@@ -1,20 +1,19 @@
-import XElement from '/library/x-element/x-element.js';
-
-export default class XPasteHandler extends XElement {
-    static setDefaultTarget(target, sanitize){
-        if (XPasteHandler.listener !== undefined) window.removeEventListener('paste', XPasteHandler.listener);
-        XPasteHandler.listener = XPasteHandler._listen.bind(target);
-        XPasteHandler.sanitize = sanitize;
-        window.addEventListener('paste', XPasteHandler.listener)
+export default class PasteHandler {
+    static setDefaultTarget(target, sanitize) {
+        if (PasteHandler.listener !== undefined) window.removeEventListener('paste', PasteHandler.listener);
+        PasteHandler.listener = PasteHandler._listen.bind(target);
+        PasteHandler.sanitize = sanitize;
+        window.addEventListener('paste', PasteHandler.listener)
     }
 
     static _listen(e) {
-      if (!(document.activeElement && ['input', 'textarea'].indexOf(document.activeElement.className) != -1)) {
+        const activeElement = document.activeElement && document.activeElement.className;
+        const isInInput = activeElement === 'input' || activeElement === 'textarea';
+        if (isInInput) return;  // We are interested in the case were we're NOT in an input yet
         this.focus();
         e.preventDefault();
         e.stopPropagation();
         const pasted = e.clipboardData.getData('text/plain');
-        this.value = XPasteHandler.sanitize(pasted);
-      }
+        this.value = PasteHandler.sanitize(pasted);
     }
 }
