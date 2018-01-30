@@ -2,7 +2,6 @@ export default class PasteHandler {
     static setDefaultTarget(target, sanitize) {
         if (PasteHandler.listener !== undefined) window.removeEventListener('paste', PasteHandler.listener);
         PasteHandler.listener = PasteHandler._listen.bind(target);
-        PasteHandler.sanitize = sanitize;
         window.addEventListener('paste', PasteHandler.listener)
     }
 
@@ -11,9 +10,7 @@ export default class PasteHandler {
         const isInInput = activeElement === 'input' || activeElement === 'textarea';
         if (isInInput) return;  // We are interested in the case were we're NOT in an input yet
         this.focus();
-        e.preventDefault();
         e.stopPropagation();
         const pasted = e.clipboardData.getData('text/plain');
-        this.value = PasteHandler.sanitize(pasted);
     }
 }
