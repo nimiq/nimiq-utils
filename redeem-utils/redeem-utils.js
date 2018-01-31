@@ -6,7 +6,7 @@ export default class RedeemTools {
         const ethAddress = await RedeemTools.nim2ethAddress(wallet.address);
         console.log('Ethereum address: ' + ethAddress);
 
-        await response = fetch(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xcfb98637bcae43C13323EAa1731cED2B716962fD&tag=latest&address=${ethAddress}`)
+        const response = await fetch(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xcfb98637bcae43C13323EAa1731cED2B716962fD&tag=latest&address=${ethAddress}`)
         return response.json();
     }
 
