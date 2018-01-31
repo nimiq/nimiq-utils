@@ -11,6 +11,5 @@ export default class PasteHandler {
         if (isInInput) return;  // We are interested in the case were we're NOT in an input yet
         this.focus();
         e.stopPropagation();
-        const pasted = e.clipboardData.getData('text/plain');
     }
 }
