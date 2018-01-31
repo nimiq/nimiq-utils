@@ -1,4 +1,4 @@
-import template_formatter from './template formatter'
+import template_formatter from './template-formatter'
 
 // Formats `value` value preserving `caret` at the same character.
 //
