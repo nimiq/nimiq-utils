@@ -1,4 +1,4 @@
-import { count_occurences } from './helpers'
+import { count_occurences } from './helpers.js'
 
 export default function create_template_parser(template, placeholder, parse)
 {
