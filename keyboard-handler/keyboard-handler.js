@@ -1,12 +1,20 @@
 export default class KeyboardHandler {
-    static setDefaultTarget(target) {
-        if (KeyboardHandler.listener !== undefined)
-            window.removeEventListener('keypress', KeyboardHandler.listener);
-
-        KeyboardHandler.listener = KeyboardHandler._listen.bind(target);
-        window.addEventListener('keypress', KeyboardHandler.listener)
+    // Set individual listener. Only one can be active at a time.
+    static setGlobalListener(listener) {
+        if (KeyboardHandler.listener !== undefined) KeyboardHandler.removeGlobalListener();
+        KeyboardHandler.listener = listener;
+        window.addEventListener('keypress', KeyboardHandler.listener);
     }
 
+    static removeGlobalListener() {
+        window.removeEventListener('keypress', KeyboardHandler.listener);
+    }
+
+    static setDefaultTarget(target) {
+        KeyboardHandler.setGlobalListener(KeyboardHandler._listen.bind(target));
+    }
+
+    // For use with setDefaultTarget
     static _listen(e) {
         const input = e.key;
         if (e.keyCode === 13) return; // enter key
