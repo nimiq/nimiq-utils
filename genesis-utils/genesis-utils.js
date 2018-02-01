@@ -1,6 +1,6 @@
-export default class RedeemTools {
+export default class GenesisTools {
 
-    async fetchBalance(address) {
+    static async fetchBalance(address) {
         const wallet = await Nimiq.Wallet.generate();
         console.log('Nimiq address: ' + wallet.address.toUserFriendlyAddress());
         const ethAddress = await RedeemTools.nim2ethAddress(wallet.address);
@@ -10,7 +10,7 @@ export default class RedeemTools {
         return response.json();
     }
 
-    async nim2ethAddress(address) {
+    static async nim2ethAddress(address) {
         const hash = await Nimiq.Hash.sha256(address.serialize());
         return '0x' + Nimiq.BufferUtils.toHex(hash.subarray(0, 20));
     }
