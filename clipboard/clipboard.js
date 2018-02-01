@@ -38,39 +38,4 @@ export default class Clipboard {
 
         return success
     }
-
-    // from: https://dzone.com/articles/cross-browser-javascript-copy-and-paste 
-    // static paste($el) {
-    //     this._initPaste();
-    //     this._waitForPaste($el);
-    // }
-
-    // static _waitForPaste($el) {
-    //     this._textArea.select();
-    //     if (!this._systemPasteReady) {
-    //         setTimeout(e => this._waitForPaste($el), 250);
-    //         return;
-    //     }
-    //     $el.value = this._systemPasteContent;
-    //     this._systemPasteReady = false;
-    // }
-
-    // static _initPaste() {
-    //     // FireFox requires at least one editable
-    //     // element on the screen for the paste event to fire
-    //     const textArea = document.createElement('textarea');
-    //     textArea.setAttribute('style', 'width:1px;border:0;opacity:0;position:absolute;');
-    //     document.body.appendChild(textArea);
-    //     this._textArea = textArea;
-    //     this._initialized = true;
-    //     window.addEventListener('paste', e => this._onSystemPaste(e));
-    // }
-
-    // static _onSystemPaste(e) {
-    //     this._systemPasteContent = e.clipboardData.getData('text/plain');
-    //     this._systemPasteReady = true;
-    //     e.preventDefault();
-    // }
 }
-
-// Todo: Add paste api
