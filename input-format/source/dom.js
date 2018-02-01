@@ -47,5 +47,5 @@ export function setCaretPosition(element, caret_position)
 	}
 
 	// Set caret position
-	element.setSelectionRange(caret_position, caret_position)
+	setTimeout(() => element.setSelectionRange(caret_position, caret_position), 0)
 }
