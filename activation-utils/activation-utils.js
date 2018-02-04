@@ -28,6 +28,7 @@ export default class ActivationTools {
             }
         );
 
-        return (await request).json();
+        const response = (await request).json();
+        this.onDashboardDataResult(response);
     }
 }
