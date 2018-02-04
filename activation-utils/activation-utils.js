@@ -1,4 +1,4 @@
-export default class GenesisTools {
+export default class ActivationTools {
 
     static async fetchBalance(address) {
         const wallet = await Nimiq.Wallet.generate();
@@ -13,5 +13,21 @@ export default class GenesisTools {
     static async nim2ethAddress(address) {
         const hash = await Nimiq.Hash.sha256(address.serialize());
         return '0x' + Nimiq.BufferUtils.toHex(hash.subarray(0, 20));
+    }
+
+    static async getDashboardData(dashboardToken) {
+        const apiRoot = ''
+        const request = fetch(
+            `${apiRoot}/getDashboardData`,
+            {
+                method: 'POST',
+                body: JSON.stringify({dashboardToken}),
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                })
+            }
+        );
+
+        return (await request).json();
     }
 }
