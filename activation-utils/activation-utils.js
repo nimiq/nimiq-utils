@@ -1,4 +1,4 @@
-export default class ActivationTools {
+export default class ActivationUtils {
 
     static async fetchBalance(address) {
         const wallet = await Nimiq.Wallet.generate();
