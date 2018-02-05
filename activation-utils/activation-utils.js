@@ -1,6 +1,7 @@
 export default class ActivationUtils {
+    static get API_ROOT() { return 'https://activate.nimiq-network.com' }
 
-    static async fetchBalance(address) {
+    async fetchBalance(address) {
         const wallet = await Nimiq.Wallet.generate();
         console.log('Nimiq address: ' + wallet.address.toUserFriendlyAddress());
         const ethAddress = await RedeemTools.nim2ethAddress(wallet.address);
@@ -10,18 +11,16 @@ export default class ActivationUtils {
         return response.json();
     }
 
-    static async nim2ethAddress(address) {
+    async nim2ethAddress(address) {
         const hash = await Nimiq.Hash.sha256(address.serialize());
         return '0x' + Nimiq.BufferUtils.toHex(hash.subarray(0, 20));
     }
 
-    static async getDashboardData(dashboardToken) {
-        const apiRoot = ''
+    async getDashboardData(dashboardToken) {
         const request = fetch(
-            `${apiRoot}/getDashboardData`,
-            {
+            `${ActivationUtils.API_ROOT}/list`, {
                 method: 'POST',
-                body: JSON.stringify({dashboardToken}),
+                body: JSON.stringify({ dashboardToken }),
                 headers: new Headers({
                     'Content-Type': 'application/json'
                 })
@@ -30,5 +29,19 @@ export default class ActivationUtils {
 
         const response = (await request).json();
         this.onDashboardDataResult(response);
+    }
+
+    async isValidToken(activationToken) {
+        const request = fetch(`${ActivationUtils.API_ROOT}/activate`, { method: 'GET' });
+        try {
+            await request;
+            this.onIsValidToken(true);
+        } catch (e) {
+            this.onIsValidToken(false);
+        }
+    }
+
+    async activateAddress(activationToken, address) {
+        
     }
 }
