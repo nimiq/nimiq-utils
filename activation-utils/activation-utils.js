@@ -18,7 +18,8 @@ export default class ActivationUtils {
 
     async getDashboardData(dashboardToken) {
         const request = fetch(
-            `${ActivationUtils.API_ROOT}/list/${dashboardToken}`, {
+            `${ActivationUtils.API_ROOT}/list/${dashboardToken}`,
+            {
                 method: 'GET',
                 headers: new Headers()
             }
@@ -29,10 +30,13 @@ export default class ActivationUtils {
     }
 
     async isValidToken(activationToken) {
-        const request = fetch(`${ActivationUtils.API_ROOT}/activate`, { method: 'GET' });
+        const request = fetch(
+            `${ActivationUtils.API_ROOT}/activate/${activationToken}`,
+            { method: 'GET' }
+        );
         try {
-            await request;
-            this.onIsValidToken(true);
+            const response = await request;
+            this.onIsValidToken(response.ok);
         } catch (e) {
             this.onIsValidToken(false);
         }
