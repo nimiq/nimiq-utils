@@ -18,16 +18,13 @@ export default class ActivationUtils {
 
     async getDashboardData(dashboardToken) {
         const request = fetch(
-            `${ActivationUtils.API_ROOT}/list`, {
-                method: 'POST',
-                body: JSON.stringify({ dashboardToken }),
-                headers: new Headers({
-                    'Content-Type': 'application/json'
-                })
+            `${ActivationUtils.API_ROOT}/list/${dashboardToken}`, {
+                method: 'GET',
+                headers: new Headers()
             }
         );
 
-        const response = (await request).json();
+        const response = await request.then(response => response.json());
         this.onDashboardDataResult(response);
     }
 
