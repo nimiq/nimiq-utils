@@ -3,12 +3,16 @@ export default class ActivationUtils {
 
     static async fetchBalance(ethAddress) {
         const response = await fetch(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xcfb98637bcae43C13323EAa1731cED2B716962fD&tag=latest&address=${ethAddress}`)
-        return await response.json();
+        return (await response.json()).result;
     }
 
     static async nim2ethAddress(address) {
         const hash = await Nimiq.Hash.sha256(address.serialize());
         return '0x' + Nimiq.BufferUtils.toHex(hash.subarray(0, 20));
+    }
+
+    static getUnfriendlyAddress(friendlyAddress) {
+        return Nimiq.Address.fromUserFriendlyAddress(friendlyAddress);
     }
 
     async getDashboardData(dashboardToken) {
