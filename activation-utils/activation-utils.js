@@ -46,6 +46,7 @@ export default class ActivationUtils {
     }
 
 
+    /** @param {string} activationToken */
     async isValidToken(activationToken) {
         const request = fetch(
             `${ActivationUtils.API_ROOT}/activate/${activationToken}`,
@@ -59,6 +60,8 @@ export default class ActivationUtils {
         }
     }
 
+    /** @param {string} activationToken
+     * @param {string} nimiqAddress */
     async activateAddress(activationToken, nimiqAddress) {
         const request = fetch(
             `${ActivationUtils.API_ROOT}/activate/address`,
@@ -77,5 +80,28 @@ export default class ActivationUtils {
 
         const response = await request;
         this.onActivateAddress(response.ok);
+    }
+
+    /** @param {{birthday: Date, city: string, country_residence: string, country_nationality: string, email: string, sex: string, first_name: string, last_name: string, street: string, zip: string }} kycData */
+    async submitKyc(kycData) {
+        const request = fetch(
+            `${ActivationUtils.API_ROOT}/submit`,
+            {
+                method: 'POST',
+                body: JSON.stringify(kycData),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        const response = await request;
+        if (response.ok) {
+            this.onKycSuccess(await response.json());
+        }
+        else {
+            this.onKycError();
+        }
     }
 }
