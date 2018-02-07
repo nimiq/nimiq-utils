@@ -59,7 +59,7 @@ export default class ActivationUtils {
         }
     }
 
-    async activateAddress(activationToken, ethAddress, nimiqAddress) {
+    async activateAddress(activationToken, nimiqAddress) {
         const request = fetch(
             `${ActivationUtils.API_ROOT}/activate/address`,
             { 
