@@ -10,7 +10,8 @@ export default class ActivationUtils {
 
     /** @return {Promise<string>} */
     static async nim2ethAddress(address) {
-        const hash = await Nimiq.Hash.sha256(address.serialize());
+        const addressObj = (typeof address  === 'string') ? ActivationUtils.getUnfriendlyAddress(address) : address;
+        const hash = await Nimiq.Hash.sha256(addressObj.serialize());
         return '0x' + Nimiq.BufferUtils.toHex(hash.subarray(0, 20));
     }
 
