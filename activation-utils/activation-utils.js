@@ -101,7 +101,7 @@ export default class ActivationUtils {
             this.onKycSuccess(await response.json());
         }
         else {
-            this.onKycError();
+            this.onKycError(response.status);
         }
     }
 }
