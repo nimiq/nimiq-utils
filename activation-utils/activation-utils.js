@@ -22,7 +22,7 @@ export default class ActivationUtils {
     }
 
     /** @param {string} dashboardToken */
-    async getDashboardData(dashboardToken) {
+    static async getDashboardData(dashboardToken) {
         try {
             const request = fetch(
                 `${ActivationUtils.API_ROOT}/list/${dashboardToken}`,
@@ -46,23 +46,27 @@ export default class ActivationUtils {
     }
 
 
-    /** @param {string} activationToken */
-    async isValidToken(activationToken) {
+    /** @param {string} activationToken
+     *  @returns {boolean} */
+    static async isValidToken(activationToken) {
+        return true;
+
         const request = fetch(
             `${ActivationUtils.API_ROOT}/activate/${activationToken}`,
             { method: 'GET' }
         );
         try {
             const response = await request;
-            this.onIsValidToken(response.ok);
+            return response.ok;
         } catch (e) {
-            this.onIsValidToken(false);
+            return false;
         }
     }
 
     /** @param {string} activationToken
-     * @param {string} nimiqAddress */
-    async activateAddress(activationToken, nimiqAddress) {
+     * @param {string} nimiqAddress
+     * @returns {boolean} */
+    static async activateAddress(activationToken, nimiqAddress) {
         const request = fetch(
             `${ActivationUtils.API_ROOT}/activate/address`,
             { 
@@ -79,7 +83,7 @@ export default class ActivationUtils {
         );
 
         const response = await request;
-        this.onActivateAddress(response.ok);
+        return response.ok;
     }
 
     /** @param {{birthday: Date, city: string, country_residence: string, country_nationality: string, email: string, sex: string, first_name: string, last_name: string, street: string, zip: string }} kycData */
