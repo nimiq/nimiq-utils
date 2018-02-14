@@ -24,8 +24,6 @@ export default class ActivationUtils {
     /** @param {string} activationToken
      *  @returns {boolean} */
     static async isValidToken(activationToken) {
-        return true;
-
         const request = fetch(
             `${ActivationUtils.API_ROOT}/activate/${activationToken}`,
             { method: 'GET' }
