@@ -8,19 +8,6 @@ export default class ActivationUtils {
         return (await response.json()).result;
     }
 
-    /** @param {string | Nimiq.Address} address 
-     * @return {Promise<string>} */
-    static async nim2ethAddress(address) {
-        const addressObj = (typeof address  === 'string') ? ActivationUtils.getUnfriendlyAddress(address) : address;
-        const hash = await Nimiq.Hash.sha256(addressObj.serialize());
-        return '0x' + Nimiq.BufferUtils.toHex(hash.subarray(0, 20));
-    }
-
-    /** @param {string} friendlyAddress */
-    static getUnfriendlyAddress(friendlyAddress) {
-        return Nimiq.Address.fromUserFriendlyAddress(friendlyAddress);
-    }
-
     /** @param {string} dashboardToken */
     static async getDashboardData(dashboardToken) {
         try {
@@ -28,23 +15,11 @@ export default class ActivationUtils {
                 `${ActivationUtils.API_ROOT}/list/${dashboardToken}`,
                 { method: 'GET' }
             );
-
-            const result = await request.then(response => {
-                if (!response.ok) {
-                    this.onDashboardTokenError();
-                } else {
-                    return response.json();
-                }
-            });
-
-            if (result) {
-                this.onDashboardDataResult(result);
-            } 
+            return await request;
         } catch(e) {
-            this.onDashboardTokenError();
+            throw Error('Request failed');
         }
     }
-
 
     /** @param {string} activationToken
      *  @returns {boolean} */
