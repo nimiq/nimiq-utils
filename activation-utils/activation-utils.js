@@ -87,7 +87,7 @@ export default class ActivationUtils {
     }
 
     /** @param {{birthday: Date, city: string, country_residence: string, country_nationality: string, email: string, sex: string, first_name: string, last_name: string, street: string, zip: string }} kycData */
-    async submitKyc(kycData) {
+    static async submitKyc(kycData) {
         const request = fetch(
             `${ActivationUtils.API_ROOT}/submit`,
             {
@@ -100,12 +100,6 @@ export default class ActivationUtils {
             }
         );
 
-        const response = await request;
-        if (response.ok) {
-            this.onKycSuccess(await response.json());
-        }
-        else {
-            this.onKycError(response.status);
-        }
+        return await request;
     }
 }
