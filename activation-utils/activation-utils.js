@@ -32,7 +32,7 @@ export default class ActivationUtils {
             const response = await request;
             return response.ok;
         } catch (e) {
-            return false;
+            throw Error('Request failed');
         }
     }
 
