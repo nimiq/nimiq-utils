@@ -1,5 +1,6 @@
 export default class ActivationUtils {
     static get API_ROOT() { return 'https://activation.nimiq.com/api' }
+    //static get API_ROOT() { return 'https://activate.nimiq-network.com' }
 
     /** @param {string} ethAddress
      *  @return {Promise<number>}*/
