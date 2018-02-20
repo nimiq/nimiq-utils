@@ -6,7 +6,7 @@ export default class ActivationUtils {
      *  @return {Promise<number>}*/
     static async fetchBalance(ethAddress) {
         const response = await fetch(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xcfb98637bcae43C13323EAa1731cED2B716962fD&tag=latest&address=${ethAddress}`)
-        return (await response.json()).result;
+        return parseInt((await response.json()).result) / 1e18; // Convert from smallest unit into NET
     }
 
     /** @param {string} dashboardToken */
@@ -43,7 +43,7 @@ export default class ActivationUtils {
     static async activateAddress(activationToken, nimiqAddress) {
         const request = fetch(
             `${ActivationUtils.API_ROOT}/activate/address`,
-            { 
+            {
                 method: 'POST',
                 body: JSON.stringify({
                     'activation_token': activationToken,
