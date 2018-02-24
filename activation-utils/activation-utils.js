@@ -37,6 +37,21 @@ export default class ActivationUtils {
         }
     }
 
+    /** @param {string} contributorToken
+     *  @returns {boolean} */
+    static async isValidContributorToken(contributorToken) {
+        const request = fetch(
+            `${ActivationUtils.API_ROOT}/activate/${contributorToken}`,
+            { method: 'GET' }
+        );
+        try {
+            const response = await request;
+            return response.ok;
+        } catch (e) {
+            throw Error('Request failed');
+        }
+    }
+
     /** @param {string} activationToken
      * @param {string} nimiqAddress
      * @returns {boolean} */
