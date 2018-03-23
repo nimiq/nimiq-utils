@@ -4,7 +4,11 @@ export default class Reflection {
      * @returns {Set<string>}
      */
     static userFunctions(proto) {
-        return new Set(Reflection._deepFunctions(proto).filter(name => name !== 'constructor' && !name.includes('__')));
+        return new Set(Reflection._deepFunctions(proto).filter(name => {
+            return name !== 'constructor'
+                && name !== 'fire'
+                && name[0] !== '_';
+        }));
     }
 
     /** @param {Object} proto

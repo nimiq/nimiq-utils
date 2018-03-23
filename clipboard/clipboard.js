@@ -5,22 +5,14 @@ export default class Clipboard {
         span.textContent = text
         span.style.whiteSpace = 'pre' // Preserve consecutive spaces and newlines
 
-        // An <iframe> isolates the <span> from the page's styles
-        var iframe = document.createElement('iframe')
-        iframe.sandbox = 'allow-same-origin'
-        document.body.appendChild(iframe)
+        // Paint the span outside the viewport
+        span.style.position = 'absolute';
+        span.style.left = '-9999px';
+        span.style.top = '-9999px';
 
-        var win = iframe.contentWindow
-        win.document.body.appendChild(span)
-
+        var win = window
         var selection = win.getSelection()
-
-        // Firefox fails to get a selection from <iframe> window, so fallback
-        if (!selection) {
-            win = window
-            selection = win.getSelection()
-            document.body.appendChild(span)
-        }
+        win.document.body.appendChild(span)
 
         var range = win.document.createRange()
         selection.removeAllRanges()
@@ -34,7 +26,6 @@ export default class Clipboard {
 
         selection.removeAllRanges()
         span.remove()
-        iframe.remove()
 
         return success
     }
