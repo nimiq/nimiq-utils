@@ -5,12 +5,16 @@
     <title>Most Simple Nimiq Wallet</title>
     
 </head>
-    <input>
+<h1>Type a text to copy it.</h1>
+<input>
+<button>Copy</button>
 <body>
     <script type="module">
     import Clipboard from '../clipboard.js';
-    
-    Clipboard.paste(document.querySelector('input'));
+
+    const input = document.querySelector('input');
+    const button = document.body.querySelector('button');
+    button.addEventListener('click', () => Clipboard.copy(input.value));
     </script>
 </body>
 
