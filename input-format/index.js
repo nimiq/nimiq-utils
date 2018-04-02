@@ -1,14 +1,14 @@
-export { default as templateParser } from './source/template-parser.js'
+import { default as templateParser } from './source/template-parser.js'
 
-export { default as templateFormatter } from './source/template-formatter.js'
+import { default as templateFormatter } from './source/template-formatter.js'
 
-export { default as parseDigit } from './source/parse-digit.js'
+import { default as parseDigit } from './source/parse-digit.js'
 
-export { default as parse } from './source/parse.js'
+import { default as parse } from './source/parse.js'
 
-export { default as format } from './source/format.js'
+import { default as format } from './source/format.js'
 
-export
+import
 {
 	onChange,
 	onPaste,
@@ -16,3 +16,15 @@ export
 	onKeyDown
 }
 from './source/input-control.js'
+
+export default {
+	templateParser,
+	templateFormatter,
+	parseDigit,
+	parse,
+	format,
+	onChange,
+	onPaste,
+	onCut,
+	onKeyDown
+}
