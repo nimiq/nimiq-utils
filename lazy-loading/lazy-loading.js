@@ -20,7 +20,7 @@ export default class LazyLoading {
         let request = LazyLoading.REQUESTS.get('nimiq');
         if (request) return request;
         if (typeof Nimiq === "undefined")
-            request = LazyLoading.loadScript('https://cdn.nimiq-testnet.com/nimiq.js').then(() => Nimiq.load());
+            request = LazyLoading.loadScript(Config.cdn).then(() => Nimiq.load());
         else if (!Nimiq._loaded) // only nimiq loader was loaded but not actual nimiq code
             request = Nimiq.load();
         else
