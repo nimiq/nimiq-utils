@@ -14,4 +14,5 @@ AddressBook.BOOK = {
     'NQ76 R7R0 DCKG N0RC 35XK ULTS N41J VGA7 3CMP': 'Porky Pool',
     'NQ10 76JC KSSE 5S2R U401 NC5P M3N2 8TKQ YATP': 'pool.nimiqchain.info',
     'NQ33 DH76 PHUK J41Q LX3A U4E0 M0BM QJH9 QQL1': 'Beeppool',
+    'NQ40 BHLY ND9E GAVA PMJ5 XF9Q CDDJ 5N4F L012': 'pool.bhlynd.nz',
 }
