@@ -15,4 +15,5 @@ AddressBook.BOOK = {
     'NQ33 DH76 PHUK J41Q LX3A U4E0 M0BM QJH9 QQL1': 'Beeppool',
     'NQ40 BHLY ND9E GAVA PMJ5 XF9Q CDDJ 5N4F L012': 'pool.bhlynd.nz',
     'NQ90 P00L 2EG5 3SBU 7TB5 NPGG 8FNL 4JC7 A4ML': 'pool.nimiq.watch',
+    'NQ11 P00L 2HYP TUK8 VY6L 2N22 MMBU MHHR BSAA': 'nimpool.io',
 }
