@@ -5,6 +5,7 @@ export default class AddressBook {
 }
 
 AddressBook.BOOK = {
+    // Mainnet
     'NQ58 U4HN TVVA FCRS VLYL 8XTL K0B7 2FVD EC6B': 'skypool',
     'NQ88 D1R3 KR4H KSY2 CQYR 5G0C 80X4 0KED 32G8': 'skypool',
     'NQ48 8CKH BA24 2VR3 N249 N8MN J5XX 74DB 5XJ8': 'skypool',
@@ -17,4 +18,9 @@ AddressBook.BOOK = {
     'NQ11 P00L 2HYP TUK8 VY6L 2N22 MMBU MHHR BSAA': 'nimpool.io',
     'NQ04 3GHQ RAV6 75FD R9XA VS7N 146Q H230 2KER': 'nimiqpool.com',
     'NQ07 SURF KVMX XF1U T3PH GXSN HYK1 RG71 HBKR': 'Nimiq.Surf',
+
+    // Testnet
+    'NQ31 QEPR ED7V 00KC P7UC P1PR DKJC VNU7 E461': 'pool.nimiq-testnet.com',
+    'NQ36 P00L 1N6T S3QL KJY8 6FH4 5XN4 DXY0 L7C8': 'test-pool.nimiq.watch',
+    'NQ50 CXGC 14C6 Y7Q4 U3X2 KF0S 0Q88 G09C PGA0': 'SushiPool TESTNET',
 }
