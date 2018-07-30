@@ -24,6 +24,7 @@ AddressBook.BOOK = {
     'NQ06 NG1G 83YG 5D59 LK8G Y2JB VYTH EL6D 7AKY': 'Nimbus Pool',
     'NQ18 37VM K2Y5 2HPY 5U80 2E0U VHUJ R7RK QSNE': 'Sirius Pool',
     'NQ64 55BR 87SX AFHN XB27 M7BQ F7CY L4FV 2TG2': 'HexaPool',
+    'NQ67 AQB4 RHCC AU2T 4CC0 ETUT X1XB SSFL V9UQ': 'mineNIM Pool',
 
     // Mainnet Services
     'NQ15 MLJN 23YB 8FBM 61TN 7LYG 2212 LVBG 4V19': 'NIM Activation',
@@ -31,6 +32,7 @@ AddressBook.BOOK = {
     'NQ19 YG54 46TX EHGQ D2R2 V8XA JX84 UFG0 S0MC': 'Nimiq Charity',
     'NQ94 GSXP KNG0 K5YV HFJ1 PYAQ Y5D1 XTQ1 SLFP': 'Nimiq-Faucet.surge.sh',
     'NQ80 PAYN R93R D0H4 BH8T KPRT SBYE 30A3 PHDL': 'PayNim.app',
+    'NQ85 TEST VY0L DR6U KDXA 6EAV 1EJG ENJ9 NCGP': 'Discord NIM Tip Bot',
 
     // Testnet
     'NQ31 QEPR ED7V 00KC P7UC P1PR DKJC VNU7 E461': 'pool.nimiq-testnet.com',
