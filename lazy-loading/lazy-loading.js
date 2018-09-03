@@ -13,6 +13,7 @@ export default class LazyLoading {
             document.head.appendChild(script);
         });
         LazyLoading.REQUESTS.set(src, request);
+        request.catch(() => LazyLoading.REQUESTS.delete(src));
         return request;
     }
 
@@ -37,6 +38,7 @@ export default class LazyLoading {
             }
         });
         LazyLoading.REQUESTS.set('nimiq', request);
+        request.catch(() => LazyLoading.REQUESTS.delete('nimiq'));
         return request;
     }
 }
