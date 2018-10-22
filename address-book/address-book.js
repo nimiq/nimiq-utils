@@ -35,6 +35,7 @@ AddressBook.BOOK = {
     'NQ80 PAYN R93R D0H4 BH8T KPRT SBYE 30A3 PHDL': 'PayNim.app',
     'NQ85 TEST VY0L DR6U KDXA 6EAV 1EJG ENJ9 NCGP': 'Discord NIM Tip Bot',
     'NQ26 NMK7 R4EA KSV2 67Q2 5L4T DVDS FR5E NX7B': 'Nimiq Shop',
+    'NQ02 YP68 BA76 0KR3 QY9C SF0K LP8Q THB6 LTKU': 'Nimiq Faucet',
 
     // Testnet
     'NQ31 QEPR ED7V 00KC P7UC P1PR DKJC VNU7 E461': 'pool.nimiq-testnet.com',
