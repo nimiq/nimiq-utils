@@ -1,5 +1,5 @@
 export class ValidationUtils {
-    static isValidAddress(address) {
+    static isValidAddress(address: string) {
         if (!address) return false;
         try {
             this.isUserFriendlyAddress(address);
@@ -11,22 +11,28 @@ export class ValidationUtils {
 
     // Copied from: https://github.com/nimiq-network/core/blob/master/src/main/generic/consensus/base/account/Address.js
 
-    static isUserFriendlyAddress(str) {
+    static isUserFriendlyAddress(str: string) {
         if (!str) return;
 
         str = str.replace(/ /g, '');
         if (str.substr(0, 2).toUpperCase() !== 'NQ') {
+            // TODO use custom error class?
+            // @ts-ignore
             throw new Error('Addresses start with NQ', 201);
         }
         if (str.length !== 36) {
+            // TODO use custom error class?
+            // @ts-ignore
             throw new Error('Addresses are 36 chars (ignoring spaces)', 202);
         }
         if (this._ibanCheck(str.substr(4) + str.substr(0, 4)) !== 1) {
+            // TODO use custom error class?
+            // @ts-ignore
             throw new Error('Address Checksum invalid', 203);
         }
     }
 
-    static _ibanCheck(str) {
+    static _ibanCheck(str: string) {
         const num = str.split('').map((c) => {
             const code = c.toUpperCase().charCodeAt(0);
             return code >= 48 && code <= 57 ? c : (code - 55).toString();
@@ -40,7 +46,7 @@ export class ValidationUtils {
         return parseInt(tmp);
     }
 
-    static isValidHash(hash) {
+    static isValidHash(hash: string) {
         // not using Nimiq Api here to don't require it to be loaded already
         try {
             return atob(hash).length === 32;

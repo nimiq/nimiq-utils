@@ -15,14 +15,14 @@ export class BrowserDetection {
 
     static iOSversion() {
         if (/iP(hone|od|ad)/.test(navigator.platform)) {
-            var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
-            return [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
+            const v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+            return [parseInt(v![1], 10), parseInt(v![2], 10), parseInt(v![3] || '0', 10)];
         }
     }
 
     static isBadIOS() {
         const version = this.iOSversion();
-        return version[0] < 11 || (version[0] === 11 && version[1] === 2) // Only 11.2 has the WASM bug
+        return version && version![0] < 11 || (version![0] === 11 && version![1] === 2) // Only 11.2 has the WASM bug
     }
 
     /**
@@ -48,7 +48,8 @@ export class BrowserDetection {
                 return void window.webkitRequestFileSystem(0, 0, off, on);
             }
             // Firefox
-            if ('MozAppearance' in document.documentElement.style) {
+            if (document.documentElement && 'MozAppearance' in document.documentElement.style) {
+                // @ts-ignore
                 const db = indexedDB.open(null);
                 db.onerror = on;
                 db.onsuccess = off;

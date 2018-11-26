@@ -1,2 +1,5 @@
 .DS_Store
 delay
+node_modules
+/dist
+/build

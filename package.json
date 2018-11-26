@@ -1,19 +1,20 @@
 {
   "name": "@nimiq/utils",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Nimiq Util Classes",
-  "repository": "git@github.com:nimiq/secure-utils.git",
+  "repository": "git@github.com:nimiq/nimiq-utils.git",
   "author": "Nimiq",
   "license": "Apache-2.0",
   "main": "dist/utils.umd.js",
   "module": "dist/utils.es.js",
   "scripts": {
-    "build": "rollup -c"
+    "build": "tsc && rollup -c"
   },
   "files": [
     "dist"
   ],
   "devDependencies": {
-    "rollup": "^0.64.0"
+    "rollup": "^0.64.0",
+    "typescript": "^3.1.6"
   }
 }
