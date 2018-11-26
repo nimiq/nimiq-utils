@@ -1,31 +1,24 @@
 // rollup.config.js
-const dependencies = Object.keys(require('./package.json').dependencies);
-
-export default [
-    {
-        input: 'build/main.js',
-        output: {
-            file: 'dist/utils.common.js',
-            format: 'cjs'
+export default {
+    input: [
+        'build/main.js',
+        'build/address-book/AddressBook.js',
+        'build/browser-detection/BrowserDetection.js',
+        'build/paste-handler/PasteHandler.js',
+        'build/utf8-tools/Utf8Tools.js',
+        'build/validation-utils/ValidationUtils.js'
+    ],
+    output: [
+        {
+            dir: 'dist/module',
+            format: "es",
+            sourcemap: true
         },
-        external: dependencies
-    },
-    {
-        input: 'build/main.js',
-        output: {
-            file: 'dist/utils.umd.js',
-            format: 'umd',
-            name: 'window',
-            extend: true
-        },
-        external: dependencies
-    },
-    {
-        input: 'build/main.js',
-        output: {
-            file: 'dist/utils.es.js',
-            format: 'es'
-        },
-        external: dependencies
-    }
-];
+        {
+            dir: 'dist/nomodule',
+            format: 'system',
+            sourcemap: true
+        }
+    ],
+    experimentalCodeSplitting: true
+};
