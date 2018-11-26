@@ -1,3 +1,4 @@
+// Not sure if we still need this one, I'll leave it for now
 export default class PasteHandler {
     static setDefaultTarget(target, sanitize) {
         if (PasteHandler.listener !== undefined) window.removeEventListener('paste', PasteHandler.listener);
