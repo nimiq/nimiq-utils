@@ -1,5 +1,5 @@
 // Not sure if we still need this one, I'll leave it for now
-export default class PasteHandler {
+export class PasteHandler {
     static listener: EventListener;
 
     static setDefaultTarget(target: HTMLElement) {
