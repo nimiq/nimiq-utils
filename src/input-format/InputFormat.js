@@ -17,7 +17,7 @@ import
 }
 from './source/input-control.js'
 
-export default {
+export const InputFormat = {
 	templateParser,
 	templateFormatter,
 	parseDigit,
