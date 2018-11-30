@@ -17,7 +17,7 @@ export default {
         },
         {
             dir: 'dist/nomodule',
-            format: 'system',
+            format: 'cjs',
             sourcemap: true
         }
     ],
