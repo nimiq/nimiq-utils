@@ -22,23 +22,27 @@ class BrowserDetection {
     // - Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36
     // - Safari: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A
     static getBrowser() {
-        const ua = navigator.userAgent;
+        if (BrowserDetection._browser) {
+            return BrowserDetection._browser;
+        }
         // note that the order is important as many browsers include the names of others in the ua.
+        const ua = navigator.userAgent;
         if (/Edge\//i.test(ua)) {
-            return BrowserDetection.Browser.EDGE;
+            BrowserDetection._browser = BrowserDetection.Browser.EDGE;
         } else if (/(Opera|OPR)\//i.test(ua)) {
-            return BrowserDetection.Browser.OPERA;
+            BrowserDetection._browser = BrowserDetection.Browser.OPERA;
         } else if (/Firefox\//i.test(ua)) {
-            return BrowserDetection.Browser.FIREFOX;
+            BrowserDetection._browser = BrowserDetection.Browser.FIREFOX;
         } else if (/Chrome\//i.test(ua)) {
-            return BrowserDetection.Browser.CHROME;
+            BrowserDetection._browser = BrowserDetection.Browser.CHROME;
         } else if (/^((?!chrome|android).)*safari/i.test(ua)) {
             // see https://stackoverflow.com/a/23522755
             // Note that Chrome iOS is also detected as Safari, see comments in stack overflow
-            return BrowserDetection.Browser.SAFARI;
+            BrowserDetection._browser = BrowserDetection.Browser.SAFARI;
         } else {
-            return BrowserDetection.Browser.UNKNOWN;
+            BrowserDetection._browser = BrowserDetection.Browser.UNKNOWN;
         }
+        return BrowserDetection._browser;
     }
 
     static isChrome() {
@@ -125,6 +129,8 @@ class BrowserDetection {
             return off();
         });
     }
+
+    private static _browser?: BrowserDetection.Browser;
 }
 
 namespace BrowserDetection {
