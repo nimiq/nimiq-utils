@@ -1,9 +1,9 @@
 {
   "name": "@nimiq/utils",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Nimiq Util Classes",
   "repository": "git@github.com:nimiq/nimiq-utils.git",
-  "author": "Nimiq",
+  "author": "Nimiq (https://www.nimiq.com)",
   "license": "Apache-2.0",
   "main": "dist/nomodule/main.js",
   "module": "dist/module/main.js",
