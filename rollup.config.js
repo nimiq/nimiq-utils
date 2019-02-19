@@ -6,6 +6,7 @@ export default {
         'build/browser-detection/BrowserDetection.js',
         // 'src/input-format/InputFormat.js',
         'build/paste-handler/PasteHandler.js',
+        'build/request-link-encoding/RequestLinkEncoding.js',
         'build/utf8-tools/Utf8Tools.js',
         'build/validation-utils/ValidationUtils.js'
     ],
