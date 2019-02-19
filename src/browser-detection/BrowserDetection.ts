@@ -21,48 +21,48 @@ class BrowserDetection {
     // - Firefox: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:64.0) Gecko/20100101 Firefox/64.0
     // - Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36
     // - Safari: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A
-    static getBrowser() {
-        if (BrowserDetection._browser) {
-            return BrowserDetection._browser;
+    static detectBrowser() {
+        if (BrowserDetection._detectedBrowser) {
+            return BrowserDetection._detectedBrowser;
         }
         // note that the order is important as many browsers include the names of others in the ua.
         const ua = navigator.userAgent;
         if (/Edge\//i.test(ua)) {
-            BrowserDetection._browser = BrowserDetection.Browser.EDGE;
+            BrowserDetection._detectedBrowser = BrowserDetection.Browser.EDGE;
         } else if (/(Opera|OPR)\//i.test(ua)) {
-            BrowserDetection._browser = BrowserDetection.Browser.OPERA;
+            BrowserDetection._detectedBrowser = BrowserDetection.Browser.OPERA;
         } else if (/Firefox\//i.test(ua)) {
-            BrowserDetection._browser = BrowserDetection.Browser.FIREFOX;
+            BrowserDetection._detectedBrowser = BrowserDetection.Browser.FIREFOX;
         } else if (/Chrome\//i.test(ua)) {
-            BrowserDetection._browser = BrowserDetection.Browser.CHROME;
+            BrowserDetection._detectedBrowser = BrowserDetection.Browser.CHROME;
         } else if (/^((?!chrome|android).)*safari/i.test(ua)) {
             // see https://stackoverflow.com/a/23522755
             // Note that Chrome iOS is also detected as Safari, see comments in stack overflow
-            BrowserDetection._browser = BrowserDetection.Browser.SAFARI;
+            BrowserDetection._detectedBrowser = BrowserDetection.Browser.SAFARI;
         } else {
-            BrowserDetection._browser = BrowserDetection.Browser.UNKNOWN;
+            BrowserDetection._detectedBrowser = BrowserDetection.Browser.UNKNOWN;
         }
-        return BrowserDetection._browser;
+        return BrowserDetection._detectedBrowser;
     }
 
     static isChrome() {
-        return BrowserDetection.getBrowser() === BrowserDetection.Browser.CHROME;
+        return BrowserDetection.detectBrowser() === BrowserDetection.Browser.CHROME;
     }
 
     static isFirefox() {
-        return BrowserDetection.getBrowser() === BrowserDetection.Browser.FIREFOX;
+        return BrowserDetection.detectBrowser() === BrowserDetection.Browser.FIREFOX;
     }
 
     static isOpera() {
-        return BrowserDetection.getBrowser() === BrowserDetection.Browser.OPERA;
+        return BrowserDetection.detectBrowser() === BrowserDetection.Browser.OPERA;
     }
 
     static isEdge() {
-        return BrowserDetection.getBrowser() === BrowserDetection.Browser.EDGE;
+        return BrowserDetection.detectBrowser() === BrowserDetection.Browser.EDGE;
     }
 
     static isSafari() {
-        return BrowserDetection.getBrowser() === BrowserDetection.Browser.SAFARI;
+        return BrowserDetection.detectBrowser() === BrowserDetection.Browser.SAFARI;
     }
 
     static isIOS() {
@@ -130,7 +130,7 @@ class BrowserDetection {
         });
     }
 
-    private static _browser?: BrowserDetection.Browser;
+    private static _detectedBrowser?: BrowserDetection.Browser;
 }
 
 namespace BrowserDetection {
