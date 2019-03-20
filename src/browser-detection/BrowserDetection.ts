@@ -21,6 +21,7 @@ class BrowserDetection {
     // - Firefox: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:64.0) Gecko/20100101 Firefox/64.0
     // - Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36
     // - Safari: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A
+    // - Safari iOS: Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1
     static detectBrowser() {
         if (BrowserDetection._detectedBrowser) {
             return BrowserDetection._detectedBrowser;
@@ -43,6 +44,47 @@ class BrowserDetection {
             BrowserDetection._detectedBrowser = BrowserDetection.Browser.UNKNOWN;
         }
         return BrowserDetection._detectedBrowser;
+    }
+
+    static detectVersion() {
+        if (typeof BrowserDetection._detectedVersion !== 'undefined') {
+            return BrowserDetection._detectedVersion;
+        }
+        let regex;
+        switch (BrowserDetection.detectBrowser()) {
+            case BrowserDetection.Browser.EDGE:
+                regex = /Edge\/(\S+)/i;
+                break;
+            case BrowserDetection.Browser.OPERA:
+                regex = /(Opera|OPR)\/(\S+)/i;
+                break;
+            case BrowserDetection.Browser.FIREFOX:
+                regex = /Firefox\/(\S+)/i;
+                break;
+            case BrowserDetection.Browser.CHROME:
+                regex = /Chrome\/(\S+)/i;
+                break;
+            case BrowserDetection.Browser.SAFARI:
+                regex = /Version\/(\S+)/i;
+                break;
+            default:
+                BrowserDetection._detectedVersion = null;
+                return null;
+        }
+        const match = navigator.userAgent.match(regex);
+        if (!match) {
+            BrowserDetection._detectedVersion = null;
+            return null;
+        }
+        const versionString = match[match.length - 1];
+        const versionParts = versionString.split('.');
+        const parsedVersionParts = [];
+        for (let i = 0; i < 4; ++i) {
+            parsedVersionParts.push(parseInt(versionParts[i]) || 0);
+        }
+        const [major, minor, build, patch] = parsedVersionParts;
+        BrowserDetection._detectedVersion =  { versionString, major, minor, build, patch };
+        return BrowserDetection._detectedVersion;
     }
 
     static isChrome() {
@@ -131,6 +173,7 @@ class BrowserDetection {
     }
 
     private static _detectedBrowser?: BrowserDetection.Browser;
+    private static _detectedVersion?: BrowserDetection.BrowserVersion | null;
 }
 
 namespace BrowserDetection {
@@ -141,6 +184,14 @@ namespace BrowserDetection {
         EDGE = 'edge',
         SAFARI = 'safari',
         UNKNOWN = 'unknown',
+    }
+
+    export interface BrowserVersion {
+        versionString: string;
+        major: number;
+        minor: number;
+        build: number;
+        patch: number;
     }
 }
 
