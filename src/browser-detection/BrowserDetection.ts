@@ -1,4 +1,12 @@
 class BrowserDetection {
+    static getBrowserInfo() {
+        return {
+            browser: BrowserDetection.detectBrowser(),
+            version: BrowserDetection.detectVersion(),
+            isMobile: BrowserDetection.isMobile(),
+        };
+    }
+
     // Also includes tablets.
     // Inspired by:
     // - https://stackoverflow.com/a/13819253
