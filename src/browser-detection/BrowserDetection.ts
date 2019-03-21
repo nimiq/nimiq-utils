@@ -177,7 +177,7 @@ class BrowserDetection {
 }
 
 namespace BrowserDetection {
-    export const enum Browser {
+    export enum Browser {
         CHROME = 'chrome',
         FIREFOX = 'firefox',
         OPERA = 'opera',
