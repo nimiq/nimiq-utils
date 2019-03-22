@@ -29,7 +29,8 @@ class BrowserDetection {
     // - Firefox: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:64.0) Gecko/20100101 Firefox/64.0
     // - Chrome: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36
     // - Safari: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A
-    // - Safari iOS: Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1
+    // - Safari iPhone: Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1
+    // - Safari iPad: Mozilla/5.0 (iPad; CPU OS 11_2_2 like Mac OS X) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0 Mobile/15C202 Safari/604.1
     static detectBrowser() {
         if (BrowserDetection._detectedBrowser) {
             return BrowserDetection._detectedBrowser;
@@ -73,7 +74,7 @@ class BrowserDetection {
                 regex = /Chrome\/(\S+)/i;
                 break;
             case BrowserDetection.Browser.SAFARI:
-                regex = /Version\/(\S+)/i;
+                regex = /(iP(hone|ad|od).*?OS |Version\/)(\S+)/i;
                 break;
             default:
                 BrowserDetection._detectedVersion = null;
@@ -84,7 +85,7 @@ class BrowserDetection {
             BrowserDetection._detectedVersion = null;
             return null;
         }
-        const versionString = match[match.length - 1];
+        const versionString = match[match.length - 1].replace(/_/g, '.'); // replace _ in iOS version
         const versionParts = versionString.split('.');
         const parsedVersionParts = [];
         for (let i = 0; i < 4; ++i) {
@@ -119,16 +120,13 @@ class BrowserDetection {
         return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     }
 
-    static iOSversion() {
-        if (/iP(hone|od|ad)/.test(navigator.platform)) {
-            const v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
-            return [parseInt(v![1], 10), parseInt(v![2], 10), parseInt(v![3] || '0', 10)];
-        }
-    }
-
     static isBadIOS() {
-        const version = this.iOSversion();
-        return version && version![0] < 11 || (version![0] === 11 && version![1] === 2) // Only 11.2 has the WASM bug
+        const browserInfo = BrowserDetection.getBrowserInfo();
+        // Check for iOS < 11 or 11.2 which has the WASM bug
+        return browserInfo.browser === BrowserDetection.Browser.SAFARI
+            && browserInfo.isMobile
+            && browserInfo.version
+            && (browserInfo.version.major < 11 || browserInfo.version.major === 11 && browserInfo.version.minor === 2);
     }
 
     /**
