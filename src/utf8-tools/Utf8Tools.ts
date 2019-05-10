@@ -12,7 +12,12 @@
 
 export class Utf8Tools { // eslint-disable-line no-unused-vars
     public static stringToUtf8ByteArray(str: string): Uint8Array {
-        // TODO: Use native implementations if/when available
+        if (typeof TextEncoder !== 'undefined') {
+            const encoder = new TextEncoder(); // utf-8 is the default
+            return encoder.encode(str);
+        }
+
+        // Fallback for unsupported TextEncoder
         const out = [];
         let p = 0;
         for (let i = 0; i < str.length; i++) {
@@ -41,7 +46,12 @@ export class Utf8Tools { // eslint-disable-line no-unused-vars
     }
 
     public static utf8ByteArrayToString(bytes: Uint8Array): string {
-        // TODO: Use native implementations if/when available
+        if (typeof TextDecoder !== 'undefined') {
+            const decoder = new TextDecoder('utf-8');
+            return decoder.decode(bytes);
+        }
+
+        // Fallback for unsupported TextDecoder
         const out = [];
         let pos = 0;
         let c = 0;
