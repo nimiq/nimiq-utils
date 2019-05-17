@@ -29,6 +29,10 @@ export function parseRequestLink(
 ) {
     if (!(requestLink instanceof URL)) {
         try {
+            if (!requestLink.includes('://')) {
+                // Because we are only interested in the host and hash, the protocol doesn't matter
+                requestLink = 'dummy://' + requestLink;
+            }
             requestLink = new URL(requestLink);
         } catch(e) {
             return null;
