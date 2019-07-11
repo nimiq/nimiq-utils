@@ -1,2 +1,0 @@
-This was taken from https://github.com/catamphetamine/input-format when we didn't want to use npm packages.
-TODO: Check if there were changes made by us and/or if we can just use above package.
