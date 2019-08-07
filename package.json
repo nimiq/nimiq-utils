@@ -10,13 +10,14 @@
   "types": "types/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "tsc && rollup -c"
+    "build": "rimraf build dist && tsc && rollup -c"
   },
   "files": [
     "dist",
     "types"
   ],
   "devDependencies": {
+    "rimraf": "^2.6.3",
     "rollup": "^0.64.0",
     "typescript": "^3.1.6"
   }
