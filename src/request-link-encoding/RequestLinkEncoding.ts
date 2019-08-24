@@ -1,37 +1,77 @@
 import { ValidationUtils } from "../validation-utils/ValidationUtils";
 
-/**
- * @deprecated
- */
+const enum Currency {
+    NIM = 'nim',
+    BTC = 'btc',
+    ETH = 'eth',
+}
+
+export interface NimiqRequestLinkOptions {
+    amount?: number, // in NIM
+    message?: string,
+    basePath?: string,
+}
+
+export interface BitcoinRequestLinkOptions {
+    amount?: number, // in BTC
+    fee?: number, // suggested fee in BTC, might be ignored
+    label?: string,
+    message?: string,
+}
+
+export interface EthereumRequestLinkOptions {
+    // Note that ETH values are limited to JS number precision
+    amount?: number, // in ETH
+    gasPrice?: number, // in ETH
+    gasLimit?: number, // integer in gas units, same as parameter 'gas' as specified in EIP681
+    chainId?: number,
+}
+
+export type GeneralRequestLinkOptions =
+    NimiqRequestLinkOptions & { currency: Currency.NIM }
+    | BitcoinRequestLinkOptions & { currency: Currency.BTC }
+    | EthereumRequestLinkOptions & { currency: Currency.ETH };
+
+// Can be used with an options object or with the legacy function signature for creating a Nim request link
 export function createRequestLink(
     recipient: string,
-    amount?: number, // in NIM
+    amountOrOptions?: number | GeneralRequestLinkOptions, // amount in Nim or options object
     message?: string,
     basePath: string = window.location.host,
 ) {
-    console.warn('This method is deprecated. Use createNimiqRequestLink instead.');
-    return createNimiqRequestLink(recipient, { amount, message, basePath })
+    if (typeof amountOrOptions === 'object') {
+        switch (amountOrOptions.currency) {
+            case Currency.NIM:
+                return createNimiqRequestLink(recipient, amountOrOptions);
+            case Currency.BTC:
+                return createBitcoinRequestLink(recipient, amountOrOptions);
+            case Currency.ETH:
+                return createEthereumRequestLink(recipient, amountOrOptions);
+            default:
+                throw new Error('Unsupported currency.');
+        }
+    }
+    return createNimiqRequestLink(recipient, { amount: amountOrOptions, message, basePath });
 }
 
-/**
- * @deprecated
- */
 export function parseRequestLink(
     requestLink: string | URL,
     requiredBasePath?: string,
 ) {
-    console.warn('This method is deprecated. Use parseNimiqRequestLink instead.');
+    const protocol = requestLink instanceof URL
+        ? requestLink.protocol
+        : (requestLink.match(/^[^:]+:/) || ['https:'])[0];
+    if (!/^http(s)?:$/i.test(protocol)) {
+        // currently only nimiq web link parsing supported
+        throw new Error(`Parsing links for protocol ${protocol} is currently not supported.`);
+    }
     return parseNimiqRequestLink(requestLink, requiredBasePath);
 }
 
 // Note that the encoding scheme is the same as for Safe XRouter aside route parameters (see _makeAside).
 export function createNimiqRequestLink(
     recipient: string,
-    options: {
-        amount?: number, // in NIM
-        message?: string,
-        basePath?: string,
-    } = { basePath: window.location.host },
+    options: NimiqRequestLinkOptions = { basePath: window.location.host },
 ) {
     let { amount, message, basePath } = options;
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
@@ -40,7 +80,7 @@ export function createNimiqRequestLink(
     const optionsArray = [
         recipient.replace(/ /g, ''), // strip spaces
         amount || '',
-        encodeURIComponent(message || '')
+        encodeURIComponent(message || ''),
     ];
     // don't encode empty options (if they are not followed by other non-empty options)
     while (optionsArray[optionsArray.length - 1] === '') optionsArray.pop();
@@ -102,12 +142,7 @@ export function parseNimiqRequestLink(
 // following BIP21
 export function createBitcoinRequestLink(
     recipient: string,
-    options: {
-        amount?: number, // in BTC
-        fee?: number, // suggested fee in BTC, might be ignored
-        label?: string,
-        message?: string,
-    } = {},
+    options: BitcoinRequestLinkOptions = {},
 ) {
     if (!recipient) throw new Error('Recipient is required');
     if (options.amount && (!Number.isFinite(options.amount) || options.amount < 0)) throw new TypeError('Invalid amount');
@@ -131,13 +166,7 @@ export function createBitcoinRequestLink(
 // subset of EIP681
 export function createEthereumRequestLink(
     recipient: string, // ETH address or ENS name
-    options: {
-        // Note that ETH values are limited to JS number precision
-        amount?: number, // in ETH
-        gasPrice?: number, // in ETH
-        gasLimit?: number, // integer in gas units, same as parameter 'gas' as specified in EIP681
-        chainId?: number,
-    } = {},
+    options: EthereumRequestLinkOptions = {},
 ) {
     if (!recipient) throw new Error('Recipient is required');
     const { amount: value, gasPrice, gasLimit, chainId } = options;
