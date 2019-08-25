@@ -1,28 +1,35 @@
 import { ValidationUtils } from "../validation-utils/ValidationUtils";
 
+// this imports only the type without bundling the library
+type BigInteger = import('big-integer').BigInteger;
+
 const enum Currency {
     NIM = 'nim',
     BTC = 'btc',
     ETH = 'eth',
 }
 
+const NIM_DECIMALS = 5;
+const BTC_DECIMALS = 8;
+const ETH_DECIMALS = 18;
+
 export interface NimiqRequestLinkOptions {
-    amount?: number, // in NIM
+    amount?: number, // in luna
     message?: string,
     basePath?: string,
+    currency?: Currency.NIM,
 }
 
 export interface BitcoinRequestLinkOptions {
-    amount?: number, // in BTC
+    amount?: number, // in Satoshi
     fee?: number, // suggested fee in BTC, might be ignored
     label?: string,
     message?: string,
 }
 
 export interface EthereumRequestLinkOptions {
-    // Note that ETH values are limited to JS number precision
-    amount?: number, // in ETH
-    gasPrice?: number, // in ETH
+    amount?: number | bigint | BigInteger, // in Wei. To avoid js number limitations, usage of BigInt is recommendable
+    gasPrice?: number | bigint | BigInteger, // in Wei. To avoid js number limitations, usage of BigInt is recommendable
     gasLimit?: number, // integer in gas units, same as parameter 'gas' as specified in EIP681
     chainId?: number,
 }
@@ -32,13 +39,14 @@ export type GeneralRequestLinkOptions =
     | BitcoinRequestLinkOptions & { currency: Currency.BTC }
     | EthereumRequestLinkOptions & { currency: Currency.ETH };
 
-// Can be used with an options object or with the legacy function signature for creating a Nim request link
+// Can be used with an options object or with the legacy function signature for creating a Nim request link.
+// If using the legacy function signature, amountOrOptions can be given as a value in Nim.
 export function createRequestLink(
     recipient: string,
     amountOrOptions?: number | GeneralRequestLinkOptions, // amount in Nim or options object
     message?: string,
     basePath: string = window.location.host,
-) {
+): string {
     if (typeof amountOrOptions === 'object') {
         switch (amountOrOptions.currency) {
             case Currency.NIM:
@@ -51,13 +59,21 @@ export function createRequestLink(
                 throw new Error('Unsupported currency.');
         }
     }
-    return createNimiqRequestLink(recipient, { amount: amountOrOptions, message, basePath });
+    const amount = typeof amountOrOptions !== 'undefined' ? amountOrOptions * Math.pow(10, NIM_DECIMALS) : undefined;
+    return createNimiqRequestLink(recipient, { amount, message, basePath });
 }
 
+export function parseRequestLink(requestLink: string | URL, requiredBasePath?: string, useNewApi?: false)
+    : null | { recipient: string, amount: number | null, message: string | null }; // legacy function signature
+export function parseRequestLink(requestLink: string | URL, requiredBasePath: string | undefined, useNewApi: true)
+    : null | NimiqRequestLinkOptions & { recipient: string };
 export function parseRequestLink(
     requestLink: string | URL,
     requiredBasePath?: string,
-) {
+    useNewApi?: boolean, // temporary option to distinguish legacy usage that returned amount in Nim
+): null | NimiqRequestLinkOptions & { recipient: string }
+    | { recipient: string, amount: number | null, message: string | null }
+{
     const protocol = requestLink instanceof URL
         ? requestLink.protocol
         : (requestLink.match(/^[^:]+:/) || ['https:'])[0];
@@ -65,21 +81,37 @@ export function parseRequestLink(
         // currently only nimiq web link parsing supported
         throw new Error(`Parsing links for protocol ${protocol} is currently not supported.`);
     }
-    return parseNimiqRequestLink(requestLink, requiredBasePath);
+
+    if (!useNewApi) {
+        console.warn('parseRequestLink with amounts in Nim and null for non-existing values has been deprecated. '
+            + 'Please set useNewApi to true to signal usage of the new parseRequestLink method. Note that useNewApi '
+            + 'is a temporary flag that will be removed once parseRequestLink switches to returning amounts in '
+            + 'the smallest unit and undefined for non-existing values by default after a transition period.');
+    }
+    const parsedNimiqRequestLink = parseNimiqRequestLink(requestLink, requiredBasePath);
+    if (!parsedNimiqRequestLink) return null;
+
+    let { recipient, amount, message } = parsedNimiqRequestLink;
+    if (!useNewApi) {
+        amount = amount ? amount / Math.pow(10, NIM_DECIMALS) : amount;
+        return { recipient, amount: amount || null, message: message || null };
+    }
+    return { recipient, amount, message };
 }
 
 // Note that the encoding scheme is the same as for Safe XRouter aside route parameters (see _makeAside).
 export function createNimiqRequestLink(
     recipient: string,
     options: NimiqRequestLinkOptions = { basePath: window.location.host },
-) {
+): string {
     let { amount, message, basePath } = options;
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
     if (amount && typeof amount !== 'number') throw new Error(`Not a valid amount: ${amount}`);
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
+    const amountNim = amount ? smallestUnitToBaseUnitString(amount, NIM_DECIMALS) : '';
     const optionsArray = [
         recipient.replace(/ /g, ''), // strip spaces
-        amount || '',
+        amountNim,
         encodeURIComponent(message || ''),
     ];
     // don't encode empty options (if they are not followed by other non-empty options)
@@ -93,7 +125,7 @@ export function createNimiqRequestLink(
 export function parseNimiqRequestLink(
     requestLink: string | URL,
     requiredBasePath?: string,
-) {
+): null | NimiqRequestLinkOptions & { recipient: string } {
     if (!(requestLink instanceof URL)) {
         try {
             if (!requestLink.includes('://')) {
@@ -124,17 +156,17 @@ export function parseNimiqRequestLink(
 
     let parsedAmount;
     if (typeof amount !== 'undefined' && amount !== '') {
-        parsedAmount = parseFloat(amount);
+        parsedAmount = parseFloat(amount) * Math.pow(10, NIM_DECIMALS);
         if (Number.isNaN(parsedAmount)) return null;
     } else {
-        parsedAmount = null;
+        parsedAmount = undefined;
     }
 
     let parsedMessage;
     if (typeof message !== 'undefined' && message !== '') {
         parsedMessage = decodeURIComponent(message) ;
     } else {
-        parsedMessage = null;
+        parsedMessage = undefined;
     }
     return { recipient, amount: parsedAmount, message: parsedMessage };
 }
@@ -143,19 +175,18 @@ export function parseNimiqRequestLink(
 export function createBitcoinRequestLink(
     recipient: string,
     options: BitcoinRequestLinkOptions = {},
-) {
+): string {
     if (!recipient) throw new Error('Recipient is required');
-    if (options.amount && (!Number.isFinite(options.amount) || options.amount < 0)) throw new TypeError('Invalid amount');
-    if (options.fee && (!Number.isFinite(options.fee) || options.fee < 0)) throw new TypeError('Invalid fee');
+    if (options.amount && !isUnsignedInteger(options.amount)) throw new TypeError('Invalid amount');
+    if (options.fee && !isUnsignedInteger(options.fee)) throw new TypeError('Invalid fee');
     const query = new URLSearchParams();
     const validQueryKeys: ['amount', 'fee', 'label', 'message'] = ['amount', 'fee', 'label', 'message'];
     validQueryKeys.forEach((key) => {
         const option = options[key];
         if (!option) return;
         // formatted value in BTC without scientific number notation
-        const btcPrecision = 8;
         const formattedValue = typeof option === 'number'
-            ? option.toFixed(btcPrecision).replace(/\.?0*$/g, '')
+            ? smallestUnitToBaseUnitString(option, BTC_DECIMALS)
             : option.toString();
         query.set(key, formattedValue);
     }, '');
@@ -167,26 +198,63 @@ export function createBitcoinRequestLink(
 export function createEthereumRequestLink(
     recipient: string, // ETH address or ENS name
     options: EthereumRequestLinkOptions = {},
-) {
+): string {
     if (!recipient) throw new Error('Recipient is required');
     const { amount: value, gasPrice, gasLimit, chainId } = options;
-    if (value && (!Number.isFinite(value) || value < 0)) throw new TypeError('Invalid amount');
-    if (gasPrice && (!Number.isFinite(gasPrice) || gasPrice < 0)) throw new TypeError('Invalid gasPrice');
-    if (gasLimit && (!Number.isInteger(gasLimit) || gasLimit < 0)) throw new TypeError('Invalid gasLimit');
+    if (value && !isUnsignedInteger(value)) throw new TypeError('Invalid amount');
+    if (gasPrice && !isUnsignedInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
+    if (gasLimit && !isUnsignedInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
     const eip831Prefix = !recipient.startsWith('0x') ? 'pay-' : '';
     const chainIdString = chainId !== undefined ? `@${chainId}` : '';
     const query = new URLSearchParams();
-    const queryOptions: { [key: string]: number | undefined } = { value, gasLimit, gasPrice };
+    const queryOptions: { [key: string]: number | bigint | BigInteger | undefined } = { value, gasLimit, gasPrice };
     Object.keys(queryOptions).forEach((key) => {
         const option = queryOptions[key];
         if (!option) return;
-        // formatted ETH values in Wei with manual scientific number notation
-        const ethPrecision = 18;
-        const formattedValue = key === 'amount' || key === 'gasPrice'
-            ? option.toFixed(ethPrecision).replace(/\.?0*$/g, '') + `e${ethPrecision}`
-            : option.toString();
+        // formatted ETH values in Wei with scientific number notation as recommended by EIP681
+        const formattedValue = key === 'value'
+            ? smallestUnitToBaseUnitString(option, ETH_DECIMALS) + `e${ETH_DECIMALS}` // render value as ETH
+            : key === 'gasPrice'
+                ? smallestUnitToBaseUnitString(option, 9) + `e${9}` // render value as GWei
+                : option.toString();
         query.set(key, formattedValue);
     }, '');
     const queryString = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
     return `ethereum:${eip831Prefix}${recipient}${chainIdString}${queryString}`;
+}
+
+function smallestUnitToBaseUnitString(value: number | bigint | BigInteger, decimals: number): string {
+    if (typeof value === 'number' && !Number.isInteger(value)) throw new Error(`${value} is not an integer.`);
+    // Manually generate the string instead of dividing the value to avoid limitations of javascript number precision.
+    // Start with creating an unsigned integer string without scientific notation.
+    let valueString;
+    if (value.toLocaleString !== Object.prototype.toLocaleString) {
+        // number or native BigInt
+        valueString = value.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 0 }).replace('-', '');
+    }
+    if (!valueString || !/^\d+$/.test(valueString)) {
+        // Non-native BigInteger or incomplete BigInt toLocaleString support (e.g. Chrome 67-75, Firefox 68-?) which
+        // potentially let to a rendering that is not a plain number. Fallback to toString, which seems to be generating
+        // strings without scientific notation although there is no guarantee.
+        valueString = value.toString().replace('-', '');
+    }
+
+    // Split into an integer part and a decimal part
+    const sign = !isUnsignedInteger(value) ? '-' : '';
+    const integerPart = `${sign}${valueString.substring(0, valueString.length - decimals) || '0'}`;
+    const decimalPart = valueString.substring(valueString.length - decimals)
+        .padStart(decimals, '0') // make sure we have the required number of decimal positions
+        .replace(/0*$/, ''); // remove trailing zeros
+
+    return `${integerPart}${decimalPart ? `.${decimalPart}` : ''}`;
+}
+
+function isUnsignedInteger(value: number | bigint | BigInteger) {
+    if (typeof value === 'number') {
+        return Number.isInteger(value) && value >= 0;
+    } else if (typeof value === 'bigint') {
+        return value >= 0;
+    } else {
+        return !value.isNegative();
+    }
 }

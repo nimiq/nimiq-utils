@@ -17,8 +17,9 @@
     "types"
   ],
   "devDependencies": {
+    "big-integer": "^1.6.44",
     "rimraf": "^2.6.3",
     "rollup": "^0.64.0",
-    "typescript": "^3.1.6"
+    "typescript": "^3.2.0"
   }
 }
