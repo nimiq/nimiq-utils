@@ -14,7 +14,8 @@
     "declaration": true,
     "declarationDir": "./dist/src/",
     "lib": [
-      "es2015",
+      "es2017",
+      "esnext.bigint",
       "es6",
       "dom",
       "dom.iterable",
