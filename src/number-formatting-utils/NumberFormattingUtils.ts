@@ -1,38 +1,82 @@
 // this imports only the type without bundling the library
 type BigInteger = import('big-integer').BigInteger;
 
-const NUMBER_REGEX = /^(-?)(\d*)\.?(\d*)(e(-?\d+))?$/;
+class FormattableNumber {
+    private static readonly NUMBER_REGEX = /^(-?)(\d*)\.?(\d*)(e(-?\d+))?$/;
 
-export function toNonScientificNumberString(
-    value: string | number | bigint | BigInteger,
-): string {
-    if (typeof value === 'string') {
-        const numberMatch = value.match(NUMBER_REGEX);
-        if (!numberMatch) throw new Error(`${value} is not a valid number`);
-        const [, sign, integerPart, decimalPart, , moveCommaBy] = numberMatch; // manual disassembly to avoid recursion
-        if (!integerPart && !decimalPart) throw new Error(`${value} is not a valid number`);
-        value = _assembleNumber(sign as '-' | '', integerPart, decimalPart); // normalizes and trims the number
-        if (moveCommaBy) {
-            // remove scientific notation
-            return moveComma(value, parseInt(moveCommaBy));
-        } else {
-            return value;
+    private _allDigits: string;
+    private _decimalSeperatorPosition: number;
+    private _sign: '' | '-';
+    private _exponent: number;
+
+    constructor(value: string | number | bigint | BigInteger) {
+        if (typeof value !== 'string') {
+            value = value.toString(); // work on strings in any case.
         }
+        const numberMatch = value.match(FormattableNumber.NUMBER_REGEX);
+        if (!numberMatch) throw new Error(`${value} is not a valid number`);
+        this._sign = numberMatch[1] as '' | '-';
+        this._allDigits = `${numberMatch[2]}${numberMatch[3]}`;
+        this._decimalSeperatorPosition = numberMatch[2].length;
+        this._exponent = Number.parseInt(numberMatch[5], 10) || 0;
     }
 
-    let valueString = '';
-    if (typeof value === 'number' || typeof value === 'bigint') {
-        // Use toLocalString to render a string without scientific notation. Note that 20 is the maximum allowed number
-        // of fraction digits.
-        valueString = value.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 });
+    public normalize(): FormattableNumber {
+        if (!this._exponent) return this;
+        this._decimalSeperatorPosition += this._exponent;
+        this._exponent = 0;
+        if (this._decimalSeperatorPosition > this._allDigits.length) {
+            this._allDigits.padEnd(this._decimalSeperatorPosition, '0');
+        } else  if (this._decimalSeperatorPosition < 0) {
+            this._allDigits.padStart(this._allDigits.length - this._decimalSeperatorPosition, '0');
+            this._decimalSeperatorPosition = 0;
+        }
+        return this;
     }
-    if (typeof value !== 'number' && !/^\d+$/.test(valueString)) {
-        // Non-native BigInteger or incomplete bigint toLocaleString support (e.g. Chrome 67-75, Firefox 68-?) which
-        // potentially let to a rendering that is not a plain number. Fallback to toString, which seems to be generating
-        // strings without scientific notation although there is no guarantee.
-        valueString = value.toString();
+
+    public format(
+        maxDecimals?: number,
+        minDecimals?: number,
+        groupSeparator = '\u202F', // thin space (U+202F)
+    ): string {
+        if (maxDecimals !== undefined && minDecimals !== undefined) {
+            minDecimals = Math.min(minDecimals, maxDecimals);
+        }
+        if (maxDecimals !== undefined && maxDecimals < this._allDigits.length - this._decimalSeperatorPosition) {
+            this.round(maxDecimals);
+        }
+        let integers = this._allDigits.slice(0, this._decimalSeperatorPosition).replace(/^0+/, '');
+        let decimals = this._allDigits.slice(this._decimalSeperatorPosition).replace(/0+$/, '');
+        if (minDecimals !== undefined && minDecimals > decimals.length) {
+            decimals = decimals.padEnd(minDecimals, '0');
+        }
+        if (groupSeparator && integers.length > 3) {
+            integers = integers.replace(/(\d)(?=(\d{3})+$)/g, `$1${groupSeparator}`);
+        }
+        return `${this._sign}${integers || '0'}${decimals ? `.${decimals}` : ''}${this._exponent !== 0 ? `e${this._exponent}`: ''}`;
     }
-    return valueString;
+
+    public round(decimals: number): FormattableNumber {
+        if (this._exponent) console.warn('rounding a number in scientific notation.');
+        if (this._allDigits.length - this._decimalSeperatorPosition <= decimals) return this;
+        if (Number.parseInt(this._allDigits[this._decimalSeperatorPosition + decimals]) < 5) {
+            this._allDigits = this._allDigits.substring(0, this._decimalSeperatorPosition + decimals);
+            return this;
+        }
+        this._allDigits = `0${this._allDigits}`;
+        this._decimalSeperatorPosition += 1;
+        let allDigits = this._allDigits.split('');
+        for (let i = this._decimalSeperatorPosition + decimals - 1; i >= 0; i--) {
+            const newDigit = Number.parseInt(allDigits[i]) + 1;
+            if (newDigit === 10) allDigits[i] = '0' // carry on
+            else {
+                allDigits[i] = newDigit.toString();
+                break; // no carry, so break the loop
+            }
+        }
+        this._allDigits = allDigits.join('').substring(0, this._decimalSeperatorPosition + decimals);
+        return this;
+    }
 }
 
 export function formatNumber(
@@ -41,99 +85,19 @@ export function formatNumber(
     minDecimals?: number,
     groupSeparator = '\u202F', // thin space (U+202F)
 ): string {
-    if (maxDecimals !== undefined && minDecimals !== undefined) {
-        minDecimals = Math.min(minDecimals, maxDecimals);
-    }
-    if (maxDecimals !== undefined) {
-        value = round(value, maxDecimals);
-    }
-    let { sign, integerPart, decimalPart } = _disassembleNumber(value);
-    if (minDecimals !== undefined) {
-        decimalPart = decimalPart.padEnd(minDecimals, '0');
-    }
-
-    // Apply grouping for values with more than 4 integer digits.
-    if (integerPart.length > 4) {
-        integerPart = integerPart.replace(/(\d)(?=(\d{3})+$)/g, `$1${groupSeparator}`);
-    }
-
-    return _assembleNumber(sign, integerPart, decimalPart, false);
+    return (new FormattableNumber(value)).normalize().format(maxDecimals, minDecimals, groupSeparator);
 }
 
-// moves comma and returns a string without precision loss
-export function moveComma(
+export function toNonScientificNumberString(
     value: string | number | bigint | BigInteger,
-    moveBy: number,
 ): string {
-    const { sign, integerPart, dotPosition, decimalPart } = _disassembleNumber(value);
-    let digits = `${integerPart}${decimalPart}`;
-    let newDotPosition = dotPosition + moveBy;
-
-    if (newDotPosition > digits.length) {
-        digits = digits.padEnd(newDotPosition, '0');
-    } else if (newDotPosition < 0) {
-        digits = digits.padStart(digits.length - newDotPosition, '0');
-        newDotPosition = 0;
-    }
-    const newIntegerPart = digits.substring(0, newDotPosition);
-    const newDecimalPart = digits.substring(newDotPosition);
-
-    return _assembleNumber(sign, newIntegerPart, newDecimalPart);
+    return (new FormattableNumber(value)).normalize().format();
 }
 
+/* likely not needed, as formatNumber does it already */
 export function round(
     value: string | number | bigint | BigInteger,
     decimals: number,
 ): string {
-    const { sign, integerPart, dotPosition, decimalPart } = _disassembleNumber(value);
-    const decimalsToKeep = decimalPart.substring(0, decimals);
-    const decimalsToRemove = decimalPart.substring(decimals);
-    if (!decimalsToRemove || parseInt(decimalsToRemove[0]) < 5) {
-        // rounding down, can just use the trimmed decimals
-        return _assembleNumber(sign, integerPart, decimalsToKeep);
-    }
-
-    // round up
-    const digits = `0${integerPart}${decimalsToKeep}`.split(''); // add a leading 0 for easier handling of carry
-    const newDotPosition = dotPosition + 1; // account for added leading 0
-    for (let i = digits.length - 1; i >= 0; --i) {
-        const newDigit = parseInt(digits[i]) + 1;
-        if (newDigit < 10) {
-            digits[i] = newDigit.toString();
-            break; // no carry over, break
-        } else {
-            digits[i] = '0';
-            // continue loop to handle carry over
-        }
-    }
-    const newIntegerPart = digits.slice(0, newDotPosition).join('');
-    const newDecimalPart = digits.slice(newDotPosition).join('');
-    return _assembleNumber(sign, newIntegerPart, newDecimalPart); // trims the leading 0 if it was not necessary
-}
-
-function _disassembleNumber(
-    value: string | number | bigint | BigInteger,
-): { sign: '-' | '', integerPart: string, dotPosition: number, decimalPart: string } {
-    value = toNonScientificNumberString(value);
-    const [, sign, integerPart, decimalPart] = value.match(NUMBER_REGEX)!;
-
-    return {
-        sign: sign as '-' | '',
-        integerPart,
-        dotPosition: integerPart.length,
-        decimalPart,
-    };
-}
-
-function _assembleNumber(
-    sign: '-' | '',
-    integerPart: string,
-    decimalPart: string,
-    trim: boolean = true,
-): string {
-    if (trim) {
-        integerPart = integerPart.replace(/^0+/, ''); // trim leading zeros
-        decimalPart = decimalPart.replace(/0+$/, ''); // trim trailing zeros
-    }
-    return `${sign}${integerPart || '0'}${decimalPart ? `.${decimalPart}` : ''}`;
+    return (new FormattableNumber(value)).normalize().round(decimals).format(decimals, decimals);
 }
