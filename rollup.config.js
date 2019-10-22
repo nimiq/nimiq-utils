@@ -6,7 +6,7 @@ export default {
         'build/address-book/AddressBook.js',
         'build/browser-detection/BrowserDetection.js',
         'build/clipboard/Clipboard.js',
-        'build/number-formatting-utils/NumberFormattingUtils.js',
+        'build/formattable-number/FormattableNumber.js',
         'build/request-link-encoding/RequestLinkEncoding.js',
         'build/tweenable/Tweenable.js',
         'build/utf8-tools/Utf8Tools.js',
