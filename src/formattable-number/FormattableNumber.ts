@@ -95,6 +95,19 @@ export class FormattableNumber {
         this._decimalSeparatorPosition += 1; // account for the added leading 0
         return this;
     }
+
+    public equals(other: any) {
+        if (!(other instanceof FormattableNumber)) {
+            try {
+                other = new FormattableNumber(other);
+            } catch (e) {
+                // not convertable to a FormattableNumber
+                return false;
+            }
+        }
+        // compare rendered results to benefit from normalizations done on rendering
+        return this.toString() === other.toString();
+    }
 }
 
 export function toNonScientificNumberString(
