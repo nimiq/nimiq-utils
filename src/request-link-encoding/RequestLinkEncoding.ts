@@ -1,4 +1,5 @@
 import { ValidationUtils } from "../validation-utils/ValidationUtils";
+import { FormattableNumber } from "../formattable-number/FormattableNumber";
 
 // this imports only the type without bundling the library
 type BigInteger = import('big-integer').BigInteger;
@@ -105,9 +106,9 @@ export function createNimiqRequestLink(
 ): string {
     let { amount, message, basePath } = options;
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
-    if (amount && typeof amount !== 'number') throw new Error(`Not a valid amount: ${amount}`);
+    if (amount && !isUnsignedInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
-    const amountNim = amount ? smallestUnitToBaseUnitString(amount, NIM_DECIMALS) : '';
+    const amountNim = amount ? new FormattableNumber(amount).moveDecimalSeparator(-NIM_DECIMALS).toString() : '';
     const optionsArray = [
         recipient.replace(/ /g, ''), // strip spaces
         amountNim,
@@ -184,8 +185,8 @@ export function createBitcoinRequestLink(
         const option = options[key];
         if (!option) return;
         // formatted value in BTC without scientific number notation
-        const formattedValue = typeof option === 'number'
-            ? smallestUnitToBaseUnitString(option, BTC_DECIMALS)
+        const formattedValue = key === 'amount' || key === 'fee'
+            ? new FormattableNumber(option).moveDecimalSeparator(-BTC_DECIMALS).toString()
             : option.toString();
         query.set(key, formattedValue);
     }, '');
@@ -210,42 +211,22 @@ export function createEthereumRequestLink(
     Object.keys(queryOptions).forEach((key) => {
         const option = queryOptions[key];
         if (!option) return;
-        // formatted ETH values in Wei with scientific number notation as recommended by EIP681
-        const formattedValue = key === 'value'
-            ? smallestUnitToBaseUnitString(option, ETH_DECIMALS) + `e${ETH_DECIMALS}` // render value as ETH
-            : key === 'gasPrice'
-                ? smallestUnitToBaseUnitString(option, 9) + `e${9}` // render value as GWei
-                : option.toString();
-        query.set(key, formattedValue);
+        // format Wei values with scientific number notation as recommended by EIP681
+        const formattableNumber = new FormattableNumber(option);
+        let formattedNumber;
+        if (key === 'value') {
+            formattableNumber.moveDecimalSeparator(-ETH_DECIMALS); // render as ETH
+            formattedNumber = `${formattableNumber.toString()}e${ETH_DECIMALS}`;
+        } else if (key === 'gasPrice') {
+            formattableNumber.moveDecimalSeparator(-9); // render as GWei
+            formattedNumber = `${formattableNumber.toString()}e9`;
+        } else {
+            formattedNumber = formattableNumber.toString();
+        }
+        query.set(key, formattedNumber);
     }, '');
     const queryString = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
     return `ethereum:${eip831Prefix}${recipient}${chainIdString}${queryString}`;
-}
-
-function smallestUnitToBaseUnitString(value: number | bigint | BigInteger, decimals: number): string {
-    if (typeof value === 'number' && !Number.isInteger(value)) throw new Error(`${value} is not an integer.`);
-    // Manually generate the string instead of dividing the value to avoid limitations of javascript number precision.
-    // Start with creating an unsigned integer string without scientific notation.
-    let valueString;
-    if (value.toLocaleString !== Object.prototype.toLocaleString) {
-        // number or native BigInt
-        valueString = value.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 0 }).replace('-', '');
-    }
-    if (!valueString || !/^\d+$/.test(valueString)) {
-        // Non-native BigInteger or incomplete BigInt toLocaleString support (e.g. Chrome 67-75, Firefox 68-?) which
-        // potentially let to a rendering that is not a plain number. Fallback to toString, which seems to be generating
-        // strings without scientific notation although there is no guarantee.
-        valueString = value.toString().replace('-', '');
-    }
-
-    // Split into an integer part and a decimal part
-    const sign = !isUnsignedInteger(value) ? '-' : '';
-    const integerPart = `${sign}${valueString.substring(0, valueString.length - decimals) || '0'}`;
-    const decimalPart = valueString.substring(valueString.length - decimals)
-        .padStart(decimals, '0') // make sure we have the required number of decimal positions
-        .replace(/0*$/, ''); // remove trailing zeros
-
-    return `${integerPart}${decimalPart ? `.${decimalPart}` : ''}`;
 }
 
 function isUnsignedInteger(value: number | bigint | BigInteger) {
