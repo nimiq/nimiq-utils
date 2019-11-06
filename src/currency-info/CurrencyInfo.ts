@@ -16,10 +16,13 @@ export class CurrencyInfo {
     public readonly decimals: number;
 
     /**
-     * @param {string} currencyCode 3-letter currency codes as defined by ISO 4217.
+     * @param {string} currencyCode 3-letter currency code
+     * @param {number} [decimals] How many decimal positions the currency has
+     * @param {string} [name] The currency's name, e.g. euros
+     * @param {string} [symbol] The currency's symbol, e.g. € or CA$
      * @throws If currency code is not a well-formed currency code.
      */
-    constructor(currencyCode: string) {
+    constructor(currencyCode: string, decimals?: number, name?: string, symbol?: string) {
         const formatterOptions = {
             style: 'currency',
             currency: currencyCode, // before toUpperCase to avoid conversion of characters, e.g. Eszett to SS
@@ -33,9 +36,17 @@ export class CurrencyInfo {
             'en-US',
             Object.assign({ currencyDisplay: 'symbol' } , formatterOptions)
         ).match(CurrencyInfo.NUMBER_FORMAT_REGEX);
-        this.symbol = regexMatch ? regexMatch[1] || this.code : this.code;
-        this.decimals = regexMatch ? (regexMatch[2] || '').length : 2;
+        this.decimals = decimals !== undefined
+            ? decimals
+            : regexMatch ? (regexMatch[2] || '').length : 2;
+        this.symbol = symbol !== undefined
+            ? symbol
+            : regexMatch ? regexMatch[1] || this.code : this.code;
 
+        if (name !== undefined) {
+            this.name = name;
+            return;
+        }
         regexMatch = (0).toLocaleString(
             'en-US',
             Object.assign({ currencyDisplay: 'name' } , formatterOptions)
