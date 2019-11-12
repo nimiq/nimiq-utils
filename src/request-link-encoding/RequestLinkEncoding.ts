@@ -42,7 +42,8 @@ export type GeneralRequestLinkOptions =
 function isUnsignedInteger(value: number | bigint | BigInteger) {
     if (typeof value === 'number') {
         return Number.isInteger(value) && value >= 0;
-    } if (typeof value === 'bigint') {
+    }
+    if (typeof value === 'bigint') {
         return value >= 0;
     }
     return !value.isNegative();

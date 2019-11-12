@@ -1,4 +1,4 @@
-/* eslint-disable no-bitwise,no-plusplus,eqeqeq */
+/* eslint-disable no-bitwise, no-plusplus, eqeqeq */
 
 /**
  * Sources:
