@@ -221,6 +221,7 @@ export function parseRequestLink(
     }
 
     if (!useNewApi) {
+        // eslint-disable-next-line no-console
         console.warn('parseRequestLink with amounts in Nim and null for non-existing values has been deprecated. '
             + 'Please set useNewApi to true to signal usage of the new parseRequestLink method. Note that useNewApi '
             + 'is a temporary flag that will be removed once parseRequestLink switches to returning amounts in '

@@ -155,16 +155,12 @@ class BrowserDetection {
      */
     static isPrivateMode() {
         return new Promise((resolve) => {
-            const on = () => { resolve(true); }; // is in private mode
-            const off = () => { resolve(false); }; // not private mode
+            const on = () => resolve(true); // is in private mode
+            const off = () => resolve(false); // not private mode
             // using browser detection by feature detection here, also see https://stackoverflow.com/a/9851769
             // These seem to be partly outdated though. Might want to consider using user agent based detection.
-            const isSafari = () => (
-                /Constructor/.test(window.HTMLElement)
-                    || (function (root) {
-                        return (!root || root.pushNotification).toString() === '[object SafariRemoteNotification]';
-                    }(window.safari))
-            );
+            const isSafari = () => /Constructor/.test(window.HTMLElement)
+                || (window.safari && window.safari.pushNotification).toString() === '[object SafariRemoteNotification]';
             // Chrome & Opera
             if (window.webkitRequestFileSystem) {
                 window.webkitRequestFileSystem(0, 0, off, on);
