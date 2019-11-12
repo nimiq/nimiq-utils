@@ -1,5 +1,5 @@
-import { ValidationUtils } from "../validation-utils/ValidationUtils";
-import { FormattableNumber } from "../formattable-number/FormattableNumber";
+import { ValidationUtils } from '../validation-utils/ValidationUtils';
+import { FormattableNumber } from '../formattable-number/FormattableNumber';
 
 // this imports only the type without bundling the library
 type BigInteger = import('big-integer').BigInteger;
@@ -39,64 +39,13 @@ export type GeneralRequestLinkOptions =
     | BitcoinRequestLinkOptions & { currency: Currency.BTC }
     | EthereumRequestLinkOptions & { currency: Currency.ETH };
 
-// Can be used with an options object or with the legacy function signature for creating a Nim request link.
-// If using the legacy function signature, amountOrOptions can be given as a value in Nim.
-export function createRequestLink(
-    recipient: string,
-    amountOrOptions?: number | GeneralRequestLinkOptions, // amount in Nim or options object
-    message?: string,
-    basePath: string = window.location.host,
-): string {
-    if (typeof amountOrOptions === 'object') {
-        switch (amountOrOptions.currency) {
-            case Currency.NIM:
-                return createNimiqRequestLink(recipient, amountOrOptions);
-            case Currency.BTC:
-                return createBitcoinRequestLink(recipient, amountOrOptions);
-            case Currency.ETH:
-                return createEthereumRequestLink(recipient, amountOrOptions);
-            default:
-                throw new Error('Unsupported currency.');
-        }
+function isUnsignedInteger(value: number | bigint | BigInteger) {
+    if (typeof value === 'number') {
+        return Number.isInteger(value) && value >= 0;
+    } if (typeof value === 'bigint') {
+        return value >= 0;
     }
-    const amount = typeof amountOrOptions !== 'undefined' ? amountOrOptions * Math.pow(10, NIM_DECIMALS) : undefined;
-    return createNimiqRequestLink(recipient, { amount, message, basePath });
-}
-
-export function parseRequestLink(requestLink: string | URL, requiredBasePath?: string, useNewApi?: false)
-    : null | { recipient: string, amount: number | null, message: string | null }; // legacy function signature
-export function parseRequestLink(requestLink: string | URL, requiredBasePath: string | undefined, useNewApi: true)
-    : null | NimiqRequestLinkOptions & { recipient: string };
-export function parseRequestLink(
-    requestLink: string | URL,
-    requiredBasePath?: string,
-    useNewApi?: boolean, // temporary option to distinguish legacy usage that returned amount in Nim
-): null | NimiqRequestLinkOptions & { recipient: string }
-    | { recipient: string, amount: number | null, message: string | null }
-{
-    const protocol = requestLink instanceof URL
-        ? requestLink.protocol
-        : (requestLink.match(/^[^:]+:/) || ['https:'])[0];
-    if (!/^http(s)?:$/i.test(protocol)) {
-        // currently only nimiq web link parsing supported
-        throw new Error(`Parsing links for protocol ${protocol} is currently not supported.`);
-    }
-
-    if (!useNewApi) {
-        console.warn('parseRequestLink with amounts in Nim and null for non-existing values has been deprecated. '
-            + 'Please set useNewApi to true to signal usage of the new parseRequestLink method. Note that useNewApi '
-            + 'is a temporary flag that will be removed once parseRequestLink switches to returning amounts in '
-            + 'the smallest unit and undefined for non-existing values by default after a transition period.');
-    }
-    const parsedNimiqRequestLink = parseNimiqRequestLink(requestLink, requiredBasePath);
-    if (!parsedNimiqRequestLink) return null;
-
-    let { recipient, amount, message } = parsedNimiqRequestLink;
-    if (!useNewApi) {
-        amount = amount ? amount / Math.pow(10, NIM_DECIMALS) : amount;
-        return { recipient, amount: amount || null, message: message || null };
-    }
-    return { recipient, amount, message };
+    return !value.isNegative();
 }
 
 // Note that the encoding scheme is the same as for Safe XRouter aside route parameters (see _makeAside).
@@ -104,7 +53,7 @@ export function createNimiqRequestLink(
     recipient: string,
     options: NimiqRequestLinkOptions = { basePath: window.location.host },
 ): string {
-    let { amount, message, basePath } = options;
+    let { amount, message, basePath } = options; // eslint-disable-line prefer-const
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
     if (amount && !isUnsignedInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
@@ -130,10 +79,10 @@ export function parseNimiqRequestLink(
         try {
             if (!requestLink.includes('://')) {
                 // Because we are only interested in the host and hash, the protocol doesn't matter
-                requestLink = 'dummy://' + requestLink;
+                requestLink = `dummy://${requestLink}`;
             }
             requestLink = new URL(requestLink);
-        } catch(e) {
+        } catch (e) {
             return null;
         }
     }
@@ -146,7 +95,7 @@ export function parseNimiqRequestLink(
 
     // parse options
     const optionsSubstr = requestRegexMatch[1];
-    let [recipient, amount, message] = optionsSubstr.split('/');
+    let [recipient, amount, message] = optionsSubstr.split('/'); // eslint-disable-line prefer-const
 
     // check options
     recipient = recipient
@@ -156,7 +105,7 @@ export function parseNimiqRequestLink(
 
     let parsedAmount;
     if (typeof amount !== 'undefined' && amount !== '') {
-        parsedAmount = parseFloat(amount) * Math.pow(10, NIM_DECIMALS);
+        parsedAmount = parseFloat(amount) * (10 ** NIM_DECIMALS);
         if (Number.isNaN(parsedAmount)) return null;
     } else {
         parsedAmount = undefined;
@@ -164,7 +113,7 @@ export function parseNimiqRequestLink(
 
     let parsedMessage;
     if (typeof message !== 'undefined' && message !== '') {
-        parsedMessage = decodeURIComponent(message) ;
+        parsedMessage = decodeURIComponent(message);
     } else {
         parsedMessage = undefined;
     }
@@ -191,7 +140,7 @@ export function createBitcoinRequestLink(
         query.set(key, formattedValue);
     }, '');
     const queryString = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
-    return `bitcoin:${recipient}${queryString}`
+    return `bitcoin:${recipient}${queryString}`;
 }
 
 // subset of EIP681
@@ -200,7 +149,9 @@ export function createEthereumRequestLink(
     options: EthereumRequestLinkOptions = {},
 ): string {
     if (!recipient) throw new Error('Recipient is required');
-    const { amount: value, gasPrice, gasLimit, chainId } = options;
+    const {
+        amount: value, gasPrice, gasLimit, chainId,
+    } = options;
     if (value && !isUnsignedInteger(value)) throw new TypeError('Invalid amount');
     if (gasPrice && !isUnsignedInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
     if (gasLimit && !isUnsignedInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
@@ -229,12 +180,61 @@ export function createEthereumRequestLink(
     return `ethereum:${eip831Prefix}${recipient}${chainIdString}${queryString}`;
 }
 
-function isUnsignedInteger(value: number | bigint | BigInteger) {
-    if (typeof value === 'number') {
-        return Number.isInteger(value) && value >= 0;
-    } else if (typeof value === 'bigint') {
-        return value >= 0;
-    } else {
-        return !value.isNegative();
+// Can be used with an options object or with the legacy function signature for creating a Nim request link.
+// If using the legacy function signature, amountOrOptions can be given as a value in Nim.
+export function createRequestLink(
+    recipient: string,
+    amountOrOptions?: number | GeneralRequestLinkOptions, // amount in Nim or options object
+    message?: string,
+    basePath: string = window.location.host,
+): string {
+    if (typeof amountOrOptions === 'object') {
+        switch (amountOrOptions.currency) {
+            case Currency.NIM:
+                return createNimiqRequestLink(recipient, amountOrOptions);
+            case Currency.BTC:
+                return createBitcoinRequestLink(recipient, amountOrOptions);
+            case Currency.ETH:
+                return createEthereumRequestLink(recipient, amountOrOptions);
+            default:
+                throw new Error('Unsupported currency.');
+        }
     }
+    const amount = typeof amountOrOptions !== 'undefined' ? amountOrOptions * (10 ** NIM_DECIMALS) : undefined;
+    return createNimiqRequestLink(recipient, { amount, message, basePath });
+}
+
+export function parseRequestLink(requestLink: string | URL, requiredBasePath?: string, useNewApi?: false)
+    : null | { recipient: string, amount: number | null, message: string | null }; // legacy function signature
+export function parseRequestLink(requestLink: string | URL, requiredBasePath: string | undefined, useNewApi: true)
+    : null | NimiqRequestLinkOptions & { recipient: string };
+export function parseRequestLink(
+    requestLink: string | URL,
+    requiredBasePath?: string,
+    useNewApi?: boolean, // temporary option to distinguish legacy usage that returned amount in Nim
+): null | NimiqRequestLinkOptions & { recipient: string }
+    | { recipient: string, amount: number | null, message: string | null } {
+    const protocol = requestLink instanceof URL
+        ? requestLink.protocol
+        : (requestLink.match(/^[^:]+:/) || ['https:'])[0];
+    if (!/^http(s)?:$/i.test(protocol)) {
+        // currently only nimiq web link parsing supported
+        throw new Error(`Parsing links for protocol ${protocol} is currently not supported.`);
+    }
+
+    if (!useNewApi) {
+        console.warn('parseRequestLink with amounts in Nim and null for non-existing values has been deprecated. '
+            + 'Please set useNewApi to true to signal usage of the new parseRequestLink method. Note that useNewApi '
+            + 'is a temporary flag that will be removed once parseRequestLink switches to returning amounts in '
+            + 'the smallest unit and undefined for non-existing values by default after a transition period.');
+    }
+    const parsedNimiqRequestLink = parseNimiqRequestLink(requestLink, requiredBasePath);
+    if (!parsedNimiqRequestLink) return null;
+
+    let { recipient, amount, message } = parsedNimiqRequestLink; // eslint-disable-line prefer-const
+    if (!useNewApi) {
+        amount = amount ? amount / (10 ** NIM_DECIMALS) : amount;
+        return { recipient, amount: amount || null, message: message || null };
+    }
+    return { recipient, amount, message };
 }

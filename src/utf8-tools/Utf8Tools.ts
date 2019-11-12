@@ -1,4 +1,4 @@
-/* tslint:disable:no-bitwise one-line triple-equals */
+/* eslint-disable no-bitwise,no-plusplus,eqeqeq */
 
 /**
  * Sources:
@@ -10,7 +10,7 @@
  * https://lemire.me/blog/2018/05/09/how-quickly-can-you-check-that-a-string-is-valid-unicode-utf-8/
  */
 
-export class Utf8Tools { // eslint-disable-line no-unused-vars
+export class Utf8Tools {
     public static stringToUtf8ByteArray(str: string): Uint8Array {
         if (typeof TextEncoder !== 'undefined') {
             const encoder = new TextEncoder(); // utf-8 is the default
@@ -56,6 +56,7 @@ export class Utf8Tools { // eslint-disable-line no-unused-vars
         let pos = 0;
         let c = 0;
         while (pos < bytes.length) {
+            /* eslint-disable no-mixed-operators */
             const c1 = bytes[pos++];
             if (c1 < 128) {
                 out[c++] = String.fromCharCode(c1);
@@ -75,6 +76,7 @@ export class Utf8Tools { // eslint-disable-line no-unused-vars
                 const c3 = bytes[pos++];
                 out[c++] = String.fromCharCode((c1 & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
             }
+            /* eslint-enable no-mixed-operators */
         }
         return out.join('');
     }
@@ -94,6 +96,7 @@ export class Utf8Tools { // eslint-disable-line no-unused-vars
                 0x0D, /* carriage return (\r) */
             ];
 
+            /* eslint-disable brace-style */
             if (first <= 0x7F) { // Possible one-byte
                 if (!denyControlCharacters) ++i; // Valid single-byte character (ASCII)
                 else if (controlCharsWhitelist.indexOf(first) > -1) ++i;
@@ -178,6 +181,7 @@ export class Utf8Tools { // eslint-disable-line no-unused-vars
             }
 
             else break;
+            /* eslint-enable brace-style */
         }
 
         // If the whole array was walked successfully, then the last check also increased the counter

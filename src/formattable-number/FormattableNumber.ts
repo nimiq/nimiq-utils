@@ -31,10 +31,12 @@ export class FormattableNumber {
         groupSeparator?: string, // defaults to thin space (U+202F)
     } | boolean) : string {
         let {
+            /* eslint-disable prefer-const */
             maxDecimals = undefined,
             minDecimals = undefined,
             useGrouping = optionsOrUseGrouping === true,
             groupSeparator = '\u202F',
+            /* eslint-enable prefer-const */
         } = typeof optionsOrUseGrouping === 'object' ? optionsOrUseGrouping : {};
         if (maxDecimals !== undefined && minDecimals !== undefined) {
             minDecimals = Math.min(minDecimals, maxDecimals);
@@ -73,7 +75,7 @@ export class FormattableNumber {
     public round(decimals: number): this {
         if (this._digits.length - this._decimalSeparatorPosition <= decimals) return this;
         const digitsToKeep = this._digits.substring(0, this._decimalSeparatorPosition + decimals);
-        if (Number.parseInt(this._digits[this._decimalSeparatorPosition + decimals]) < 5) {
+        if (Number.parseInt(this._digits[this._decimalSeparatorPosition + decimals], 10) < 5) {
             // rounding down, can just use the trimmed decimals
             this._digits = digitsToKeep;
             return this;
@@ -82,7 +84,7 @@ export class FormattableNumber {
         // round up
         const digits = `0${digitsToKeep}`.split(''); // add a leading 0 for easier handling of carry
         for (let i = digits.length - 1; i >= 0; --i) {
-            const newDigit = Number.parseInt(digits[i]) + 1;
+            const newDigit = Number.parseInt(digits[i], 10) + 1;
             if (newDigit < 10) {
                 digits[i] = newDigit.toString();
                 break; // no carry over, break

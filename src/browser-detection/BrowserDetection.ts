@@ -7,15 +7,18 @@ class BrowserDetection {
         };
     }
 
+    /* eslint-disable max-len */
     // Also includes tablets.
     // Inspired by:
     // - https://stackoverflow.com/a/13819253
     // - https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent#Mobile_Tablet_or_Desktop
     // - http://detectmobilebrowsers.com/about (tablets)
+    /* eslint-enable max-len */
     static isMobile() {
         return /i?Phone|iP(ad|od)|Android|BlackBerry|Opera Mini|WPDesktop|Mobi(le)?|Silk/i.test(navigator.userAgent);
     }
 
+    /* eslint-disable max-len */
     // Browser tests inspired by:
     // - https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent#Browser_Name
     // - https://stackoverflow.com/a/26358856 (order is important)
@@ -32,6 +35,7 @@ class BrowserDetection {
     // - Safari iPhone: Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1
     // - Safari iPad: Mozilla/5.0 (iPad; CPU OS 11_2_2 like Mac OS X) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0 Mobile/15C202 Safari/604.1
     // - Brave: is indistinguishable from Chrome user agents
+    /* eslint-enable max-len */
     static detectBrowser() {
         if (BrowserDetection._detectedBrowser) {
             return BrowserDetection._detectedBrowser;
@@ -47,10 +51,13 @@ class BrowserDetection {
         } else if (/Chrome\//i.test(ua)) {
             // Note that Brave is indistinguishable from Chrome by user agent. The additional check is taken from
             // https://stackoverflow.com/a/53799770. Unfortunately this distinction is not possible on mobile.
-            BrowserDetection._detectedBrowser =
-                navigator.plugins.length === 0 && navigator.mimeTypes.length === 0 && !BrowserDetection.isMobile()
-                    ? BrowserDetection.Browser.BRAVE
-                    : BrowserDetection.Browser.CHROME;
+            BrowserDetection._detectedBrowser = (
+                navigator.plugins.length === 0
+                && navigator.mimeTypes.length === 0
+                && !BrowserDetection.isMobile()
+            )
+                ? BrowserDetection.Browser.BRAVE
+                : BrowserDetection.Browser.CHROME;
         } else if (/^((?!chrome|android).)*safari/i.test(ua)) {
             // see https://stackoverflow.com/a/23522755
             // Note that Chrome iOS is also detected as Safari, see comments in stack overflow
@@ -96,10 +103,12 @@ class BrowserDetection {
         const versionParts = versionString.split('.');
         const parsedVersionParts = [];
         for (let i = 0; i < 4; ++i) {
-            parsedVersionParts.push(parseInt(versionParts[i]) || 0);
+            parsedVersionParts.push(parseInt(versionParts[i], 10) || 0);
         }
         const [major, minor, build, patch] = parsedVersionParts;
-        BrowserDetection._detectedVersion =  { versionString, major, minor, build, patch };
+        BrowserDetection._detectedVersion = {
+            versionString, major, minor, build, patch,
+        };
         return BrowserDetection._detectedVersion;
     }
 
@@ -137,6 +146,7 @@ class BrowserDetection {
         return browserInfo.browser === BrowserDetection.Browser.SAFARI
             && browserInfo.isMobile
             && browserInfo.version
+            // eslint-disable-next-line no-mixed-operators
             && (browserInfo.version.major < 11 || browserInfo.version.major === 11 && browserInfo.version.minor === 2);
     }
 
@@ -147,22 +157,20 @@ class BrowserDetection {
      */
     static isPrivateMode() {
         return new Promise((resolve) => {
-            const on = () => { resolve(true) }; // is in private mode
-            const off = () => { resolve(false) }; // not private mode
+            const on = () => { resolve(true); }; // is in private mode
+            const off = () => { resolve(false); }; // not private mode
             // using browser detection by feature detection here, also see https://stackoverflow.com/a/9851769
             // These seem to be partly outdated though. Might want to consider using user agent based detection.
-            const isSafari = () => {
-                return (
-                    /Constructor/.test(window.HTMLElement) ||
-                    (function (root) {
-                            return (!root || root.pushNotification).toString() === '[object SafariRemoteNotification]';
-                        }
-                    )(window.safari)
-                );
-            };
+            const isSafari = () => (
+                /Constructor/.test(window.HTMLElement)
+                    || (function (root) {
+                        return (!root || root.pushNotification).toString() === '[object SafariRemoteNotification]';
+                    }(window.safari))
+            );
             // Chrome & Opera
             if (window.webkitRequestFileSystem) {
-                return void window.webkitRequestFileSystem(0, 0, off, on);
+                window.webkitRequestFileSystem(0, 0, off, on);
+                return;
             }
             // Firefox
             if (document.documentElement && 'MozAppearance' in document.documentElement.style) {
@@ -170,22 +178,24 @@ class BrowserDetection {
                 const db = indexedDB.open(null);
                 db.onerror = on;
                 db.onsuccess = off;
-                return void 0;
+                return;
             }
             // Safari
-            if ( isSafari() ) {
+            if (isSafari()) {
                 try {
                     window.openDatabase(null, null, null, null);
                 } catch (_) {
-                    return on();
+                    on();
+                    return;
                 }
             }
             // IE10+ & Edge
             if (!window.indexedDB && (window.PointerEvent || window.MSPointerEvent)) {
-                return on();
+                on();
+                return;
             }
             // others
-            return off();
+            off();
         });
     }
 

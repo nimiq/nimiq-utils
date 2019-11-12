@@ -31,9 +31,9 @@ class Tweenable {
 }
 namespace Tweenable { // tslint:disable-line no-namespace
     // see https://gist.github.com/gre/1650294 for more easing functions
-    export let Easing = { // tslint:disable-line variable-name
+    export const Easing = { // tslint:disable-line variable-name
         LINEAR: (t: number) => t,
-        EASE_IN_OUT_CUBIC: (t: number) => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
+        EASE_IN_OUT_CUBIC: (t: number) => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
         // At some point would be nice to add the default nimiq easing function here which is cubic-bezier(.25,0,0,1)
         // (https://cubic-bezier.com/#.25,0,0,1). This is a cubic Bezier curve with P0=(0,0), P1=(.25,0),
         // P2=(0,1), P3=(1,1) (https://developer.mozilla.org/en-US/docs/Web/CSS/timing-function).
