@@ -149,9 +149,7 @@ export function createEthereumRequestLink(
     options: EthereumRequestLinkOptions = {},
 ): string {
     if (!recipient) throw new Error('Recipient is required');
-    const {
-        amount: value, gasPrice, gasLimit, chainId,
-    } = options;
+    const { amount: value, gasPrice, gasLimit, chainId } = options;
     if (value && !isUnsignedInteger(value)) throw new TypeError('Invalid amount');
     if (gasPrice && !isUnsignedInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
     if (gasLimit && !isUnsignedInteger(gasLimit)) throw new TypeError('Invalid gasLimit');

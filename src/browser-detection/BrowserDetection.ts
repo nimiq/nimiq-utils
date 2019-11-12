@@ -106,9 +106,7 @@ class BrowserDetection {
             parsedVersionParts.push(parseInt(versionParts[i], 10) || 0);
         }
         const [major, minor, build, patch] = parsedVersionParts;
-        BrowserDetection._detectedVersion = {
-            versionString, major, minor, build, patch,
-        };
+        BrowserDetection._detectedVersion = { versionString, major, minor, build, patch };
         return BrowserDetection._detectedVersion;
     }
 

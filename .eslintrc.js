@@ -19,12 +19,13 @@ module.exports = {
         '@typescript-eslint',
     ],
     rules: {
-        'indent': ['error', 4, { "SwitchCase": 1 }],
+        'indent': ['error', 4, { 'SwitchCase': 1 }],
         'max-len': ['error', 120],
         'no-underscore-dangle': 'off',
         'no-plusplus': ['error', { 'allowForLoopAfterthoughts': true }],
         'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
         'import/prefer-default-export': 'off',
+        'object-curly-newline': ['error', { 'ObjectPattern': { 'multiline': true } }],
 
         // Typescript plugin replacements
         'no-unused-vars': 'off',
