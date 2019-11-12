@@ -53,7 +53,7 @@ export function createNimiqRequestLink(
     recipient: string,
     options: NimiqRequestLinkOptions = { basePath: window.location.host },
 ): string {
-    let { amount, message, basePath } = options; // eslint-disable-line prefer-const
+    let { amount, message, basePath } = options;
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
     if (amount && !isUnsignedInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
@@ -95,7 +95,7 @@ export function parseNimiqRequestLink(
 
     // parse options
     const optionsSubstr = requestRegexMatch[1];
-    let [recipient, amount, message] = optionsSubstr.split('/'); // eslint-disable-line prefer-const
+    let [recipient, amount, message] = optionsSubstr.split('/');
 
     // check options
     recipient = recipient
@@ -230,7 +230,7 @@ export function parseRequestLink(
     const parsedNimiqRequestLink = parseNimiqRequestLink(requestLink, requiredBasePath);
     if (!parsedNimiqRequestLink) return null;
 
-    let { recipient, amount, message } = parsedNimiqRequestLink; // eslint-disable-line prefer-const
+    let { recipient, amount, message } = parsedNimiqRequestLink;
     if (!useNewApi) {
         amount = amount ? amount / (10 ** NIM_DECIMALS) : amount;
         return { recipient, amount: amount || null, message: message || null };

@@ -31,12 +31,10 @@ export class FormattableNumber {
         groupSeparator?: string, // defaults to thin space (U+202F)
     } | boolean) : string {
         let {
-            /* eslint-disable prefer-const */
             maxDecimals = undefined,
             minDecimals = undefined,
             useGrouping = optionsOrUseGrouping === true,
             groupSeparator = '\u202F',
-            /* eslint-enable prefer-const */
         } = typeof optionsOrUseGrouping === 'object' ? optionsOrUseGrouping : {};
         if (maxDecimals !== undefined && minDecimals !== undefined) {
             minDecimals = Math.min(minDecimals, maxDecimals);
