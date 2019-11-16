@@ -7,7 +7,7 @@ export class CurrencyInfo {
         + '\\d+' // integer part with useGrouping: false
         + '(?:\\D(\\d+))?' // fractional part, can be empty
         + '(?:\\s(.+))?'// currency name after number
-        + '$'
+        + '$',
     );
 
     public readonly code: string;
@@ -34,14 +34,18 @@ export class CurrencyInfo {
         // Using regex parsing instead of NumberFormat.formatToParts which has less browser support.
         let regexMatch = (0).toLocaleString(
             'en-US',
-            Object.assign({ currencyDisplay: 'symbol' } , formatterOptions)
+            { currencyDisplay: 'symbol', ...formatterOptions },
         ).match(CurrencyInfo.NUMBER_FORMAT_REGEX);
         this.decimals = decimals !== undefined
             ? decimals
-            : regexMatch ? (regexMatch[2] || '').length : 2;
+            : regexMatch
+                ? (regexMatch[2] || '').length
+                : 2;
         this.symbol = symbol !== undefined
             ? symbol
-            : regexMatch ? regexMatch[1] || this.code : this.code;
+            : regexMatch
+                ? regexMatch[1] || this.code
+                : this.code;
 
         if (name !== undefined) {
             this.name = name;
@@ -49,7 +53,7 @@ export class CurrencyInfo {
         }
         regexMatch = (0).toLocaleString(
             'en-US',
-            Object.assign({ currencyDisplay: 'name' } , formatterOptions)
+            { currencyDisplay: 'name', ...formatterOptions },
         ).match(CurrencyInfo.NUMBER_FORMAT_REGEX);
         this.name = regexMatch ? regexMatch[3] || this.code : this.code;
     }

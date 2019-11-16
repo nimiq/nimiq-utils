@@ -34,7 +34,9 @@ export class Clipboard {
         let isSuccess = false;
         try {
             isSuccess = document.execCommand('copy');
-        } catch (e) {}
+        } catch (e) {
+            // Ignore
+        }
 
         element.remove();
 

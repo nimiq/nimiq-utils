@@ -48,17 +48,17 @@ export class ValidationUtils {
         let tmp = '';
 
         for (let i = 0; i < Math.ceil(num.length / 6); i++) {
-            tmp = (parseInt(tmp + num.substr(i * 6, 6)) % 97).toString();
+            tmp = (parseInt(tmp + num.substr(i * 6, 6), 10) % 97).toString();
         }
 
-        return parseInt(tmp);
+        return parseInt(tmp, 10);
     }
 
     static isValidHash(hash: string) {
         // not using Nimiq Api here to don't require it to be loaded already
         try {
             return atob(hash).length === 32;
-        } catch(e) {
+        } catch (e) {
             return false;
         }
     }
