@@ -203,16 +203,25 @@ export function createRequestLink(
     return createNimiqRequestLink(recipient, { amount, message, basePath });
 }
 
+interface LegacyParsedRequestLink {
+    recipient: string,
+    amount: number | null,
+    message: string | null
+}
+
+interface ParsedRequestLink extends NimiqRequestLinkOptions {
+    recipient: string
+}
+
 export function parseRequestLink(requestLink: string | URL, requiredBasePath?: string, useNewApi?: false)
-    : null | { recipient: string, amount: number | null, message: string | null }; // legacy function signature
+    : null | LegacyParsedRequestLink; // legacy function signature
 export function parseRequestLink(requestLink: string | URL, requiredBasePath: string | undefined, useNewApi: true)
-    : null | NimiqRequestLinkOptions & { recipient: string };
+    : null | ParsedRequestLink;
 export function parseRequestLink(
     requestLink: string | URL,
     requiredBasePath?: string,
-    useNewApi?: boolean, // temporary option to distinguish legacy usage that returned amount in Nim
-): null | NimiqRequestLinkOptions & { recipient: string }
-    | { recipient: string, amount: number | null, message: string | null } {
+    useNewApi?: boolean, // temporary option to distinguish legacy usage that returned amount in NIM
+): null | ParsedRequestLink | LegacyParsedRequestLink {
     const protocol = requestLink instanceof URL
         ? requestLink.protocol
         : (requestLink.match(/^[^:]+:/) || ['https:'])[0];
@@ -223,7 +232,7 @@ export function parseRequestLink(
 
     if (!useNewApi) {
         // eslint-disable-next-line no-console
-        console.warn('parseRequestLink with amounts in Nim and null for non-existing values has been deprecated. '
+        console.warn('parseRequestLink with amounts in NIM and null for non-existing values has been deprecated. '
             + 'Please set useNewApi to true to signal usage of the new parseRequestLink method. Note that useNewApi '
             + 'is a temporary flag that will be removed once parseRequestLink switches to returning amounts in '
             + 'the smallest unit and undefined for non-existing values by default after a transition period.');
