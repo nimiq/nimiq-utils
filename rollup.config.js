@@ -5,6 +5,7 @@ export default {
         'build/main.js',
         'build/address-book/AddressBook.js',
         'build/browser-detection/BrowserDetection.js',
+        'build/currency-info/CurrencyInfo.js',
         'build/clipboard/Clipboard.js',
         'build/formattable-number/FormattableNumber.js',
         'build/request-link-encoding/RequestLinkEncoding.js',
