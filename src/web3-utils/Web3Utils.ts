@@ -73,11 +73,11 @@ export async function getAddress() {
 
 export async function getNetworkVersion() {
     const provider = getProvider();
-    if (provider.networkVersion) return parseInt(provider.networkVersion);
+    if (provider.networkVersion) return parseInt(provider.networkVersion, 10);
 
     // While MetaMask supports the `networkVersion` prop,
     // Opera does not. The `net_version` method works for both.
-    return parseInt(await _rpc<string>('net_version'));
+    return parseInt(await _rpc<string>('net_version'), 10);
 }
 
 export async function sendTransaction(
@@ -90,16 +90,20 @@ export async function sendTransaction(
 
     const chainId = stringToChainId(params.chainId || network);
 
-    while (await getNetworkVersion() !== chainId) {
+    while (await getNetworkVersion() !== chainId) { // eslint-disable-line no-await-in-loop
         // Prevent website from reloading when user switches network
         provider.autoRefreshOnNetworkChange = false;
 
         const networkName = _capitalizeString(chainIdToString(chainId));
 
         if (typeof changeNetworkCallback === 'function') changeNetworkCallback(networkName);
-        else alert(`To send this transaction, you must change the network in your Ethereum provider to "${networkName}"`);
+        else {
+            // eslint-disable-next-line no-alert
+            alert('To send this transaction, you must change the network '
+                + `in your Ethereum provider to "${networkName}"`);
+        }
 
-        await new Promise<number>((resolve) => {
+        await new Promise<number>((resolve) => { // eslint-disable-line no-await-in-loop
             provider.on('networkChanged', resolve);
         });
     }
@@ -158,16 +162,20 @@ async function _rpc<R>(method: string, params?: any) {
 
     if (typeof params !== 'undefined' && !Array.isArray(params)) params = [params];
 
-    console.debug('WEB3 SEND:', method, params);
+    // console.debug('WEB3 SEND:', method, params);
 
-    const response = await new Promise<RpcResult<R>>(async (resolve, reject) => {
+    const response = await new Promise<RpcResult<R>>((resolve, reject) => {
         if (typeof provider.send === 'function') {
             try {
                 // Use send() as specified in EIP-1193
                 provider.send<R>(method, params).then(resolve, reject);
-            } catch (error) {
+            } catch (_) {
                 // Opera doesn't like EIP-1193 yet and implements a sync method with a single request object
-                try { resolve(provider.send<R>({ method, params })); } catch (error) { reject(error); }
+                try {
+                    resolve(provider.send<R>({ method, params }));
+                } catch (error) {
+                    reject(error);
+                }
             }
         } else if (typeof provider.sendAsync === 'function') {
             // Use deprecated sendAsync() with callback
@@ -181,7 +189,7 @@ async function _rpc<R>(method: string, params?: any) {
         } else reject(new Error('No known Web3 integration found'));
     });
 
-    console.debug('WEB3 RECEIVE:', response);
+    // console.debug('WEB3 RECEIVE:', response);
 
     if (response.error) {
         throw new Error(response.error.message);
