@@ -14,35 +14,35 @@
     <button id="sendTransaction" disabled>Send Transaction</button>
 
     <script type="module">
-        import { Web3Utils } from '../dist/module/main.js'
-        window.Web3Utils = Web3Utils
+        import { Web3Utils } from '../dist/module/main.js';
+        window.Web3Utils = Web3Utils;
 
-        const $log = document.getElementById('log')
+        const $log = document.getElementById('log');
         function log(...args) {
-            const p = document.createElement('p')
-            p.textContent = args.join(' ')
-            $log.appendChild(p)
+            const p = document.createElement('p');
+            p.textContent = args.join(' ');
+            $log.appendChild(p);
         }
 
-        log('Has provider:', Web3Utils.hasProvider())
+        log('Has provider:', Web3Utils.hasProvider());
 
         if (Web3Utils.hasProvider()) {
-            log('Provider name:', Web3Utils.getProviderName())
+            log('Provider name:', Web3Utils.getProviderName());
 
-            const $sendTxButton = document.getElementById('sendTransaction')
-            $sendTxButton.disabled = false
+            const $sendTxButton = document.getElementById('sendTransaction');
+            $sendTxButton.disabled = false;
             $sendTxButton.addEventListener('click', async () => {
                 try {
                     const hash = await Web3Utils.sendTransaction({
                         to: '0x5AE92354c5422C307e8cF3FDba18E6C79941F824',
-                        value: 0.1 * 1e18 // 0.1 ETH
-                    }, 'test')
-                    log('Sent transaction:', hash)
+                        value: 0.1 * 1e18, // 0.1 ETH
+                    }, 'test');
+                    log('Sent transaction:', hash);
                 } catch (error) {
-                    log('Sending failed:', error.message, `(${error.stack})`)
-                    throw error
+                    log('Sending failed:', error.message, `(${error.stack})`);
+                    throw error;
                 }
-            })
+            });
         }
     </script>
 </body>
