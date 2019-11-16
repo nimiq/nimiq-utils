@@ -206,11 +206,11 @@ export function createRequestLink(
 interface LegacyParsedRequestLink {
     recipient: string,
     amount: number | null,
-    message: string | null
+    message: string | null,
 }
 
 interface ParsedRequestLink extends NimiqRequestLinkOptions {
-    recipient: string
+    recipient: string,
 }
 
 export function parseRequestLink(requestLink: string | URL, requiredBasePath?: string, useNewApi?: false)
