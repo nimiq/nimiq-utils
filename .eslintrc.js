@@ -41,5 +41,6 @@ module.exports = {
         'no-redeclare': 'off',
         'no-param-reassign': 'off',
         'import/no-unresolved': 'off',
+        'no-use-before-define': 'off',
     },
 };
