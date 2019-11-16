@@ -27,6 +27,7 @@ module.exports = {
         'import/prefer-default-export': 'off',
         'object-curly-newline': ['error', { 'ObjectPattern': { 'multiline': true } }],
         'prefer-const': ['error', {'destructuring': 'all'}],
+        'no-nested-ternary': 'off',
 
         // Typescript plugin replacements
         'no-unused-vars': 'off',
