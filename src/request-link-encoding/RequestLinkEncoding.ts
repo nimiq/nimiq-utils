@@ -4,7 +4,7 @@ import { FormattableNumber } from '../formattable-number/FormattableNumber';
 // this imports only the type without bundling the library
 type BigInteger = import('big-integer').BigInteger;
 
-const enum Currency {
+export const enum Currency {
     NIM = 'nim',
     BTC = 'btc',
     ETH = 'eth',
@@ -14,10 +14,17 @@ const NIM_DECIMALS = 5;
 const BTC_DECIMALS = 8;
 const ETH_DECIMALS = 18;
 
+export const enum NimiqRequestLinkType {
+    SAFE ='safe', // Nimiq Safe format: https://safe.nimiq.com/#_request/...
+    URI = 'uri', // URI format: nimiq:<address>?value=...
+    // BIP21WEB = 'bip-21-web', // BIP-21 for web format: web+nim://<address>?value=...
+}
+
 export interface NimiqRequestLinkOptions {
     amount?: number, // in luna
     message?: string,
     basePath?: string,
+    type?: NimiqRequestLinkType,
 }
 
 export interface BitcoinRequestLinkOptions {
@@ -97,7 +104,7 @@ export function parseRequestLink(
             + 'is a temporary flag that will be removed once parseRequestLink switches to returning amounts in '
             + 'the smallest unit and undefined for non-existing values by default after a transition period.');
     }
-    const parsedNimiqRequestLink = parseNimiqRequestLink(requestLink, requiredBasePath);
+    const parsedNimiqRequestLink = parseNimiqSafeRequestLink(requestLink, requiredBasePath);
     if (!parsedNimiqRequestLink) return null;
 
     let { recipient, amount, message } = parsedNimiqRequestLink;
@@ -113,25 +120,42 @@ export function createNimiqRequestLink(
     recipient: string,
     options: NimiqRequestLinkOptions = { basePath: window.location.host },
 ): string {
-    let { amount, message, basePath } = options;
+    const { amount, message, type = NimiqRequestLinkType.SAFE } = options;
+    let basePath = options.basePath; // eslint-disable-line prefer-destructuring
+
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
     if (amount && !isUnsignedInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
+
     const amountNim = amount ? new FormattableNumber(amount).moveDecimalSeparator(-NIM_DECIMALS).toString() : '';
-    const optionsArray = [
-        recipient.replace(/ /g, ''), // strip spaces
-        amountNim,
-        encodeURIComponent(message || ''),
-    ];
-    // don't encode empty options (if they are not followed by other non-empty options)
-    while (optionsArray[optionsArray.length - 1] === '') optionsArray.pop();
 
-    if (!basePath!.endsWith('/')) basePath = `${basePath}/`;
+    // Assemble params
+    const query = [];
+    query.push(['recipient', recipient.replace(/ /g, '')]); // strip spaces
+    if (amountNim) query.push(['amount', amountNim]);
+    if (message) query.push(['message', encodeURIComponent(message || '')]);
 
-    return `${basePath}#_request/${optionsArray.join('/')}_`;
+    if (type === NimiqRequestLinkType.SAFE) {
+        const params = query.map((param) => param[1]);
+
+        // don't encode empty options (if they are not followed by other non-empty options)
+        while (params[params.length - 1] === '') params.pop();
+
+        if (!basePath!.endsWith('/')) basePath = `${basePath}/`;
+
+        return `${basePath}#_request/${params.join('/')}_`;
+    }
+
+    if (type === NimiqRequestLinkType.URI) {
+        const address = query.shift()![1];
+        const params = query.map(([key, param]) => `${key}=${param}`);
+        return `nimiq:${address}${params.length ? '?' : ''}${params.join('&')}`;
+    }
+
+    throw new Error(`Unknown type: ${type}`);
 }
 
-export function parseNimiqRequestLink(
+export function parseNimiqSafeRequestLink(
     requestLink: string | URL,
     requiredBasePath?: string,
 ): null | NimiqRequestLinkOptions & { recipient: string } {
