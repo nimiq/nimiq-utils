@@ -114,15 +114,16 @@ export function parseRequestLink(
         parsedNimiqRequestLink = parseNimiqSafeRequestLink(requestLink, requiredBasePath);
     }
 
-    if (!parsedNimiqRequestLink) return null;
+    if (useNewApi || !parsedNimiqRequestLink) return parsedNimiqRequestLink;
+
     const { recipient, amount, message } = parsedNimiqRequestLink;
+    const amountNim = amount ? amount / (10 ** NIM_DECIMALS) : amount;
 
-    if (!useNewApi) {
-        const amountNim = amount ? amount / (10 ** NIM_DECIMALS) : amount;
-        return { recipient, amount: amountNim || null, message: message || null };
-    }
-
-    return { recipient, amount, message };
+    return {
+        recipient,
+        amount: amountNim || null,
+        message: message || null,
+    };
 }
 
 export function createNimiqRequestLink(
