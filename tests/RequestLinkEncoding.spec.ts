@@ -22,6 +22,7 @@ describe('RequestLinkEncoding', () => {
             message: 'Hello World!',
         }];
 
+        // Parse links
         for (const vector of vectors) {
             const parsed = RequestLinkEncoding.parseRequestLink(vector.link, undefined, true);
             expect(parsed!.recipient).toEqual(vector.address);
@@ -29,6 +30,7 @@ describe('RequestLinkEncoding', () => {
             expect(parsed!.message).toEqual(vector.message);
         }
 
+        // Create links
         for (const vector of vectors) {
             const options: RequestLinkEncoding.GeneralRequestLinkOptions = {
                 currency: RequestLinkEncoding.Currency.NIM,
@@ -60,13 +62,15 @@ describe('RequestLinkEncoding', () => {
             message: 'Hello World!',
         }];
 
-        // for (const vector of vectors) {
-        //     const parsed = RequestLinkEncoding.parseRequestLink(vector.link, undefined, true);
-        //     expect(parsed!.recipient).toEqual(vector.address);
-        //     expect(parsed!.amount).toEqual(vector.amount);
-        //     expect(parsed!.message).toEqual(vector.message);
-        // }
+        // Parse links
+        for (const vector of vectors) {
+            const parsed = RequestLinkEncoding.parseRequestLink(vector.link, undefined, true);
+            expect(parsed!.recipient).toEqual(vector.address);
+            expect(parsed!.amount).toEqual(vector.amount);
+            expect(parsed!.message).toEqual(vector.message);
+        }
 
+        // Create links
         for (const vector of vectors) {
             const options: RequestLinkEncoding.GeneralRequestLinkOptions = {
                 currency: RequestLinkEncoding.Currency.NIM,
@@ -108,6 +112,7 @@ describe('RequestLinkEncoding', () => {
             label: 'Luke-Jr',
         }];
 
+        // Create links
         for (const vector of vectors) {
             const options: RequestLinkEncoding.GeneralRequestLinkOptions = {
                 currency: RequestLinkEncoding.Currency.BTC,
@@ -148,6 +153,7 @@ describe('RequestLinkEncoding', () => {
             gasLimit: 2e4,
         }];
 
+        // Create links
         for (const vector of vectors) {
             const options: RequestLinkEncoding.GeneralRequestLinkOptions = {
                 currency: RequestLinkEncoding.Currency.ETH,
