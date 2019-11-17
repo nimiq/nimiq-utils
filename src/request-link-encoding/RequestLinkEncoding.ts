@@ -188,7 +188,7 @@ export function createBitcoinRequestLink(
     if (!recipient) throw new Error('Recipient is required');
     if (options.amount && !isUnsignedInteger(options.amount)) throw new TypeError('Invalid amount');
     if (options.fee && !isUnsignedInteger(options.fee)) throw new TypeError('Invalid fee');
-    const query = new URLSearchParams();
+    const query: string[] = [];
     const validQueryKeys: ['amount', 'fee', 'label', 'message'] = ['amount', 'fee', 'label', 'message'];
     validQueryKeys.forEach((key) => {
         const option = options[key];
@@ -196,10 +196,10 @@ export function createBitcoinRequestLink(
         // formatted value in BTC without scientific number notation
         const formattedValue = key === 'amount' || key === 'fee'
             ? new FormattableNumber(option).moveDecimalSeparator(-BTC_DECIMALS).toString()
-            : option.toString();
-        query.set(key, formattedValue);
+            : encodeURIComponent(option.toString());
+        query.push(`${key}=${formattedValue}`);
     }, '');
-    const queryString = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
+    const queryString = query.length ? `?${query.join('&')}` : ''; // also urlEncodes the values
     return `bitcoin:${recipient}${queryString}`;
 }
 
