@@ -12,7 +12,8 @@
   "scripts": {
     "lint": "eslint src/**/*.ts tests/*.spec.ts",
     "test": "jest",
-    "build": "rimraf build dist && tsc && rollup -c"
+    "build": "rimraf build dist && tsc && rollup -c",
+    "pr": "yarn lint && yarn test && yarn build"
   },
   "files": [
     "dist",
