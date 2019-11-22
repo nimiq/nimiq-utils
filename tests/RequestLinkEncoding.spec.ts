@@ -47,16 +47,19 @@ describe('RequestLinkEncoding', () => {
     it('can parse and create NIM URI request links', () => {
         const vectors = [{
             link: 'nimiq:NQ24458E67E1C90MC0XQ146BCE6RJMYRE27S',
+            type: RequestLinkEncoding.NimiqRequestLinkType.URI,
             address: 'NQ24 458E 67E1 C90M C0XQ 146B CE6R JMYR E27S',
             amount: undefined,
             message: undefined,
         }, {
             link: 'nimiq:NQ24458E67E1C90MC0XQ146BCE6RJMYRE27S?amount=123.456',
+            type: RequestLinkEncoding.NimiqRequestLinkType.URI,
             address: 'NQ24 458E 67E1 C90M C0XQ 146B CE6R JMYR E27S',
             amount: 123.456 * 1e5,
             message: undefined,
         }, {
-            link: 'nimiq:NQ24458E67E1C90MC0XQ146BCE6RJMYRE27S?amount=123.456&message=Hello%20World!',
+            link: 'web+nim:NQ24458E67E1C90MC0XQ146BCE6RJMYRE27S?amount=123.456&message=Hello%20World!',
+            type: RequestLinkEncoding.NimiqRequestLinkType.WEBURI,
             address: 'NQ24 458E 67E1 C90M C0XQ 146B CE6R JMYR E27S',
             amount: 123.456 * 1e5,
             message: 'Hello World!',
@@ -76,7 +79,7 @@ describe('RequestLinkEncoding', () => {
                 currency: RequestLinkEncoding.Currency.NIM,
                 amount: vector.amount,
                 message: vector.message,
-                type: RequestLinkEncoding.NimiqRequestLinkType.URI,
+                type: vector.type,
             };
 
             const link = RequestLinkEncoding.createRequestLink(vector.address, options);

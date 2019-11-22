@@ -16,13 +16,14 @@ const ETH_DECIMALS = 18;
 
 export const enum NimiqRequestLinkType {
     SAFE ='safe', // Nimiq Safe format: https://safe.nimiq.com/#_request/...
-    URI = 'uri', // URI format: nimiq:<address>?value=...
-    // BIP21WEB = 'bip-21-web', // BIP-21 for web format: web+nim://<address>?value=...
+    URI = 'uri', // URI format: nimiq:<address>?amount=...
+    WEBURI = 'web+uri', // BIP-21 for web format: web+nim://<address>?amount=...
 }
 
 export interface NimiqRequestLinkOptions {
     amount?: number, // in luna
     message?: string,
+    label?: string,
     basePath?: string,
     type?: NimiqRequestLinkType,
 }
@@ -130,39 +131,40 @@ export function createNimiqRequestLink(
     recipient: string,
     options: NimiqRequestLinkOptions = { basePath: window.location.host },
 ): string {
-    const { amount, message, type = NimiqRequestLinkType.SAFE } = options;
+    const { amount, message, label, type = NimiqRequestLinkType.SAFE } = options;
     let basePath = options.basePath; // eslint-disable-line prefer-destructuring
 
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
     if (amount && !isUnsignedInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
+    if (label && typeof label !== 'string') throw new Error(`Not a valid label: ${label}`);
 
     const amountNim = amount ? new FormattableNumber(amount).moveDecimalSeparator(-NIM_DECIMALS).toString() : '';
 
     // Assemble params
     const query = [['recipient', recipient.replace(/ /g, '')]]; // strip spaces from address
-    if (amountNim) query.push(['amount', amountNim]);
-    if (message) query.push(['message', encodeURIComponent(message || '')]);
+    if (amountNim || message || label) query.push(['amount', amountNim || '']);
+    if (message || label) query.push(['message', encodeURIComponent(message || '')]);
+    if (label) query.push(['label', encodeURIComponent(label)]);
 
     // Create Safe-style `https://` links
     // Note that the encoding scheme for Safe-style links is the same as
     // for Safe XRouter aside route parameters (see _makeAside).
     if (type === NimiqRequestLinkType.SAFE) {
         const params = query.map((param) => param[1]);
-
-        // don't encode empty options (if they are not followed by other non-empty options)
-        while (params[params.length - 1] === '') params.pop();
-
         if (!basePath!.endsWith('/')) basePath = `${basePath}/`;
-
         return `${basePath}#_request/${params.join('/')}_`;
     }
 
     // Create URI scheme `nimiq:` links
-    if (type === NimiqRequestLinkType.URI) {
+    if (type === NimiqRequestLinkType.URI || type === NimiqRequestLinkType.WEBURI) {
+        const protocol = {
+            [NimiqRequestLinkType.URI]: 'nimiq:',
+            [NimiqRequestLinkType.WEBURI]: 'web+nim:',
+        }[type];
         const address = query.shift()![1];
         const params = query.map(([key, param]) => `${key}=${param}`);
-        return `nimiq:${address}${params.length ? '?' : ''}${params.join('&')}`;
+        return `${protocol}${address}${params.length ? '?' : ''}${params.join('&')}`;
     }
 
     throw new Error(`Unknown type: ${type}`);
