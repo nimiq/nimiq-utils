@@ -4,7 +4,7 @@ import { FormattableNumber } from '../formattable-number/FormattableNumber';
 // this imports only the type without bundling the library
 type BigInteger = import('big-integer').BigInteger;
 
-export const enum Currency {
+export enum Currency {
     NIM = 'nim',
     BTC = 'btc',
     ETH = 'eth',
@@ -14,10 +14,10 @@ const NIM_DECIMALS = 5;
 const BTC_DECIMALS = 8;
 const ETH_DECIMALS = 18;
 
-export const enum NimiqRequestLinkType {
+export enum NimiqRequestLinkType {
     SAFE ='safe', // Nimiq Safe format: https://safe.nimiq.com/#_request/...
-    URI = 'uri', // URI format: nimiq:<address>?amount=...
-    WEBURI = 'web+uri', // BIP-21 for web format: web+nim://<address>?amount=...
+    URI = 'nimiq', // BIP-21 URI format: nimiq:<address>?amount=...
+    WEBURI = 'web+nim', // BIP-21 URI for web format: web+nim://<address>?amount=...
 }
 
 export interface NimiqRequestLinkOptions {
@@ -118,11 +118,10 @@ export function parseRequestLink(
     if (useNewApi || !parsedNimiqRequestLink) return parsedNimiqRequestLink;
 
     const { recipient, amount, message } = parsedNimiqRequestLink;
-    const amountNim = amount ? amount / (10 ** NIM_DECIMALS) : amount;
 
     return {
         recipient,
-        amount: amountNim || null,
+        amount: amount ? amount / (10 ** NIM_DECIMALS) : null,
         message: message || null,
     };
 }
@@ -131,8 +130,7 @@ export function createNimiqRequestLink(
     recipient: string,
     options: NimiqRequestLinkOptions = { basePath: window.location.host },
 ): string {
-    const { amount, message, label, type = NimiqRequestLinkType.SAFE } = options;
-    let basePath = options.basePath; // eslint-disable-line prefer-destructuring
+    const { amount, message, label, basePath, type = NimiqRequestLinkType.SAFE } = options;
 
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
     if (amount && !isUnsignedInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
@@ -152,19 +150,14 @@ export function createNimiqRequestLink(
     // for Safe XRouter aside route parameters (see _makeAside).
     if (type === NimiqRequestLinkType.SAFE) {
         const params = query.map((param) => param[1]);
-        if (!basePath!.endsWith('/')) basePath = `${basePath}/`;
-        return `${basePath}#_request/${params.join('/')}_`;
+        return `${basePath}${!basePath!.endsWith('/') ? '/' : ''}#_request/${params.join('/')}_`;
     }
 
     // Create URI scheme `nimiq:` links
     if (type === NimiqRequestLinkType.URI || type === NimiqRequestLinkType.WEBURI) {
-        const protocol = {
-            [NimiqRequestLinkType.URI]: 'nimiq:',
-            [NimiqRequestLinkType.WEBURI]: 'web+nim:',
-        }[type];
         const address = query.shift()![1];
         const params = query.map(([key, param]) => `${key}=${param}`);
-        return `${protocol}${address}${params.length ? '?' : ''}${params.join('&')}`;
+        return `${type}:${address}${params.length ? '?' : ''}${params.join('&')}`;
     }
 
     throw new Error(`Unknown type: ${type}`);
@@ -226,7 +219,7 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
         .replace(/(.)(?=(.{4})+$)/g, '$1 '); // reformat with spaces, forming blocks of 4 chars
     if (!ValidationUtils.isValidAddress(recipient)) return null; // recipient is required
 
-    const parsedAmount = params.amount ? parseFloat(params.amount) * (10 ** NIM_DECIMALS) : undefined;
+    const parsedAmount = params.amount ? Math.round(parseFloat(params.amount) * (10 ** NIM_DECIMALS)) : undefined;
     if (typeof parsedAmount === 'number' && Number.isNaN(parsedAmount)) return null;
 
     const parsedMessage = params.message ? decodeURIComponent(params.message) : undefined;
