@@ -4,7 +4,7 @@ import { FormattableNumber } from '../formattable-number/FormattableNumber';
 // this imports only the type without bundling the library
 type BigInteger = import('big-integer').BigInteger;
 
-const enum Currency {
+export enum Currency {
     NIM = 'nim',
     BTC = 'btc',
     ETH = 'eth',
@@ -14,10 +14,18 @@ const NIM_DECIMALS = 5;
 const BTC_DECIMALS = 8;
 const ETH_DECIMALS = 18;
 
+export enum NimiqRequestLinkType {
+    SAFE ='safe', // Nimiq Safe format: https://safe.nimiq.com/#_request/...
+    URI = 'nimiq', // BIP-21 URI format: nimiq:<address>?amount=...
+    WEBURI = 'web+nim', // BIP-21 URI for web format: web+nim://<address>?amount=...
+}
+
 export interface NimiqRequestLinkOptions {
     amount?: number, // in luna
     message?: string,
+    label?: string,
     basePath?: string,
+    type?: NimiqRequestLinkType,
 }
 
 export interface BitcoinRequestLinkOptions {
@@ -85,7 +93,8 @@ export function parseRequestLink(
     const protocol = requestLink instanceof URL
         ? requestLink.protocol
         : (requestLink.match(/^[^:]+:/) || ['https:'])[0];
-    if (!/^http(s)?:$/i.test(protocol)) {
+
+    if (!/^http(s)?:$/i.test(protocol) && !isNimiqUriProtocol(protocol)) {
         // currently only nimiq web link parsing supported
         throw new Error(`Parsing links for protocol ${protocol} is currently not supported.`);
     }
@@ -97,86 +106,124 @@ export function parseRequestLink(
             + 'is a temporary flag that will be removed once parseRequestLink switches to returning amounts in '
             + 'the smallest unit and undefined for non-existing values by default after a transition period.');
     }
-    const parsedNimiqRequestLink = parseNimiqRequestLink(requestLink, requiredBasePath);
-    if (!parsedNimiqRequestLink) return null;
 
-    let { recipient, amount, message } = parsedNimiqRequestLink;
-    if (!useNewApi) {
-        amount = amount ? amount / (10 ** NIM_DECIMALS) : amount;
-        return { recipient, amount: amount || null, message: message || null };
+    let parsedNimiqRequestLink;
+
+    if (isNimiqUriProtocol(protocol)) {
+        parsedNimiqRequestLink = parseNimiqUriRequestLink(requestLink);
+    } else {
+        parsedNimiqRequestLink = parseNimiqSafeRequestLink(requestLink, requiredBasePath);
     }
-    return { recipient, amount, message };
+
+    if (useNewApi || !parsedNimiqRequestLink) return parsedNimiqRequestLink;
+
+    const { recipient, amount, message } = parsedNimiqRequestLink;
+
+    return {
+        recipient,
+        amount: amount ? amount / (10 ** NIM_DECIMALS) : null,
+        message: message || null,
+    };
 }
 
-// Note that the encoding scheme is the same as for Safe XRouter aside route parameters (see _makeAside).
 export function createNimiqRequestLink(
     recipient: string,
     options: NimiqRequestLinkOptions = { basePath: window.location.host },
 ): string {
-    let { amount, message, basePath } = options;
+    const { amount, message, label, basePath, type = NimiqRequestLinkType.SAFE } = options;
+
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
     if (amount && !isUnsignedInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
+    if (label && typeof label !== 'string') throw new Error(`Not a valid label: ${label}`);
+
     const amountNim = amount ? new FormattableNumber(amount).moveDecimalSeparator(-NIM_DECIMALS).toString() : '';
-    const optionsArray = [
-        recipient.replace(/ /g, ''), // strip spaces
-        amountNim,
-        encodeURIComponent(message || ''),
-    ];
-    // don't encode empty options (if they are not followed by other non-empty options)
-    while (optionsArray[optionsArray.length - 1] === '') optionsArray.pop();
 
-    if (!basePath!.endsWith('/')) basePath = `${basePath}/`;
+    // Assemble params
+    const query = [['recipient', recipient.replace(/ /g, '')]]; // strip spaces from address
+    if (amountNim || message || label) query.push(['amount', amountNim || '']);
+    if (message || label) query.push(['message', encodeURIComponent(message || '')]);
+    if (label) query.push(['label', encodeURIComponent(label)]);
 
-    return `${basePath}#_request/${optionsArray.join('/')}_`;
+    // Create Safe-style `https://` links
+    // Note that the encoding scheme for Safe-style links is the same as
+    // for Safe XRouter aside route parameters (see _makeAside).
+    if (type === NimiqRequestLinkType.SAFE) {
+        const params = query.map((param) => param[1]);
+        return `${basePath}${!basePath!.endsWith('/') ? '/' : ''}#_request/${params.join('/')}_`;
+    }
+
+    // Create URI scheme `nimiq:` links
+    if (type === NimiqRequestLinkType.URI || type === NimiqRequestLinkType.WEBURI) {
+        const address = query.shift()![1];
+        const params = query.map(([key, param]) => `${key}=${param}`);
+        return `${type}:${address}${params.length ? '?' : ''}${params.join('&')}`;
+    }
+
+    throw new Error(`Unknown type: ${type}`);
 }
 
-export function parseNimiqRequestLink(
+export function parseNimiqSafeRequestLink(
     requestLink: string | URL,
     requiredBasePath?: string,
-): null | NimiqRequestLinkOptions & { recipient: string } {
-    if (!(requestLink instanceof URL)) {
-        try {
-            if (!requestLink.includes('://')) {
-                // Because we are only interested in the host and hash, the protocol doesn't matter
-                requestLink = `dummy://${requestLink}`;
-            }
-            requestLink = new URL(requestLink);
-        } catch (e) {
-            return null;
-        }
-    }
-    if (requiredBasePath && requestLink.host !== requiredBasePath) return null;
+): null | ParsedRequestLink {
+    const url = toUrl(requestLink, '://');
+    if (!url || (requiredBasePath && url.host !== requiredBasePath)) return null;
 
     // check whether it's a request link
     const requestRegex = /_request\/(([^/]+)(\/[^/]*){0,2})_/;
-    const requestRegexMatch = requestLink.hash.match(requestRegex);
+    const requestRegexMatch = url.hash.match(requestRegex);
     if (!requestRegexMatch) return null;
 
     // parse options
     const optionsSubstr = requestRegexMatch[1];
-    let [recipient, amount, message] = optionsSubstr.split('/');
+    const [recipient, amount, message] = optionsSubstr.split('/');
 
-    // check options
-    recipient = recipient
+    return parseNimiqParams({ recipient, amount, message });
+}
+
+export function parseNimiqUriRequestLink(requestLink: string | URL): null | ParsedRequestLink {
+    const url = toUrl(requestLink, ':');
+    if (!url) return null;
+
+    // Fetch options
+    const recipient = url.pathname;
+    const amount = url.searchParams.get('amount') || undefined;
+    const message = url.searchParams.get('message') || undefined;
+
+    return parseNimiqParams({ recipient, amount, message });
+}
+
+function toUrl(link: string | URL, requiredChars: string): null | URL {
+    if (link instanceof URL) return link;
+
+    if (!link.includes(requiredChars)) {
+        // The protocol doesn't matter after this function, so we add
+        // a dummy protocol, so that the string parses as an URL.
+        link = `dummy${requiredChars}${link}`;
+    }
+
+    try {
+        return new URL(link);
+    } catch (e) {
+        return null;
+    }
+}
+
+type NimiqParams = { recipient: string, amount?: string, message?: string };
+type ParsedNimiqParams = Omit<NimiqParams, 'amount'> & {amount?: number};
+
+function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
+    const recipient = params.recipient
         .replace(/[ +-]|%20/g, '') // strip spaces and dashes
         .replace(/(.)(?=(.{4})+$)/g, '$1 '); // reformat with spaces, forming blocks of 4 chars
     if (!ValidationUtils.isValidAddress(recipient)) return null; // recipient is required
 
-    let parsedAmount;
-    if (typeof amount !== 'undefined' && amount !== '') {
-        parsedAmount = parseFloat(amount) * (10 ** NIM_DECIMALS);
-        if (Number.isNaN(parsedAmount)) return null;
-    } else {
-        parsedAmount = undefined;
-    }
+    const parsedAmount = params.amount ? Math.round(parseFloat(params.amount) * (10 ** NIM_DECIMALS)) : undefined;
+    if (typeof parsedAmount === 'number' && Number.isNaN(parsedAmount)) return null;
 
-    let parsedMessage;
-    if (typeof message !== 'undefined' && message !== '') {
-        parsedMessage = decodeURIComponent(message);
-    } else {
-        parsedMessage = undefined;
-    }
+    const parsedMessage = params.message ? decodeURIComponent(params.message) : undefined;
+
     return { recipient, amount: parsedAmount, message: parsedMessage };
 }
 
@@ -188,7 +235,7 @@ export function createBitcoinRequestLink(
     if (!recipient) throw new Error('Recipient is required');
     if (options.amount && !isUnsignedInteger(options.amount)) throw new TypeError('Invalid amount');
     if (options.fee && !isUnsignedInteger(options.fee)) throw new TypeError('Invalid fee');
-    const query = new URLSearchParams();
+    const query: string[] = [];
     const validQueryKeys: ['amount', 'fee', 'label', 'message'] = ['amount', 'fee', 'label', 'message'];
     validQueryKeys.forEach((key) => {
         const option = options[key];
@@ -196,10 +243,10 @@ export function createBitcoinRequestLink(
         // formatted value in BTC without scientific number notation
         const formattedValue = key === 'amount' || key === 'fee'
             ? new FormattableNumber(option).moveDecimalSeparator(-BTC_DECIMALS).toString()
-            : option.toString();
-        query.set(key, formattedValue);
+            : encodeURIComponent(option.toString());
+        query.push(`${key}=${formattedValue}`);
     }, '');
-    const queryString = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
+    const queryString = query.length ? `?${query.join('&')}` : ''; // also urlEncodes the values
     return `bitcoin:${recipient}${queryString}`;
 }
 
@@ -236,6 +283,10 @@ export function createEthereumRequestLink(
     }, '');
     const queryString = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
     return `ethereum:${eip831Prefix}${recipient}${chainIdString}${queryString}`;
+}
+
+function isNimiqUriProtocol(link: string): boolean {
+    return /^(web\+)?nim(iq)?:$/i.test(link);
 }
 
 function isUnsignedInteger(value: number | bigint | BigInteger) {

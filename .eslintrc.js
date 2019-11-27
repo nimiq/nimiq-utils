@@ -1,3 +1,8 @@
+const airbnb = require('eslint-config-airbnb-base/rules/style');
+
+// Do not restrict usage of for...of
+const noRestrictedSyntax = airbnb.rules['no-restricted-syntax'].slice(1).filter(r => r.selector !== 'ForOfStatement');
+
 module.exports = {
     env: {
         browser: true,
@@ -28,6 +33,7 @@ module.exports = {
         'object-curly-newline': ['error', { 'ObjectPattern': { 'multiline': true } }],
         'prefer-const': ['error', {'destructuring': 'all'}],
         'no-nested-ternary': 'off',
+        'no-restricted-syntax': ['error', ...noRestrictedSyntax],
 
         // Typescript plugin replacements
         'no-unused-vars': 'off',
