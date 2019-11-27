@@ -72,12 +72,12 @@ export class FormattableNumber {
 
     public round(decimals: number): this {
         if (this._digits.length - this._decimalSeparatorPosition <= decimals) return this;
-        const firstRoundedIndex = this._decimalSeparatorPosition + decimals;
+        const firstCutOffIndex = this._decimalSeparatorPosition + decimals;
         const digitsToKeep = this._digits
-            .substring(0, firstRoundedIndex)
+            .substring(0, firstCutOffIndex)
             .padEnd(this._decimalSeparatorPosition, '0');
 
-        if (Number.parseInt(this._digits[firstRoundedIndex], 10) < 5) {
+        if (Number.parseInt(this._digits[firstCutOffIndex], 10) < 5) {
             // rounding down, can just use the trimmed decimals
             this._digits = digitsToKeep;
             return this;
@@ -85,7 +85,8 @@ export class FormattableNumber {
 
         // round up
         const digits = `0${digitsToKeep}`.split(''); // add a leading 0 for easier handling of carry
-        for (let i = firstRoundedIndex; i >= 0; --i) {
+        const lastRemainingIndex = firstCutOffIndex; // due to the added leading 0
+        for (let i = lastRemainingIndex; i >= 0; --i) {
             const newDigit = Number.parseInt(digits[i], 10) + 1;
             if (newDigit < 10) {
                 digits[i] = newDigit.toString();
