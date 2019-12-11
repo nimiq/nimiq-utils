@@ -51,7 +51,9 @@ export class Utf8Tools {
             return decoder.decode(bytes);
         }
 
-        // Fallback for unsupported TextDecoder
+        // Fallback for unsupported TextDecoder.
+        // Note that this fallback can result in a different decoding for invalid utf8 than the native implementation.
+        // This is the case when a character requires more bytes than are left in the array which is not handled here.
         const out = [];
         let pos = 0;
         let c = 0;
@@ -106,12 +108,11 @@ export class Utf8Tools {
             }
         }
 
-        // Fallback for unsupported TextDecoder. Note that this fallback implementation seems to be partially broken
-        // (see https://github.com/nimiq/nimiq-utils/issues/34). However as TextDecoder support is increasing, it is
-        // not actually that relevant.
+        // Fallback for unsupported TextDecoder
         let i = 0;
 
         while (i < bytes.length) {
+            const bytesLeft = bytes.length - i;
             const first = bytes[i]; // The byte
 
             /* eslint-disable brace-style */
@@ -122,14 +123,14 @@ export class Utf8Tools {
                 else break;
             }
 
-            else if (first >= 0xC2 && first <= 0xDF) { // Possible two-byte
+            else if (first >= 0xC2 && first <= 0xDF && bytesLeft >= 2) { // Possible two-byte
                 const second = bytes[++i];
 
                 if (second >= 0x80 && second <= 0xBF) ++i; // Is valid two-byte
                 else break;
             }
 
-            else if (first === 0xE0) { // Possible three-byte
+            else if (first === 0xE0 && bytesLeft >= 3) { // Possible three-byte
                 const second = bytes[++i];
                 const third = bytes[++i];
 
@@ -138,7 +139,7 @@ export class Utf8Tools {
                 else break;
             }
 
-            else if (first >= 0xE1 && first <= 0xEC) { // Possible three-byte
+            else if (first >= 0xE1 && first <= 0xEC && bytesLeft >= 3) { // Possible three-byte
                 const second = bytes[++i];
                 const third = bytes[++i];
 
@@ -147,7 +148,7 @@ export class Utf8Tools {
                 else break;
             }
 
-            else if (first === 0xED) { // Possible three-byte
+            else if (first === 0xED && bytesLeft >= 3) { // Possible three-byte
                 const second = bytes[++i];
                 const third = bytes[++i];
 
@@ -156,7 +157,7 @@ export class Utf8Tools {
                 else break;
             }
 
-            else if (first >= 0xEE && first <= 0xEF) { // Possible three-byte
+            else if (first >= 0xEE && first <= 0xEF && bytesLeft >= 3) { // Possible three-byte
                 const second = bytes[++i];
                 const third = bytes[++i];
 
@@ -165,7 +166,7 @@ export class Utf8Tools {
                 else break;
             }
 
-            else if (first === 0xF0) { // Possible four-byte
+            else if (first === 0xF0 && bytesLeft >= 4) { // Possible four-byte
                 const second = bytes[++i];
                 const third = bytes[++i];
                 const fourth = bytes[++i];
@@ -176,7 +177,7 @@ export class Utf8Tools {
                 else break;
             }
 
-            else if (first >= 0xF1 && first <= 0xF3) { // Possible four-byte
+            else if (first >= 0xF1 && first <= 0xF3 && bytesLeft >= 4) { // Possible four-byte
                 const second = bytes[++i];
                 const third = bytes[++i];
                 const fourth = bytes[++i];
@@ -187,7 +188,7 @@ export class Utf8Tools {
                 else break;
             }
 
-            else if (first === 0xF4) { // Possible four-byte
+            else if (first === 0xF4 && bytesLeft >= 4) { // Possible four-byte
                 const second = bytes[++i];
                 const third = bytes[++i];
                 const fourth = bytes[++i];
