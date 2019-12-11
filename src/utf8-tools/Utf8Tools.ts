@@ -82,25 +82,43 @@ export class Utf8Tools {
     }
 
     public static isValidUtf8(bytes: Uint8Array, denyControlCharacters = false): boolean {
-        // We cannot use the build-in TextDecoder to check for validity, as we need to
-        // also filter out control characters, which are valid UTF8.
+        const controlCharsWhitelist = [
+            0x09, /* horizontal tab (\t) */
+            0x0A, /* line feed (\n) */
+            0x0D, /* carriage return (\r) */
+        ];
 
+        if (typeof TextDecoder !== 'undefined') {
+            try {
+                const decoder = new TextDecoder('utf-8', { fatal: true });
+                const decoded = decoder.decode(bytes); // throws for invalid input
+                if (!denyControlCharacters) return true;
+                // Search for control characters (utf-8 single byte characters (0x00-0x7F) which are not in the range
+                // 0x20-0x7E (space-tilde)). Note that we use the unicode u flag to avoid astral symbols (symbols
+                // outside the range 0x0000 - 0xFFFF) getting split up into two surrogate halves.
+                // See https://mathiasbynens.be/notes/javascript-unicode#regex
+                // eslint-disable-next-line no-control-regex
+                const controlCharsMatch = decoded.match(/[\u0000-\u001F\u007F]/gu);
+                if (!controlCharsMatch) return true;
+                return controlCharsMatch.every((char) => controlCharsWhitelist.includes(char.charCodeAt(0)));
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Fallback for unsupported TextDecoder. Note that this fallback implementation seems to be partially broken
+        // (see https://github.com/nimiq/nimiq-utils/issues/34). However as TextDecoder support is increasing, it is
+        // not actually that relevant.
         let i = 0;
 
         while (i < bytes.length) {
             const first = bytes[i]; // The byte
 
-            const controlCharsWhitelist = [
-                0x09, /* horizontal tab (\t) */
-                0x0A, /* line feed (\n) */
-                0x0D, /* carriage return (\r) */
-            ];
-
             /* eslint-disable brace-style */
             if (first <= 0x7F) { // Possible one-byte
-                if (!denyControlCharacters) ++i; // Valid single-byte character (ASCII)
-                else if (controlCharsWhitelist.indexOf(first) > -1) ++i;
-                else if (first >= 0x20 /* space */ && first <= 0x7E /* tilde */) ++i; // Only allow non-control chars
+                if (first >= 0x20 /* space */ && first <= 0x7E /* tilde */) ++i; // non-control chars
+                else if (!denyControlCharacters) ++i; // it's a control char but we're accepting them
+                else if (controlCharsWhitelist.indexOf(first) > -1) ++i; // whitelisted control char
                 else break;
             }
 
