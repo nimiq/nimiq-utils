@@ -208,4 +208,50 @@ export class Utf8Tools {
         // If the while loop was broken early, i is smaller and the array is not valid UTF-8.
         return i === bytes.length;
     }
+
+    public static truncateToUtf8ByteLength(input: string | Uint8Array, length: number, applyEllipsis: boolean = true)
+        : { truncatedString: string, truncatedBytes: Uint8Array, didTruncate: boolean } {
+        if (length < 0) {
+            throw new Error('Invalid byte length');
+        }
+
+        let bytes: Uint8Array;
+        if (typeof input === 'string') {
+            bytes = Utf8Tools.stringToUtf8ByteArray(input);
+        } else {
+            bytes = input;
+        }
+
+        if (bytes.length <= length) {
+            return {
+                truncatedString: typeof input === 'string' ? input : Utf8Tools.utf8ByteArrayToString(input),
+                truncatedBytes: bytes,
+                didTruncate: false,
+            };
+        }
+
+        const ellipsisBytes = [226, 128, 166];
+        if (length < ellipsisBytes.length) applyEllipsis = false;
+
+        bytes = bytes.subarray(0, length - (applyEllipsis ? ellipsisBytes.length : 0));
+
+        // Cut off last byte until byte array is valid utf-8
+        while (!Utf8Tools.isValidUtf8(bytes)) bytes = bytes.subarray(0, bytes.length - 1);
+
+        if (applyEllipsis) {
+            // Add ellipsis. Note that we can safely extend by the ellipsis bytes as we shoved these bytes off before.
+            bytes = new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.length + ellipsisBytes.length);
+            if (typeof input !== 'string') {
+                // We're working on the input bytes. Create a copy to not modify the original data.
+                bytes = new Uint8Array(bytes);
+            }
+            bytes.set(ellipsisBytes, bytes.length - ellipsisBytes.length);
+        }
+
+        return {
+            truncatedString: Utf8Tools.utf8ByteArrayToString(bytes),
+            truncatedBytes: bytes,
+            didTruncate: true,
+        };
+    }
 }
