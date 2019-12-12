@@ -209,8 +209,13 @@ export class Utf8Tools {
         return i === bytes.length;
     }
 
+    /* eslint-disable lines-between-class-members, no-dupe-class-members */
+    public static truncateToUtf8ByteLength(input: string, length: number, applyEllipsis?: boolean)
+        : { result: string, didTruncate: boolean };
+    public static truncateToUtf8ByteLength(input: Uint8Array, length: number, applyEllipsis?: boolean)
+        : { result: Uint8Array, didTruncate: boolean };
     public static truncateToUtf8ByteLength(input: string | Uint8Array, length: number, applyEllipsis: boolean = true)
-        : { truncatedString: string, truncatedBytes: Uint8Array, didTruncate: boolean } {
+        : { result: string | Uint8Array, didTruncate: boolean } {
         if (length < 0) {
             throw new Error('Invalid byte length');
         }
@@ -224,8 +229,7 @@ export class Utf8Tools {
 
         if (bytes.length <= length) {
             return {
-                truncatedString: typeof input === 'string' ? input : Utf8Tools.utf8ByteArrayToString(input),
-                truncatedBytes: bytes,
+                result: input,
                 didTruncate: false,
             };
         }
@@ -249,9 +253,9 @@ export class Utf8Tools {
         }
 
         return {
-            truncatedString: Utf8Tools.utf8ByteArrayToString(bytes),
-            truncatedBytes: bytes,
+            result: typeof input === 'string' ? Utf8Tools.utf8ByteArrayToString(bytes) : bytes,
             didTruncate: true,
         };
     }
+    /* eslint-enable lines-between-class-members, no-dupe-class-members */
 }
