@@ -82,10 +82,12 @@ describe('Utf8Tools', () => {
     it('can truncate to utf8 byte lengths', () => {
         expect(() => Utf8Tools.truncateToUtf8ByteLength(asciiString, -1)).toThrow();
 
-        const expected = {
+        const expected: {
+            didTruncate: boolean,
+            result: string | Uint8Array,
+        } = {
             didTruncate: false,
-            truncatedString: hanziString,
-            truncatedBytes: hanziBytes,
+            result: hanziString,
         };
         expect(Utf8Tools.truncateToUtf8ByteLength(hanziString, hanziBytes.length, true)).toEqual(expected);
         expect(Utf8Tools.truncateToUtf8ByteLength(hanziString, hanziBytes.length, false)).toEqual(expected);
@@ -93,31 +95,31 @@ describe('Utf8Tools', () => {
         expect(Utf8Tools.truncateToUtf8ByteLength(hanziString, hanziBytes.length + 1, false)).toEqual(expected);
 
         expected.didTruncate = true;
-        expected.truncatedString = asciiString.substring(0, asciiString.length - 1);
-        expected.truncatedBytes = Utf8Tools.stringToUtf8ByteArray(expected.truncatedString);
+        expected.result = asciiString.substring(0, asciiString.length - 1);
         expect(Utf8Tools.truncateToUtf8ByteLength(asciiString, asciiBytes.length - 1, false)).toEqual(expected);
-        expect(Utf8Tools.truncateToUtf8ByteLength(asciiBytes, asciiBytes.length - 1, false)).toEqual(expected);
         expect(Utf8Tools.truncateToUtf8ByteLength(asciiString, asciiBytes.length - 1, true)).toEqual(expected);
+        expected.result = Utf8Tools.stringToUtf8ByteArray(expected.result);
+        expect(Utf8Tools.truncateToUtf8ByteLength(asciiBytes, asciiBytes.length - 1, false)).toEqual(expected);
         expect(Utf8Tools.truncateToUtf8ByteLength(asciiBytes, asciiBytes.length - 1, true)).toEqual(expected);
 
-        expected.truncatedString = hanziString.substring(0, hanziString.length - 1);
-        expected.truncatedBytes = Utf8Tools.stringToUtf8ByteArray(expected.truncatedString);
+        expected.result = hanziString.substring(0, hanziString.length - 1);
         expect(Utf8Tools.truncateToUtf8ByteLength(hanziString, hanziBytes.length - 1, false)).toEqual(expected);
+        expected.result = Utf8Tools.stringToUtf8ByteArray(expected.result);
         expect(Utf8Tools.truncateToUtf8ByteLength(hanziBytes, hanziBytes.length - 1, false)).toEqual(expected);
 
-        expected.truncatedString = `${hanziString.substring(0, hanziString.length - 2)}…`;
-        expected.truncatedBytes = Utf8Tools.stringToUtf8ByteArray(expected.truncatedString);
+        expected.result = `${hanziString.substring(0, hanziString.length - 2)}…`;
         expect(Utf8Tools.truncateToUtf8ByteLength(hanziString, hanziBytes.length - 1, true)).toEqual(expected);
+        expected.result = Utf8Tools.stringToUtf8ByteArray(expected.result);
         expect(Utf8Tools.truncateToUtf8ByteLength(hanziBytes, hanziBytes.length - 1, true)).toEqual(expected);
 
-        expected.truncatedString = '';
-        expected.truncatedBytes = Utf8Tools.stringToUtf8ByteArray(expected.truncatedString);
+        expected.result = '';
         expect(Utf8Tools.truncateToUtf8ByteLength(astralString, astralBytes.length - 1, false)).toEqual(expected);
+        expected.result = Utf8Tools.stringToUtf8ByteArray(expected.result);
         expect(Utf8Tools.truncateToUtf8ByteLength(astralBytes, astralBytes.length - 1, false)).toEqual(expected);
 
-        expected.truncatedString = '…';
-        expected.truncatedBytes = Utf8Tools.stringToUtf8ByteArray(expected.truncatedString);
+        expected.result = '…';
         expect(Utf8Tools.truncateToUtf8ByteLength(astralString, astralBytes.length - 1, true)).toEqual(expected);
+        expected.result = Utf8Tools.stringToUtf8ByteArray(expected.result);
         expect(Utf8Tools.truncateToUtf8ByteLength(astralBytes, astralBytes.length - 1, true)).toEqual(expected);
     });
 });
