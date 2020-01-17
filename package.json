@@ -6,13 +6,13 @@
   "author": "Nimiq (https://www.nimiq.com)",
   "license": "Apache-2.0",
   "main": "dist/nomodule/main.js",
-  "module": "dist/module/main.js",
+  "module": "dist/main.js",
   "types": "types/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "lint": "eslint src/**/*.ts tests/*.spec.ts",
     "test": "jest",
-    "build": "yarn lint && rimraf build dist && tsc && rollup -c",
+    "build": "yarn lint && rimraf dist && tsc && rollup -c",
     "pr": "yarn test && yarn build"
   },
   "files": [

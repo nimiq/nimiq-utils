@@ -1,7 +1,7 @@
 /* global describe, beforeAll, afterAll, it, expect */
 
 import { TextDecoder as NodeTextDecoder } from 'util';
-import { Utf8Tools } from '../src/utf8-tools/Utf8Tools';
+import * as Utf8Tools from '../src/utf8-tools/Utf8Tools';
 
 declare namespace global {
     let TextDecoder: any;
