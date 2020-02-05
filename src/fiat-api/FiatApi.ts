@@ -18,7 +18,7 @@ const ONE_MINUTE = 60 * 1000;
 const ONE_HOUR = 60 * ONE_MINUTE;
 const ONE_DAY = 24 * ONE_HOUR;
 
-export async function getCurrentPrices(
+export async function getExchangeRates(
     cryptoCurrencies: Array<CryptoCurrency>,
     vsCurrencies: Array<FiatCurrency | CryptoCurrency>,
 ): Promise<{ [crypto: string]: { [vsCurrency: string]: number | undefined } }> {
@@ -33,13 +33,13 @@ export async function getCurrentPrices(
 }
 
 /**
- * Request historic prices by range. Note that the time resolution depends on the chosen range. Coingecko provides
- * minutely for ranges within 1 day from the current time, hourly data for any ranges between 1 day and 90 days (do not
- * need to be within 90 days from current time) and daily for ranges above 90 days.
+ * Request historic exchange rates by range. Note that the time resolution depends on the chosen range. Coingecko
+ * provides minutely for ranges within 1 day from the current time, hourly data for any ranges between 1 day and 90 days
+ * (do not need to be within 90 days from current time) and daily for ranges above 90 days.
  * Note that minutely data is ~5-10 minutes apart, hourly data about an hour.
  * Input and output timestamps are in milliseconds.
  */
-export async function getHistoricPricesByRange(
+export async function getHistoricExchangeRatesByRange(
     cryptoCurrency: CryptoCurrency,
     vsCurrency: FiatCurrency | CryptoCurrency,
     from: number, // in milliseconds
@@ -55,9 +55,9 @@ export async function getHistoricPricesByRange(
 }
 
 /**
- * Get historic prices at specific timestamps in milliseconds.
+ * Get historic exchange rates at specific timestamps in milliseconds.
  */
-export async function getHistoricPrices(
+export async function getHistoricExchangeRates(
     cryptoCurrency: CryptoCurrency,
     vsCurrency: FiatCurrency | CryptoCurrency,
     timestamps: number[],
@@ -105,7 +105,7 @@ export async function getHistoricPrices(
 
     // 2. Query Coingecko Api
     const fetchPromises = chunks.map(
-        (chunk) => getHistoricPricesByRange(cryptoCurrency, vsCurrency, chunk.start, chunk.end),
+        (chunk) => getHistoricExchangeRatesByRange(cryptoCurrency, vsCurrency, chunk.start, chunk.end),
     );
     const prices = (await Promise.all(fetchPromises)).reduce(
         (accumulated, singleResult) => [...singleResult, ...accumulated],
