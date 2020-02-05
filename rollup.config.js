@@ -7,6 +7,7 @@ export default {
         'build/browser-detection/BrowserDetection.js',
         'build/currency-info/CurrencyInfo.js',
         'build/clipboard/Clipboard.js',
+        'build/fiat-api/FiatApi.js',
         'build/formattable-number/FormattableNumber.js',
         'build/request-link-encoding/RequestLinkEncoding.js',
         'build/tweenable/Tweenable.js',
