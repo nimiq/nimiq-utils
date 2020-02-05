@@ -32,6 +32,31 @@ export async function getCurrentPrices(
     }), {});
 }
 
+/**
+ * Request historic prices by range. Note that the time resolution depends on the chosen range. Coingecko provides
+ * minutely for ranges within 1 day from the current time, hourly data for any ranges between 1 day and 90 days (do not
+ * need to be within 90 days from current time) and daily for ranges above 90 days.
+ * Note that minutely data is ~5-10 minutes apart, hourly data about an hour.
+ * Input and output timestamps are in milliseconds.
+ */
+export async function getHistoricPricesByRange(
+    cryptoCurrency: CryptoCurrency,
+    vsCurrency: FiatCurrency | CryptoCurrency,
+    from: number, // in milliseconds
+    to: number, // in milliseconds
+): Promise<Array<[number, number]>> {
+    const coinId = COINGECKO_COIN_IDS[cryptoCurrency];
+    // Note that from and to are expected in seconds but returned timestamps are in ms.
+    from = Math.floor(from / 1000);
+    to = Math.ceil(to / 1000);
+    const { prices: result } = await _fetch(`${API_URL}/coins/${coinId}/market_chart/range`
+        + `?vs_currency=${vsCurrency}&from=${from}&to=${to}`);
+    return result;
+}
+
+/**
+ * Get historic prices at specific timestamps in milliseconds.
+ */
 export async function getHistoricPrices(
     cryptoCurrency: CryptoCurrency,
     vsCurrency: FiatCurrency | CryptoCurrency,
@@ -41,11 +66,6 @@ export async function getHistoricPrices(
     if (!timestamps.length) return result;
 
     // 1. Create chunks.
-    // Coingecko provides different resolutions depending on the range. The documentation says: Minutely data will
-    // be used for duration within 1 day, Hourly data will be used for duration between 1 day and 90 days, Daily
-    // data will be used for duration above 90 days.
-    // However, minutely data is only available for data within 1 day from now. Also note that minutely data and
-    // hourly data are not exactly one minute / hour apart from each other.
     // To get the best possible time resolution, we split the timestamps into a chunk within at most 1 day from now
     // and the rest into additional 90 day chunks.
     const now = Date.now();
@@ -84,15 +104,11 @@ export async function getHistoricPrices(
     }
 
     // 2. Query Coingecko Api
-    const coinId = COINGECKO_COIN_IDS[cryptoCurrency];
-    const fetchPromises: Array<Promise<{ prices: Array<[number, number]> }>> = chunks.map((chunk) => {
-        const from = Math.floor(chunk.start / 1000); // from and to are in seconds
-        const to = Math.floor(chunk.end / 1000);
-        return _fetch(`${API_URL}/coins/${coinId}/market_chart/range`
-            + `?vs_currency=${vsCurrency}&from=${from}&to=${to}`);
-    });
+    const fetchPromises = chunks.map(
+        (chunk) => getHistoricPricesByRange(cryptoCurrency, vsCurrency, chunk.start, chunk.end),
+    );
     const prices = (await Promise.all(fetchPromises)).reduce(
-        (accumulated, singleResult) => [...singleResult.prices, ...accumulated],
+        (accumulated, singleResult) => [...singleResult, ...accumulated],
         [] as Array<[number, number]>,
     ).sort((a, b) => a[0] - b[0]); // have to re-sort by timestamp as chunks might be overlapping
     if (!prices.length) return result; // Happens if coingecko doesn't have data for any of requested timestamps,
@@ -103,8 +119,6 @@ export async function getHistoricPrices(
     let priceIndex = 0;
     while (timestampIndex < timestamps.length) {
         // Search priceIndex at which predecessor price timestamp < our timestamp <= current price timestamp.
-        // Note that returned coingecko price timestamps are in milliseconds even though `from` and `to` were
-        // expected in seconds.
         const timestamp = timestamps[timestampIndex];
         while (priceIndex < prices.length && prices[priceIndex][0] < timestamp) {
             priceIndex += 1;
