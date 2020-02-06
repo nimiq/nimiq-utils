@@ -185,7 +185,7 @@ function _findTimestampChunk(
     let i = searchStartIndex - 1;
     while (i >= 0 && end - timestamps[i] < maxChunkLength) {
         start = timestamps[i];
-        i += 1;
+        i -= 1;
     }
     return {
         searchEndIndex: i,
