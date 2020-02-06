@@ -81,6 +81,7 @@ export async function getHistoricExchangeRates(
     cryptoCurrency: FiatApiSupportedCryptoCurrency,
     vsCurrency: FiatApiSupportedFiatCurrency | FiatApiSupportedCryptoCurrency,
     timestamps: number[],
+    disableMinutlyData = false,
 ): Promise<Map<number, number|undefined>> {
     const result = new Map<number, number|undefined>();
     if (!timestamps.length) return result;
@@ -94,7 +95,7 @@ export async function getHistoricExchangeRates(
     timestamps.sort((a, b) => a - b);
 
     // Create one day chunk
-    if (now - timestamps[timestamps.length - 1] < ONE_DAY - 15 * ONE_MINUTE) {
+    if (!disableMinutlyData && now - timestamps[timestamps.length - 1] < ONE_DAY - 15 * ONE_MINUTE) {
         // Has a timestamp within last day (minus safety margin in case our clock is slightly off).
         // As one day is calculated from now and not from the timestamp, we have to account for the difference
         // between now and the timestamp.
