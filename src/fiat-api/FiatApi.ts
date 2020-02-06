@@ -142,7 +142,7 @@ export async function getHistoricExchangeRates(
         // Search priceIndex at which predecessor price timestamp < our timestamp <= current price timestamp.
         const timestamp = timestamps[timestampIndex];
         while (priceIndex < prices.length && prices[priceIndex][0] < timestamp) {
-            priceIndex += 1;
+            ++priceIndex;
         }
         if (priceIndex === 0 || priceIndex === prices.length) {
             // Can't interpolate. This should typically not happen as we try to include additional data points
@@ -168,7 +168,7 @@ export async function getHistoricExchangeRates(
                 result.set(timestamp, interpolatedPrice);
             }
         }
-        timestampIndex += 1; // Continue with next timestamp and check same priceIndex
+        ++timestampIndex; // Continue with next timestamp and check same priceIndex
     }
     return result;
 }
@@ -185,7 +185,7 @@ function _findTimestampChunk(
     let i = searchStartIndex - 1;
     while (i >= 0 && end - timestamps[i] < maxChunkLength) {
         start = timestamps[i];
-        i -= 1;
+        --i;
     }
     return {
         searchEndIndex: i,

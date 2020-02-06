@@ -27,7 +27,7 @@ module.exports = {
         'indent': ['error', 4, { 'SwitchCase': 1 }],
         'max-len': ['error', 120],
         'no-underscore-dangle': 'off',
-        'no-plusplus': ['error', { 'allowForLoopAfterthoughts': true }],
+        'no-plusplus': 'off',
         'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
         'import/prefer-default-export': 'off',
         'object-curly-newline': ['error', { 'ObjectPattern': { 'multiline': true } }],
