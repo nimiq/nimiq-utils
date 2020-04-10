@@ -22,7 +22,7 @@ export class Cookie {
      * @param {number} [options.expires] - The expiration date of the Cookie, in GMTString format.
      * See Date.toUTCString() for help formatting this value.
      * @param {boolean} [options.secure] - This specify if the Cookie is only to be transmitted over secure protocols.
-     * @param {'lax'|'strict'} [options.samesite] - This prevents the browser from sending this Cookie along with
+     * @param {'lax'|'strict'|'none'} [options.samesite] - This prevents the browser from sending this Cookie along with
      * cross-site requests.
      * @returns {string} Returns the just created Cookie with his options
      */
@@ -35,7 +35,7 @@ export class Cookie {
             maxAge?: number,
             secure?: boolean,
             expires?: string,
-            samesite?: 'lax'|'strict',
+            samesite?: 'lax'|'strict'|'none',
         },
     ) {
         if (typeof cookieName !== 'string') throw new Error('cookieName must be a string');
@@ -44,9 +44,7 @@ export class Cookie {
         const cookie = [`${encodeURIComponent(cookieName)}=${encodeURIComponent(cookieValue)}`];
 
         if (options) {
-            if (typeof options !== 'object') {
-                throw new Error('options must be an object');
-            }
+            if (typeof options !== 'object') throw new Error('options must be an object');
 
             if (options.path) {
                 if (typeof options.path === 'string') cookie.push(`path=${options.path}`);
@@ -71,10 +69,10 @@ export class Cookie {
             }
 
             if (options.samesite) {
-                if (typeof options.samesite === 'string' && ['lax', 'strict'].includes(options.samesite)) {
+                if (['lax', 'strict', 'none'].includes(options.samesite)) {
                     cookie.push(`samesite=${options.samesite}`);
                 } else {
-                    throw new Error('options.samesite must be either "lax" or "strict"');
+                    throw new Error('options.samesite must be either "lax", "strict" or "none"');
                 }
             }
         }
