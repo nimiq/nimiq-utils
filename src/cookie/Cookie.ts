@@ -46,35 +46,26 @@ export class Cookie {
         if (options) {
             if (typeof options !== 'object') throw new Error('options must be an object');
 
-            if (options.path) {
-                if (typeof options.path === 'string') cookie.push(`path=${options.path}`);
-                else throw new Error('options.path must be a string');
+            if (options.path && typeof options.path !== 'string') throw new Error('options.path must be a string');
+            if (options.domain && typeof options.domain !== 'string') {
+                throw new Error('options.domain must be a string');
+            }
+            if (options.maxAge && typeof options.maxAge !== 'number') {
+                throw new Error('options.maxAge must be a number');
+            }
+            if (options.expires && typeof options.expires !== 'string') {
+                throw new Error('options.expires must be a string');
+            }
+            if (options.samesite && !['lax', 'strict', 'none'].includes(options.samesite)) {
+                throw new Error('options.samesite must be either "lax", "strict" or "none"');
             }
 
+            if (options.path) cookie.push(`path=${options.path}`);
             if (options.secure) cookie.push('secure');
-
-            if (options.domain) {
-                if (typeof options.domain === 'string') cookie.push(`domain=${options.domain}`);
-                else throw new Error('options.domain must be a string');
-            }
-
-            if (options.maxAge) {
-                if (typeof options.maxAge === 'number') cookie.push(`max-age=${options.maxAge}`);
-                else throw new Error('options.maxAge must be a number');
-            }
-
-            if (options.expires) { // TODO: check if the dateString is in a valid format
-                if (typeof options.expires === 'string') cookie.push(`expires=${options.expires}`);
-                else throw new Error('options.expires must be a string');
-            }
-
-            if (options.samesite) {
-                if (['lax', 'strict', 'none'].includes(options.samesite)) {
-                    cookie.push(`samesite=${options.samesite}`);
-                } else {
-                    throw new Error('options.samesite must be either "lax", "strict" or "none"');
-                }
-            }
+            if (options.domain) cookie.push(`domain=${options.domain}`);
+            if (options.maxAge) cookie.push(`max-age=${options.maxAge}`);
+            if (options.expires) cookie.push(`expires=${options.expires}`);
+            if (options.samesite) cookie.push(`samesite=${options.samesite}`);
         }
 
         const cookieString = cookie.join(';');
