@@ -1,7 +1,7 @@
 export * from './address-book/AddressBook';
 export { default as BrowserDetection } from './browser-detection/BrowserDetection';
 export * from './clipboard/Clipboard';
-export * from './cookie/Cookie';
+import * as Cookie from './cookie/Cookie'; export { Cookie };
 export * from './currency-info/CurrencyInfo';
 export * from './fiat-api/FiatApi';
 export * from './formattable-number/FormattableNumber';
