@@ -30,6 +30,8 @@ export class AddressBook {
         'NQ88 QEC9 5MDH T2SB V70A GB76 MGRT STSB LN9A': 'X Pool',
         'NQ26 GF56 N02Y 2TUC D11J TPB6 Q7VJ 0EG5 3PU4': 'My Nimiq Pool',
         'NQ04 XEHA A84N FXQ4 DPPE 82PG QS63 TH1X XCHQ': 'IceMining Pool',
+        'NQ59 H4E7 VHKX EEJG FLT2 A41A 4A6P PGCN 87N9': 'BalkanMiningPool',
+        'NQ33 F625 YNJ8 KUKM P5PH XHSH A68H 8NBE 8TV4': 'BlankPool',
 
         // Mainnet Services
         'NQ15 MLJN 23YB 8FBM 61TN 7LYG 2212 LVBG 4V19': 'NIM Activation',
