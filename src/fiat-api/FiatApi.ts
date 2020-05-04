@@ -42,6 +42,9 @@ export async function getExchangeRates(
     cryptoCurrencies: Array<FiatApiSupportedCryptoCurrency>,
     vsCurrencies: Array<FiatApiSupportedFiatCurrency | FiatApiSupportedCryptoCurrency>,
 ): Promise<{ [crypto: string]: { [vsCurrency: string]: number | undefined } }> {
+    // Make sure the crypto currencies are lower case so they match the enum
+    cryptoCurrencies = cryptoCurrencies.map((currency) => currency.toLowerCase() as FiatApiSupportedCryptoCurrency);
+
     const coinIds = cryptoCurrencies.map((currency) => COINGECKO_COIN_IDS[currency]);
     const apiResult = await _fetch(`${API_URL}/simple/price`
         + `?ids=${coinIds.join(',')}&vs_currencies=${vsCurrencies.join(',')}`);
@@ -65,7 +68,7 @@ export async function getHistoricExchangeRatesByRange(
     from: number, // in milliseconds
     to: number, // in milliseconds
 ): Promise<Array<[number, number]>> {
-    const coinId = COINGECKO_COIN_IDS[cryptoCurrency];
+    const coinId = COINGECKO_COIN_IDS[cryptoCurrency.toLowerCase() as FiatApiSupportedCryptoCurrency];
     // Note that from and to are expected in seconds but returned timestamps are in ms.
     from = Math.floor(from / 1000);
     to = Math.ceil(to / 1000);
