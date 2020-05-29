@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./build/",
+    "outDir": "./dist/",
     "target": "esnext",
     "module": "esnext",
     "strict": true,
@@ -14,9 +14,7 @@
     "declaration": true,
     "declarationDir": "./dist/src/",
     "lib": [
-      "es2017",
-      "esnext.bigint",
-      "es6",
+      "esnext",
       "dom",
       "dom.iterable",
       "scripthost"
@@ -24,7 +22,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/browser-detection/SpecialTypes.d.ts"
+    "src/**/*.d.ts"
   ],
   "exclude": [
     "**/node_modules"

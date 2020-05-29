@@ -1,4 +1,4 @@
-import { ValidationUtils } from '../validation-utils/ValidationUtils';
+import { isValidAddress } from '../validation-utils/ValidationUtils';
 import { FormattableNumber } from '../formattable-number/FormattableNumber';
 
 // this imports only the type without bundling the library
@@ -132,7 +132,7 @@ export function createNimiqRequestLink(
 ): string {
     const { amount, message, label, basePath, type = NimiqRequestLinkType.SAFE } = options;
 
-    if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
+    if (!isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
     if (amount && !isUnsignedInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
     if (label && typeof label !== 'string') throw new Error(`Not a valid label: ${label}`);
@@ -217,7 +217,7 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
     const recipient = params.recipient
         .replace(/[ +-]|%20/g, '') // strip spaces and dashes
         .replace(/(.)(?=(.{4})+$)/g, '$1 '); // reformat with spaces, forming blocks of 4 chars
-    if (!ValidationUtils.isValidAddress(recipient)) return null; // recipient is required
+    if (!isValidAddress(recipient)) return null; // recipient is required
 
     const parsedAmount = params.amount ? Math.round(parseFloat(params.amount) * (10 ** NIM_DECIMALS)) : undefined;
     if (typeof parsedAmount === 'number' && Number.isNaN(parsedAmount)) return null;

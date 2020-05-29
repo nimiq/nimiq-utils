@@ -48,4 +48,4 @@ namespace Tweenable { // tslint:disable-line no-namespace
     };
 }
 
-export default Tweenable;
+export { Tweenable };
