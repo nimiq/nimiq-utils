@@ -65,6 +65,7 @@ export class AddressBook {
         'NQ13 XAME QAMX 3302 13E3 ECXQ HU88 TM6R YKVK': 'KuCoin', // Payouts
         'NQ27 B9ED 98G5 3VH7 FY8D BFP0 XNF4 BD8L TN4B': 'KuCoin', // Payins
         'NQ66 QDMD SRPT B2A4 JBGJ 30M6 LBPN EK9N LR74': 'HotBit',
+        'NQ17 1XMK VKC4 BHAA QH1X TH6G NC3V 40RH 8GN2': 'ChangeHero', // Payins
 
         // Testnet
         'NQ31 QEPR ED7V 00KC P7UC P1PR DKJC VNU7 E461': 'pool.nimiq-testnet.com',
