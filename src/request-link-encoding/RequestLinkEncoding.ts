@@ -189,9 +189,10 @@ export function parseNimiqUriRequestLink(requestLink: string | URL): null | Pars
     // Fetch options
     const recipient = url.pathname;
     const amount = url.searchParams.get('amount') || undefined;
+    const label = url.searchParams.get('label') || undefined;
     const message = url.searchParams.get('message') || undefined;
 
-    return parseNimiqParams({ recipient, amount, message });
+    return parseNimiqParams({ recipient, amount, label, message });
 }
 
 function toUrl(link: string | URL, requiredChars: string): null | URL {
@@ -210,7 +211,7 @@ function toUrl(link: string | URL, requiredChars: string): null | URL {
     }
 }
 
-type NimiqParams = { recipient: string, amount?: string, message?: string };
+type NimiqParams = { recipient: string, amount?: string, label?: string, message?: string };
 type ParsedNimiqParams = Omit<NimiqParams, 'amount'> & {amount?: number};
 
 function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
@@ -222,9 +223,10 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
     const parsedAmount = params.amount ? Math.round(parseFloat(params.amount) * (10 ** NIM_DECIMALS)) : undefined;
     if (typeof parsedAmount === 'number' && Number.isNaN(parsedAmount)) return null;
 
+    const parsedLabel = params.label ? decodeURIComponent(params.label) : undefined;
     const parsedMessage = params.message ? decodeURIComponent(params.message) : undefined;
 
-    return { recipient, amount: parsedAmount, message: parsedMessage };
+    return { recipient, amount: parsedAmount, label: parsedLabel, message: parsedMessage };
 }
 
 // following BIP21
