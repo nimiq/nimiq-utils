@@ -1,4 +1,35 @@
 export class CurrencyInfo {
+    private static readonly EXTRA_SYMBOLS: {[code: string]: string} = {
+        AED: 'د.إ', // also DH or Dhs.
+        ARS: '$',
+        BDT: '৳',
+        BHD: 'BD', // also .د.ب (left-to-right)
+        BMD: '$',
+        CHF: 'Fr.', // also CHf or SFr.
+        CLP: '$',
+        CZK: 'Kč',
+        DKK: 'Kr.',
+        HUF: 'Ft',
+        IDR: 'Rp',
+        KWD: 'KD', // also د.ك (left-to-right)
+        LKR: 'Rs', // also ரூ or රු
+        MMK: 'K',
+        MYR: 'RM',
+        NOK: 'kr',
+        PHP: '₱',
+        PKR: '₨',
+        PLN: 'zł',
+        RUB: '₽',
+        SAR: 'SR', // also ر.س or ﷼‎ (both left-to-right)
+        SEK: 'kr',
+        SGD: 'S$', // also $
+        THB: '฿',
+        TRY: '₺',
+        UAH: '₴',
+        VEF: 'Bs', // also Bs.F.
+        ZAR: 'R',
+    };
+
     // Regex for en-US formatted currency strings (supporting both currency symbol and currency name)
     private static readonly NUMBER_FORMAT_REGEX = new RegExp(
         '^'
@@ -43,9 +74,7 @@ export class CurrencyInfo {
                 : 2;
         this.symbol = symbol !== undefined
             ? symbol
-            : regexMatch
-                ? regexMatch[1] || this.code
-                : this.code;
+            : CurrencyInfo.EXTRA_SYMBOLS[this.code] || (regexMatch && regexMatch[1]) || this.code;
 
         if (name !== undefined) {
             this.name = name;

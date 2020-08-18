@@ -25,6 +25,36 @@ export enum FiatApiSupportedFiatCurrency {
     TWD = 'twd',
     USD = 'usd',
     VND = 'vnd',
+
+    // Extra currencies with extra symbols in CurrencyInfo
+    AED = 'aed', // arab emirates dirham
+    ARS = 'ars', // argentine peso
+    BDT = 'bdt', // Bangladeshi Taka
+    BHD = 'bhd', // Bahraini Dinar
+    BMD = 'bmd', // Bermudan Dollar
+    CHF = 'chf', // Swiss Franc
+    CLP = 'clp', // Chilean Peso
+    CZK = 'czk', // Czech Koruna
+    DKK = 'dkk', // Danish Krone
+    HUF = 'huf', // Hungarian Forint
+    IDR = 'idr', // Indonesian Rupiah
+    KWD = 'kwd', // Kuwaiti Dinar
+    LKR = 'lkr', // Sri Lankan Rupee
+    MMK = 'mmk', // Burmese Kyat
+    MYR = 'myr', // Malaysian Ringgit
+    NOK = 'nok', // Norwegian Krone
+    PHP = 'php', // Philippine peso
+    PKR = 'pkr', // Pakistani Rupee
+    PLN = 'pln', // Poland złoty
+    RUB = 'rub', // Russian Ruble
+    SAR = 'sar', // Saudi Riyal
+    SEK = 'sek', // Swedish Krona
+    SGD = 'sgd', // Singapore Dollar
+    THB = 'thb', // Thai Baht
+    TRY = 'try', // Turkish lira
+    UAH = 'uah', // Ukrainian hryvnia
+    VEF = 'vef', // Venezuelan bolívar
+    ZAR = 'zar', // South African Rand
 }
 
 const API_URL = 'https://api.coingecko.com/api/v3';
