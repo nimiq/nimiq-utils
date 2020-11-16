@@ -13,8 +13,7 @@ export default {
         'build/request-link-encoding/RequestLinkEncoding.js',
         'build/tweenable/Tweenable.js',
         'build/utf8-tools/Utf8Tools.js',
-        'build/validation-utils/ValidationUtils.js',
-        'build/fastspot-api/FastspotApi.js',
+        'build/validation-utils/ValidationUtils.js'
     ],
     output: [
         {
