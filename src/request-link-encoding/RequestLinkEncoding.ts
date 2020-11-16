@@ -43,9 +43,9 @@ export interface EthereumRequestLinkOptions {
 }
 
 export type GeneralRequestLinkOptions =
-    NimiqRequestLinkOptions & { currency: Currency.NIM }
-    | BitcoinRequestLinkOptions & { currency: Currency.BTC }
-    | EthereumRequestLinkOptions & { currency: Currency.ETH };
+    ({ currency: Currency.NIM } & NimiqRequestLinkOptions)
+    | ({ currency: Currency.BTC } & BitcoinRequestLinkOptions)
+    | ({ currency: Currency.ETH } & EthereumRequestLinkOptions);
 
 // Can be used with an options object or with the legacy function signature for creating a Nim request link.
 // If using the legacy function signature, amountOrOptions can be given as a value in Nim.
