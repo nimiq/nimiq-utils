@@ -74,4 +74,19 @@ describe('CurrencyInfo', () => {
     it('uses fallback locales', () => {
         expect(new CurrencyInfo('usd', 'xy').locale).not.toMatch(/xy/i);
     });
+
+    it('supports right-to-left locales', () => {
+        // test some rtl languages
+        const rtlLanguages = ['ar', 'fa'];
+        const supportedRtlLanguages = Intl.NumberFormat.supportedLocalesOf(rtlLanguages);
+        if (!supportedRtlLanguages.length) return;
+
+        // Simplified and adapted from https://stackoverflow.com/a/14824756.
+        // Note that this rtl detection is incomplete but good enough for our needs.
+        const rightToLeftDetectionRegex = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/;
+        expect(rtlLanguages.some((lang) => rightToLeftDetectionRegex.test(new CurrencyInfo('aed', lang).name)))
+            .toBeTruthy();
+        expect(rtlLanguages.some((lang) => rightToLeftDetectionRegex.test(new CurrencyInfo('aed', lang).symbol)))
+            .toBeTruthy();
+    });
 });
