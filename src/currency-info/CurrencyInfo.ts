@@ -1,33 +1,177 @@
 export class CurrencyInfo {
+    // This is a manually curated list which was created mainly from
+    // https://en.wikipedia.org/wiki/List_of_circulating_currencies with help of the following script run
+    // on that wikipedia page. Note that we don't just use the ISO 4217 list of currency codes directly, as
+    // it includes some additional codes which are not actual fiat currency codes (see
+    // https://en.wikipedia.org/wiki/ISO_4217#X_currencies). Also note that there are also already nicely
+    // parsable npm packages like https://github.com/bengourley/currency-symbol-map/blob/master/map.js
+    // or https://github.com/smirzaei/currency-formatter/blob/master/currencies.json. However, they both
+    // seem to be less accurate than the Wikipedia article (see e.g. KGS), missing some currencies (e.g. MRU)
+    // and contain some non-fiat currencies like crypto currencies. When unsure about a currency sign, also
+    // consult https://en.wikipedia.org/wiki/Currency_symbol#List_of_currency_symbols_currently_in_use.
+    //
+    // const EXTRA_SYMBOLS = {
+    //     as defined below
+    // };
+    //
+    // function parseWikipediaCurrencyList() {
+    //     const sectionHeadline = document.querySelector('#List_of_circulating_currencies_by_state_or_territory')
+    //         .closest('h2');
+    //     const table = ((el) => {
+    //         while (el.tagName !== 'TABLE') el = el.nextElementSibling;
+    //         return el;
+    //     })(sectionHeadline);
+    //
+    //     const currencySymbols = {};
+    //
+    //     for (const row of table.querySelectorAll('tbody tr')) {
+    //         // count columns from the end because not all rows have the same number of columns as on some rows, the
+    //         // first column is omitted if the cell in the first column of a previous row spans multiple rows.
+    //         const code = row.children[row.childElementCount - 3].textContent.trim();
+    //         if (code.includes('[G]') // an inofficial currency code not registered in ISO 4217
+    //             || code.includes('none')
+    //         ) continue;
+    //         const symbols = row.children[row.childElementCount - 4].textContent.trim()
+    //             .replace(/\[.+]/g, '') // remove comments
+    //             .split(/ or |, /);
+    //         if (symbols.length === 1 && symbols[0].includes('none')) continue;
+    //
+    //         var entry = currencySymbols[code] || [];
+    //         symbols.forEach((symbol) => {
+    //             if (!entry.includes(symbol)) entry.push(symbol);
+    //         });
+    //         currencySymbols[code] = entry;
+    //     }
+    //
+    //     return currencySymbols;
+    // }
+    //
+    // // simplified from CurrencyInfo and removed checking for navigator.language to remove the dependency of this code
+    // // snippet from the tester's browser language.
+    // function getBrowserCurrencySymbol(currencyCode) {
+    //     const currencyCountry = currencyCode.substring(0, 2);
+    //
+    //     const [locale] = Intl.NumberFormat.supportedLocalesOf([ // also normalizes the locales
+    //         `en-${currencyCountry}`, // English as spoken in currency country
+    //         'en-US', // en-US as last resort
+    //     ]);
+    //     const formatterOptions = {
+    //         style: 'currency',
+    //         currency: currencyCode,
+    //         useGrouping: false,
+    //         numberingSystem: 'latn',
+    //     };
+    //
+    //     let formattedString = (0).toLocaleString(
+    //         locale,
+    //         { currencyDisplay: 'narrowSymbol', ...formatterOptions },
+    //     );
+    //
+    //     return formattedString.replace(/\d+(?:\D(\d+))?/, '').trim();
+    // }
+    //
+    // function isRightToLeft(s){
+    //     return /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(s);
+    // };
+    //
+    // const referenceCurrencySymbols = parseWikipediaCurrencyList();
+    // for (const currency of Object.keys(referenceCurrencySymbols).sort()) {
+    //     const referenceSymbols = referenceCurrencySymbols[currency];
+    //     const extraSymbols = !EXTRA_SYMBOLS[currency]
+    //         ? []
+    //         : Array.isArray(EXTRA_SYMBOLS[currency])
+    //             ? EXTRA_SYMBOLS[currency]
+    //             : [EXTRA_SYMBOLS[currency]];
+    //     const browserSymbol = getBrowserCurrencySymbol(currency);
+    //
+    //     if (extraSymbols.length) {
+    //         if (referenceSymbols.includes(browserSymbol) && !isRightToLeft(browserSymbol)) {
+    //             console.warn(`${currency}: potentially unnecessary definition in EXTRA_SYMBOLS. `
+    //                 + `Reference symbols are ${referenceSymbols}; extra symbols are ${extraSymbols}; `
+    //                 + `browser symbol is ${browserSymbol}.`);
+    //         } else {
+    //             console.info(`${currency}: manually defined via EXTRA_SYMBOLS. `
+    //                 + `Reference symbols are ${referenceSymbols}; extra symbols are ${extraSymbols}; `
+    //                 + `browser symbol is ${browserSymbol}.`);
+    //         }
+    //
+    //         if (!extraSymbols.some((symbol) => referenceSymbols.includes(symbol))) {
+    //             console.warn(`${currency}: mismatch between reference symbols and EXTRA_SYMBOLS. `
+    //                 + `Reference symbols are ${referenceSymbols}; extra symbols are ${extraSymbols}; `
+    //                 + `browser symbol is ${browserSymbol}.`);
+    //         }
+    //     } else {
+    //         if (!referenceSymbols.includes(browserSymbol) && browserSymbol === currency) {
+    //             console.warn(`${currency}: missing in EXTRA_SYMBOLS. `
+    //                 + `Reference symbols are ${referenceSymbols}; browser symbol is ${browserSymbol}. `
+    //                 + `Add as ${currency}: ${referenceSymbols.length > 1
+    //                     ? `['${referenceSymbols.join(`', '`)}']`
+    //                     : `'${referenceSymbols}'`},`);
+    //         } else {
+    //             console.info(`${currency}: Saved explicit definition of extra symbol.  `
+    //                 + `Reference symbols are ${referenceSymbols}; `
+    //                 + `browser symbol is ${browserSymbol}.`);
+    //         }
+    //
+    //         if (isRightToLeft(browserSymbol)) {
+    //             console.warn(`${currency}: browser symbol is right to left. `
+    //                 + `Reference symbols are ${referenceSymbols}; extra symbols are ${extraSymbols}; `
+    //                 + `browser symbol is ${browserSymbol}.`);
+    //         }
+    //     }
+    // }
     private static readonly EXTRA_SYMBOLS: {[code: string]: string | [string, string]} = {
         AED: ['DH', 'د.إ'],
-        ARS: '$',
-        BDT: '৳',
+        AFN: ['Afs', '؋'],
+        ALL: 'L',
+        ANG: 'ƒ',
+        AWG: 'ƒ',
+        BGN: 'лв.',
         BHD: ['BD', '.د.ب'],
-        BMD: '$',
-        CHF: 'Fr.', // also CHf or SFr.
-        CLP: '$',
-        CZK: 'Kč',
-        DKK: 'Kr.',
-        HUF: 'Ft',
-        IDR: 'Rp',
+        BTN: 'Nu.',
+        BYN: 'Br',
+        CDF: 'Fr',
+        CHF: 'Fr.',
+        CVE: '$',
+        DJF: 'Fr',
+        DZD: ['DA', 'د.ج'],
+        EGP: ['£', 'ج.م'],
+        ETB: 'Br',
+        HTG: 'G',
+        IQD: ['ID', 'ع.د'],
+        IRR: ['RI', '﷼'],
+        JOD: ['JD', 'د.ا'],
+        KES: 'Sh',
+        KGS: '\u20c0', // new unicode char to be released Sep 2021
         KWD: ['KD', 'د.ك'],
-        LKR: 'Rs', // also ரூ or රු
-        MMK: 'K',
-        MYR: 'RM',
-        NOK: 'kr',
-        PHP: '₱',
+        LBP: ['LL', 'ل.ل'],
+        LSL: 'M', // mismatch to Wikipedia's L because M is used for plural
+        LYD: ['LD', 'ل.د'],
+        MAD: ['DH', 'درهم'], // mismatch to Wikipedia as the actual wiki article shows different symbols, also in Arabic
+        MDL: 'L',
+        MKD: 'ден',
+        MMK: 'Ks', // Ks for plural
+        MRU: 'UM',
+        MVR: ['Rf', '.ރ'],
+        MZN: 'MT',
+        NPR: 'रु', // mismatch to Wikipedia as actual wiki article shows it as रु, also in Nepali
+        OMR: ['R.O.', 'ر.ع.'],
+        PAB: 'B/.',
+        PEN: 'S/', // mismatch to Wikipedia as actual wiki article shows it as S/, also in Spanish
         PKR: '₨',
-        PLN: 'zł',
-        RUB: '₽',
+        QAR: ['QR', 'ر.ق'],
+        RSD: 'дин.',
         SAR: ['SR', '﷼'],
-        SEK: 'kr',
-        SGD: 'S$', // also $
-        THB: '฿',
-        TRY: '₺',
-        UAH: '₴',
-        VEF: 'Bs', // also Bs.F.
-        ZAR: 'R',
+        SDG: ['£SD', 'ج.س.'],
+        SOS: 'Sh.',
+        TJS: 'SM', // mismatch to Wikipedia as actual wiki article shows it as SM
+        TMT: 'm', // mismatch to Wikipedia as actual wiki article shows it as m
+        TND: ['DT', 'د.ت'],
+        UZS: 'сум', // mismatch to Wikipedia as actual wiki article shows it as сум
+        VES: 'Bs.',
+        WST: 'T',
+        XPF: '₣',
+        YER: ['RI', '﷼'],
     };
 
     // Regex for detecting the number with optional decimals in a formatted string for useGrouping: false
@@ -97,11 +241,10 @@ export class CurrencyInfo {
 
         // Get the country from the currency code which is typically (but not necessarily) the first two letters,
         // see https://en.wikipedia.org/wiki/ISO_4217#National_currencies.
-        const currencyCountry = currencyCode.substring(0, 2);
+        const currencyCountry = this.code.substring(0, 2);
 
         [this.locale] = Intl.NumberFormat.supportedLocalesOf([ // also normalizes the locales
             ...(locale ? [locale] : []), // try requested locale
-            currencyCountry, // test whether the country code coincides with a language code
             `${navigator.language.substring(0, 2)}-${currencyCountry}`, // user language as spoken in currency country
             navigator.language, // fallback
             'en-US', // en-US as last resort
@@ -147,8 +290,15 @@ export class CurrencyInfo {
                 this.symbol = extraSymbol[useRightToLeft ? 1 : 0];
             } else {
                 formattedString = (0).toLocaleString(
-                    this.locale,
-                    { currencyDisplay: 'symbol', ...formatterOptions },
+                    // Unless a locale was specifically requested, use `en-${currencyCountry}` for the symbol detection
+                    // instead of this.locale which is based on navigator.language, as the EXTRA_SYMBOLS have been
+                    // created based on en.
+                    [
+                        ...(locale ? [locale] : []), // try requested locale
+                        `en-${currencyCountry}`,
+                        'en',
+                    ],
+                    { currencyDisplay: 'narrowSymbol', ...formatterOptions },
                 );
                 this.symbol = formattedString.replace(CurrencyInfo.NUMBER_REGEX, '').trim();
             }

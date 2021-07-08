@@ -48,7 +48,11 @@ describe('CurrencyInfo', () => {
     });
 
     it('has custom currency symbols', () => {
-        for (const code of Object.keys(FiatApiSupportedFiatCurrency)) {
+        for (const code of new Set([
+            ...Object.keys(FiatApiSupportedFiatCurrency),
+            // @ts-ignore: EXTRA_SYMBOLS is private
+            ...Object.keys(CurrencyInfo.EXTRA_SYMBOLS),
+        ].sort())) {
             const info = new CurrencyInfo(code);
             expect(info.symbol).toBeDefined();
             expect(info.symbol).not.toEqual(info.code);
