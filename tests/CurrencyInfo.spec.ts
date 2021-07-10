@@ -47,6 +47,11 @@ describe('CurrencyInfo', () => {
         expect(c2).toEqual(c3);
     });
 
+    it('reports decimals of currencies with deprecated sub-units as 0', () => {
+        expect(new CurrencyInfo('jpy').decimals).toBe(0); // by browsers reported as 0
+        expect(new CurrencyInfo('crc').decimals).toBe(0); // manually set to 0
+    });
+
     it('has custom currency symbols', () => {
         for (const code of new Set([
             ...Object.keys(FiatApiSupportedFiatCurrency),

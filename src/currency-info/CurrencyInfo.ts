@@ -174,6 +174,71 @@ export class CurrencyInfo {
         YER: ['RI', '﷼'],
     };
 
+    // Some currencies have been devalued so much by inflation that their sub-units have been removed from circulation
+    // or are effectively not being used anymore. This is not for all currencies reflected yet in toLocaleString, such
+    // that we mark some currencies manually as decimal-less. This list has been assembled manually from the list of all
+    // circulating currencies (https://en.wikipedia.org/wiki/List_of_circulating_currencies) by first reducing it to
+    // currencies that still have decimals via the following script, and then looking through their Wikipedia articles.
+    //
+    // const referenceCurrencySymbols = parseWikipediaCurrencyList(); // as defined above
+    // for (const currency of Object.keys(referenceCurrencySymbols).sort()) {
+    //     const country = currency.substring(0, 2);
+    //     const formatted = (2).toLocaleString([`en-${country}`], {
+    //         style: 'currency',
+    //         currency: currency,
+    //         currencyDisplay: 'narrowSymbol',
+    //         numberingSystem: 'latn',
+    //     });
+    //     const numberMatch = formatted.match(/\d+(?:\D(\d+))?/);
+    //     const decimals = numberMatch ? (numberMatch[1] || '').length : 2;
+    //     if (!decimals) continue;
+    //     console.log(`${currency} - ${decimals}\n`);
+    // }
+    private static readonly CUSTOM_DECIMAL_LESS_CURRENCIES = new Set([
+        'AMD', // sub-unit rarely used
+        'AOA', // sub-unit rarely used
+        'ARS', // sub-unit discontinued
+        'BDT', // sub-unit discontinued
+        'BTN', // sub-unit rarely used
+        'CDF', // sub-unit rarely used
+        'COP', // sub-unit rarely used
+        'CRC', // sub-unit discontinued
+        'CVE', // sub-unit discontinued
+        'CZK', // sub-unit discontinued
+        'DOP', // sub-unit rarely used
+        'DZD', // sub-unit discontinued
+        'GMD', // sub-unit discontinued
+        'GYD', // sub-unit discontinued
+        'HUF', // sub-unit discontinued
+        'IDR', // sub-unit discontinued
+        'INR', // sub-unit discontinued
+        'JMD', // sub-unit discontinued
+        'KES', // sub-unit rarely used
+        'KGS', // sub-unit rarely used
+        'KHR', // sub-unit discontinued
+        'KZT', // sub-unit rarely used
+        'LKR', // sub-unit discontinued
+        'MAD', // sub-unit rarely used
+        'MKD', // sub-unit discontinued
+        'MNT', // sub-unit discontinued
+        'MOP', // sub-unit discontinued
+        'MWK', // sub-unit rarely used
+        'MXN', // sub-unit rarely used
+        'NGN', // sub-unit rarely used
+        'NOK', // sub-unit discontinued
+        'NPR', // sub-unit rarely used
+        'PHP', // sub-unit rarely used
+        'PKR', // sub-unit discontinued
+        'RUB', // sub-unit rarely used
+        'SEK', // sub-unit discontinued
+        'TWD', // sub-unit discontinued
+        'TZS', // sub-unit discontinued
+        'UAH', // sub-unit discontinued
+        'UYU', // sub-unit discontinued
+        'UZS', // sub-unit discontinued
+        'VES', // sub-unit rarely used
+    ]);
+
     // Regex for detecting the number with optional decimals in a formatted string for useGrouping: false
     private static readonly NUMBER_REGEX = /\d+(?:\D(\d+))?/;
     // Simplified and adapted from https://stackoverflow.com/a/14824756.
@@ -266,6 +331,8 @@ export class CurrencyInfo {
 
         if (decimals !== undefined) {
             this.decimals = decimals;
+        } else if (CurrencyInfo.CUSTOM_DECIMAL_LESS_CURRENCIES.has(this.code)) {
+            this.decimals = 0;
         } else {
             const numberMatch = formattedString.match(CurrencyInfo.NUMBER_REGEX);
             this.decimals = numberMatch ? (numberMatch[1] || '').length : 2;
