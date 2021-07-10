@@ -47,6 +47,14 @@ describe('CurrencyInfo', () => {
         expect(c2).toEqual(c3);
     });
 
+    it('can cache auto-generated CurrencyInfos', () => {
+        const c1 = new CurrencyInfo('jpy');
+        const c2 = new CurrencyInfo('jpy');
+        const c3 = new CurrencyInfo('jpy', { symbol: '円' }); // alternative yen symbol
+        expect(c1).toBe(c2);
+        expect(c1).not.toBe(c3);
+    });
+
     it('reports decimals of currencies with deprecated sub-units as 0', () => {
         expect(new CurrencyInfo('jpy').decimals).toBe(0); // by browsers reported as 0
         expect(new CurrencyInfo('crc').decimals).toBe(0); // manually set to 0
