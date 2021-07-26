@@ -317,8 +317,11 @@ export class CurrencyInfo {
             navigator.language, // fallback
             'en-US', // en-US as last resort
         ];
+        const supportsDisplayNames = 'DisplayNames' in Intl
+            // @ts-ignore: the `polyfilled` property is just added by the @formatjs polyfill
+            && !Intl.DisplayNames.polyfilled; // @formatjs/intl-displaynames polyfill is causing issues
         // also normalizes the locales
-        [this.locale] = 'DisplayNames' in Intl
+        [this.locale] = supportsDisplayNames
             // @ts-ignore TODO use proper types once https://github.com/microsoft/TypeScript/pull/44022 is available
             ? Intl.DisplayNames.supportedLocalesOf(nameLocalesToTry)
             : Intl.NumberFormat.supportedLocalesOf(nameLocalesToTry);
@@ -342,7 +345,7 @@ export class CurrencyInfo {
             this.name = name;
         } else if (cachedCurrencyInfo) {
             this.name = cachedCurrencyInfo.name;
-        } else if ('DisplayNames' in Intl) {
+        } else if (supportsDisplayNames) {
             // Use DisplayNames if available as it provides better names.
             // @ts-ignore TODO use proper types once https://github.com/microsoft/TypeScript/pull/44022 is merged
             this.name = new Intl.DisplayNames(this.locale, { type: 'currency' }).of(currencyCode);
