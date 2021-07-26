@@ -371,17 +371,26 @@ export class CurrencyInfo {
                     && CurrencyInfo.RIGHT_TO_LEFT_DETECTION_REGEX.test(this.name);
                 this.symbol = extraSymbol[useRightToLeft ? 1 : 0];
             } else {
-                formattedString = (0).toLocaleString(
-                    // Unless a locale was specifically requested, use `en-${currencyCountry}` for the symbol detection
-                    // instead of this.locale which is based on navigator.language, as the EXTRA_SYMBOLS have been
-                    // created based on en.
-                    [
-                        ...(locale ? [locale] : []), // try requested locale
-                        `en-${currencyCountry}`,
-                        'en',
-                    ],
-                    { currencyDisplay: 'narrowSymbol', ...formatterOptions },
-                );
+                // Unless a locale was specifically requested, use `en-${currencyCountry}` for the symbol detection
+                // instead of this.locale which is based on navigator.language, as the EXTRA_SYMBOLS have been
+                // created based on en.
+                const symbolLocalesToTry = [
+                    ...(locale ? [locale] : []), // try requested locale
+                    `en-${currencyCountry}`,
+                    'en',
+                ];
+                try {
+                    formattedString = (0).toLocaleString(
+                        symbolLocalesToTry,
+                        { currencyDisplay: 'narrowSymbol', ...formatterOptions },
+                    );
+                } catch (e) {
+                    // on old browsers that do not support currencyDisplay narrowSymbol yet, fallback to symbol.
+                    formattedString = (0).toLocaleString(
+                        symbolLocalesToTry,
+                        { currencyDisplay: 'symbol', ...formatterOptions },
+                    );
+                }
                 this.symbol = formattedString.replace(CurrencyInfo.NUMBER_REGEX, '').trim();
             }
         }
