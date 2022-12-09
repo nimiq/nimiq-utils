@@ -3,6 +3,7 @@ export enum FiatApiSupportedCryptoCurrency {
     NIM = 'nim',
     BTC = 'btc',
     ETH = 'eth',
+    USDC = 'usdc',
 }
 
 // Note that coingecko supports more vs_currencies (see https://api.coingecko.com/api/v3/simple/supported_vs_currencies)
@@ -81,6 +82,7 @@ const COINGECKO_COIN_IDS = {
     [FiatApiSupportedCryptoCurrency.NIM]: 'nimiq-2',
     [FiatApiSupportedCryptoCurrency.BTC]: 'bitcoin',
     [FiatApiSupportedCryptoCurrency.ETH]: 'ethereum',
+    [FiatApiSupportedCryptoCurrency.USDC]: 'usd-coin',
 };
 
 const ONE_MINUTE = 60 * 1000;
