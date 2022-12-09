@@ -10,7 +10,7 @@ describe('CurrencyInfo', () => {
             decimals: 5,
             name: 'MyCurrency',
             symbol: 'X',
-            locale: 'en-UK',
+            locale: 'en-GB',
         });
 
         expect(c1.code).toBe('ABC');
@@ -23,7 +23,7 @@ describe('CurrencyInfo', () => {
         expect(c2.decimals).toBe(5);
         expect(c2.name).toBe('MyCurrency');
         expect(c2.symbol).toBe('X');
-        expect(c2.locale).toBe('en-UK');
+        expect(c2.locale).toBe('en-GB');
     });
 
     it('can be automatically created', () => {
