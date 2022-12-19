@@ -8,14 +8,40 @@ export enum Currency {
     NIM = 'nim',
     BTC = 'btc',
     ETH = 'eth',
+    USDC = 'usdc',
 }
 
-const NIM_DECIMALS = 5;
-const BTC_DECIMALS = 8;
-const ETH_DECIMALS = 18;
+const decimals = {
+    [Currency.NIM]: 5,
+    [Currency.BTC]: 8,
+    [Currency.ETH]: 18,
+    [Currency.USDC]: 6,
+};
+
+export const ETHEREUM_CHAINS_ID = {
+    ETHEREUM_MAINNET: 1,
+    ETHEREUM_GOERLI_TESTNET: 5,
+    POLYGON_MAINNET: 137,
+    POLYGON_MUMBAI_TESTNET: 80001,
+} as const;
+
+export const SUPPORTED_TOKENS = {
+    [ETHEREUM_CHAINS_ID.ETHEREUM_MAINNET]: {
+        [Currency.USDC]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+    },
+    [ETHEREUM_CHAINS_ID.ETHEREUM_GOERLI_TESTNET]: {
+        [Currency.USDC]: '0xde637d4c445ca2aae8f782ffac8d2971b93a4998',
+    },
+    [ETHEREUM_CHAINS_ID.POLYGON_MAINNET]: {
+        [Currency.USDC]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+    },
+    [ETHEREUM_CHAINS_ID.POLYGON_MUMBAI_TESTNET]: {
+        [Currency.USDC]: '0x0fa8781a83e46826621b3bc094ea2a0212e71b23',
+    },
+} as const;
 
 export enum NimiqRequestLinkType {
-    SAFE ='safe', // Nimiq Safe format: https://safe.nimiq.com/#_request/...
+    SAFE = 'safe', // Nimiq Safe format: https://safe.nimiq.com/#_request/...
     URI = 'nimiq', // BIP-21 URI format: nimiq:<address>?amount=...
     WEBURI = 'web+nim', // BIP-21 URI for web format: web+nim://<address>?amount=...
 }
@@ -35,17 +61,26 @@ export interface BitcoinRequestLinkOptions {
     message?: string,
 }
 
-export interface EthereumRequestLinkOptions {
+export type EthereumRequestLinkOptions = {
     amount?: number | bigint | BigInteger, // in Wei. To avoid js number limitations, usage of BigInt is recommendable
     gasPrice?: number | bigint | BigInteger, // in Wei. To avoid js number limitations, usage of BigInt is recommendable
     gasLimit?: number, // integer in gas units, same as parameter 'gas' as specified in EIP681
-    chainId?: number,
-}
+} & (
+        {
+            chainId: typeof ETHEREUM_CHAINS_ID[keyof typeof ETHEREUM_CHAINS_ID],
+            contractAddress: undefined
+        } | {
+            chainId?: number,
+            // explicitly specify the contract address to send the transaction to.
+            // Otherwise, the address is derived from the chainId and the currency
+            contractAddress?: string
+        }
+    );
 
 export type GeneralRequestLinkOptions =
     ({ currency: Currency.NIM } & NimiqRequestLinkOptions)
     | ({ currency: Currency.BTC } & BitcoinRequestLinkOptions)
-    | ({ currency: Currency.ETH } & EthereumRequestLinkOptions);
+    | ({ currency: Currency.ETH | Currency.USDC } & EthereumRequestLinkOptions);
 
 // Can be used with an options object or with the legacy function signature for creating a Nim request link.
 // If using the legacy function signature, amountOrOptions can be given as a value in Nim.
@@ -62,12 +97,16 @@ export function createRequestLink(
             case Currency.BTC:
                 return createBitcoinRequestLink(recipient, amountOrOptions);
             case Currency.ETH:
-                return createEthereumRequestLink(recipient, amountOrOptions);
+                return createEthereumRequestLink(recipient, Currency.ETH, amountOrOptions);
+            case Currency.USDC:
+                return createEthereumRequestLink(recipient, Currency.USDC, amountOrOptions);
             default:
                 throw new Error('Unsupported currency.');
         }
     }
-    const amount = typeof amountOrOptions !== 'undefined' ? amountOrOptions * (10 ** NIM_DECIMALS) : undefined;
+    const amount = typeof amountOrOptions !== 'undefined'
+        ? amountOrOptions * (10 ** decimals[Currency.NIM])
+        : undefined;
     return createNimiqRequestLink(recipient, { amount, message, basePath });
 }
 
@@ -121,7 +160,7 @@ export function parseRequestLink(
 
     return {
         recipient,
-        amount: amount ? amount / (10 ** NIM_DECIMALS) : null,
+        amount: amount ? amount / (10 ** decimals[Currency.NIM]) : null,
         message: message || null,
     };
 }
@@ -137,7 +176,9 @@ export function createNimiqRequestLink(
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
     if (label && typeof label !== 'string') throw new Error(`Not a valid label: ${label}`);
 
-    const amountNim = amount ? new FormattableNumber(amount).moveDecimalSeparator(-NIM_DECIMALS).toString() : '';
+    const amountNim = amount
+        ? new FormattableNumber(amount).moveDecimalSeparator(-decimals[Currency.NIM]).toString()
+        : '';
 
     // Assemble params
     const query = [['recipient', recipient.replace(/ /g, '')]]; // strip spaces from address
@@ -212,7 +253,7 @@ function toUrl(link: string | URL, requiredChars: string): null | URL {
 }
 
 type NimiqParams = { recipient: string, amount?: string, label?: string, message?: string };
-type ParsedNimiqParams = Omit<NimiqParams, 'amount'> & {amount?: number};
+type ParsedNimiqParams = Omit<NimiqParams, 'amount'> & { amount?: number };
 
 function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
     const recipient = params.recipient
@@ -220,7 +261,9 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
         .replace(/(.)(?=(.{4})+$)/g, '$1 '); // reformat with spaces, forming blocks of 4 chars
     if (!ValidationUtils.isValidAddress(recipient)) return null; // recipient is required
 
-    const parsedAmount = params.amount ? Math.round(parseFloat(params.amount) * (10 ** NIM_DECIMALS)) : undefined;
+    const parsedAmount = params.amount
+        ? Math.round(parseFloat(params.amount) * (10 ** decimals[Currency.NIM]))
+        : undefined;
     if (typeof parsedAmount === 'number' && Number.isNaN(parsedAmount)) return null;
 
     const parsedLabel = params.label ? decodeURIComponent(params.label) : undefined;
@@ -244,7 +287,7 @@ export function createBitcoinRequestLink(
         if (!option) return;
         // formatted value in BTC without scientific number notation
         const formattedValue = key === 'amount' || key === 'fee'
-            ? new FormattableNumber(option).moveDecimalSeparator(-BTC_DECIMALS).toString()
+            ? new FormattableNumber(option).moveDecimalSeparator(-decimals[Currency.BTC]).toString()
             : encodeURIComponent(option.toString());
         query.push(`${key}=${formattedValue}`);
     }, '');
@@ -252,39 +295,64 @@ export function createBitcoinRequestLink(
     return `bitcoin:${recipient}${queryString}`;
 }
 
-// subset of EIP681
 export function createEthereumRequestLink(
-    recipient: string, // ETH address or ENS name
-    options: EthereumRequestLinkOptions = {},
+    recipient: string,
+    currency: Currency.ETH | Currency.USDC,
+    options: EthereumRequestLinkOptions,
 ): string {
     if (!recipient) throw new Error('Recipient is required');
-    const { amount: value, gasPrice, gasLimit, chainId } = options;
-    if (value && !isUnsignedInteger(value)) throw new TypeError('Invalid amount');
+    const { amount, gasPrice, gasLimit, chainId, contractAddress } = options;
+    if (recipient && !validEthereumAddress(recipient)) {
+        throw new TypeError(`Invalid recipient address: ${recipient}. Valid format: ^0x[a-fA-F0-9]{40}$`);
+    }
+    if (amount && !isUnsignedInteger(amount)) throw new TypeError('Invalid amount');
     if (gasPrice && !isUnsignedInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
     if (gasLimit && !isUnsignedInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
-    const eip831Prefix = !recipient.startsWith('0x') ? 'pay-' : '';
+    if (contractAddress && !validEthereumAddress(contractAddress)) {
+        throw new TypeError(`Invalid contract address: ${contractAddress}. Valid format: ^0x[a-fA-F0-9]{40}$`);
+    }
+
+    const schema = 'ethereum';
+
+    let targetAddress = '';
+    if (currency === Currency.ETH) {
+        targetAddress = recipient;
+    } else if (contractAddress) {
+        targetAddress = contractAddress;
+    } else if (chainId) {
+        targetAddress = getSupportedTokens(chainId)[currency];
+    } else {
+        throw new Error('No contract address or chainId provided');
+    }
+
     const chainIdString = chainId !== undefined ? `@${chainId}` : '';
+    const functionName = currency === Currency.USDC ? '/transfer' : '';
+
     const query = new URLSearchParams();
-    const queryOptions: { [key: string]: number | bigint | BigInteger | undefined } = { value, gasLimit, gasPrice };
-    Object.keys(queryOptions).forEach((key) => {
-        const option = queryOptions[key];
-        if (!option) return;
-        // format Wei values with scientific number notation as recommended by EIP681
-        const formattableNumber = new FormattableNumber(option);
-        let formattedNumber;
-        if (key === 'value') {
-            formattableNumber.moveDecimalSeparator(-ETH_DECIMALS); // render as ETH
-            formattedNumber = `${formattableNumber.toString()}e${ETH_DECIMALS}`;
-        } else if (key === 'gasPrice') {
-            formattableNumber.moveDecimalSeparator(-9); // render as GWei
-            formattedNumber = `${formattableNumber.toString()}e9`;
-        } else {
-            formattedNumber = formattableNumber.toString();
-        }
-        query.set(key, formattedNumber);
-    }, '');
-    const queryString = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
-    return `ethereum:${eip831Prefix}${recipient}${chainIdString}${queryString}`;
+    if (amount) {
+        const _decimals = currency === Currency.USDC ? decimals[Currency.USDC] : decimals[Currency.ETH];
+        const formattableNumber = new FormattableNumber(amount);
+        formattableNumber.moveDecimalSeparator(-_decimals);
+        query.set('uint256', `${formattableNumber.toString()}e${_decimals}`);
+    }
+    if (gasPrice) {
+        const formattableNumber = new FormattableNumber(gasPrice);
+        formattableNumber.moveDecimalSeparator(-9); // render as GWei
+        query.set('gasPrice', `${formattableNumber.toString()}e9`);
+    }
+    if (gasLimit) {
+        const formattableNumber = new FormattableNumber(gasLimit);
+        query.set('gasLimit', formattableNumber.toString());
+    }
+    if (currency !== Currency.ETH && recipient) {
+        query.set('address', recipient);
+    } else if (chainId && currency === Currency.USDC) {
+        const tokens = getSupportedTokens(chainId);
+        query.set('address', tokens[Currency.USDC]);
+    }
+    const params = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
+
+    return `${schema}:${targetAddress}${chainIdString}${functionName}${params}`;
 }
 
 function isNimiqUriProtocol(link: string): boolean {
@@ -299,4 +367,18 @@ function isUnsignedInteger(value: number | bigint | BigInteger) {
         return value >= 0;
     }
     return !value.isNegative();
+}
+
+function validEthereumAddress(address: string): boolean {
+    return /^0x[a-fA-F0-9]{40}$/.test(address);
+}
+
+function getSupportedTokens(chainId: number) {
+    const chain = SUPPORTED_TOKENS[chainId as keyof typeof SUPPORTED_TOKENS];
+    if (chain) return chain;
+
+    // eslint-disable-next-line no-console
+    console.warn(`Unsupported chain: ${chainId}. Falling back to Ethereum Mainnet.`);
+
+    return SUPPORTED_TOKENS[ETHEREUM_CHAINS_ID.ETHEREUM_MAINNET];
 }
