@@ -11,14 +11,14 @@ export enum Currency {
     USDC = 'usdc',
 }
 
-const decimals = {
+const DECIMALS = {
     [Currency.NIM]: 5,
     [Currency.BTC]: 8,
     [Currency.ETH]: 18,
     [Currency.USDC]: 6,
-};
+} as const;
 
-export const ETHEREUM_CHAINS_ID = {
+export const ETHEREUM_CHAIN_ID = {
     ETHEREUM_MAINNET: 1,
     ETHEREUM_GOERLI_TESTNET: 5,
     POLYGON_MAINNET: 137,
@@ -26,16 +26,16 @@ export const ETHEREUM_CHAINS_ID = {
 } as const;
 
 export const SUPPORTED_TOKENS = {
-    [ETHEREUM_CHAINS_ID.ETHEREUM_MAINNET]: {
+    [ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET]: {
         [Currency.USDC]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     },
-    [ETHEREUM_CHAINS_ID.ETHEREUM_GOERLI_TESTNET]: {
+    [ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET]: {
         [Currency.USDC]: '0xde637d4c445ca2aae8f782ffac8d2971b93a4998',
     },
-    [ETHEREUM_CHAINS_ID.POLYGON_MAINNET]: {
+    [ETHEREUM_CHAIN_ID.POLYGON_MAINNET]: {
         [Currency.USDC]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     },
-    [ETHEREUM_CHAINS_ID.POLYGON_MUMBAI_TESTNET]: {
+    [ETHEREUM_CHAIN_ID.POLYGON_MUMBAI_TESTNET]: {
         [Currency.USDC]: '0x0fa8781a83e46826621b3bc094ea2a0212e71b23',
     },
 } as const;
@@ -67,12 +67,12 @@ export type EthereumRequestLinkOptions = {
     gasLimit?: number, // integer in gas units, same as parameter 'gas' as specified in EIP681
 } & (
         {
-            chainId: typeof ETHEREUM_CHAINS_ID[keyof typeof ETHEREUM_CHAINS_ID],
+            chainId: typeof ETHEREUM_CHAIN_ID[keyof typeof ETHEREUM_CHAIN_ID],
             contractAddress: undefined
         } | {
-            chainId?: number,
-            // explicitly specify the contract address to send the transaction to.
-            // Otherwise, the address is derived from the chainId and the currency
+            chainId: number,
+            // Explicitly specify the contract address to send the transaction to.
+            // Otherwise, the address is derived from the chainId and the currency.
             contractAddress?: string
         }
     );
@@ -105,7 +105,7 @@ export function createRequestLink(
         }
     }
     const amount = typeof amountOrOptions !== 'undefined'
-        ? amountOrOptions * (10 ** decimals[Currency.NIM])
+        ? amountOrOptions * (10 ** DECIMALS[Currency.NIM])
         : undefined;
     return createNimiqRequestLink(recipient, { amount, message, basePath });
 }
@@ -160,7 +160,7 @@ export function parseRequestLink(
 
     return {
         recipient,
-        amount: amount ? amount / (10 ** decimals[Currency.NIM]) : null,
+        amount: amount ? amount / (10 ** DECIMALS[Currency.NIM]) : null,
         message: message || null,
     };
 }
@@ -177,7 +177,7 @@ export function createNimiqRequestLink(
     if (label && typeof label !== 'string') throw new Error(`Not a valid label: ${label}`);
 
     const amountNim = amount
-        ? new FormattableNumber(amount).moveDecimalSeparator(-decimals[Currency.NIM]).toString()
+        ? new FormattableNumber(amount).moveDecimalSeparator(-DECIMALS[Currency.NIM]).toString()
         : '';
 
     // Assemble params
@@ -262,7 +262,7 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
     if (!ValidationUtils.isValidAddress(recipient)) return null; // recipient is required
 
     const parsedAmount = params.amount
-        ? Math.round(parseFloat(params.amount) * (10 ** decimals[Currency.NIM]))
+        ? Math.round(parseFloat(params.amount) * (10 ** DECIMALS[Currency.NIM]))
         : undefined;
     if (typeof parsedAmount === 'number' && Number.isNaN(parsedAmount)) return null;
 
@@ -287,7 +287,7 @@ export function createBitcoinRequestLink(
         if (!option) return;
         // formatted value in BTC without scientific number notation
         const formattedValue = key === 'amount' || key === 'fee'
-            ? new FormattableNumber(option).moveDecimalSeparator(-decimals[Currency.BTC]).toString()
+            ? new FormattableNumber(option).moveDecimalSeparator(-DECIMALS[Currency.BTC]).toString()
             : encodeURIComponent(option.toString());
         query.push(`${key}=${formattedValue}`);
     }, '');
@@ -312,7 +312,7 @@ export function createEthereumRequestLink(
         throw new TypeError(`Invalid contract address: ${contractAddress}. Valid format: ^0x[a-fA-F0-9]{40}$`);
     }
 
-    const schema = 'ethereum';
+    const schema = getEthereumBlochainName(chainId);
 
     let targetAddress = '';
     if (currency === Currency.ETH) {
@@ -329,11 +329,18 @@ export function createEthereumRequestLink(
     const functionName = currency === Currency.USDC ? '/transfer' : '';
 
     const query = new URLSearchParams();
+    if (currency !== Currency.ETH && recipient) {
+        query.set('address', recipient);
+    } else if (chainId && currency === Currency.USDC) {
+        const tokens = getSupportedTokens(chainId);
+        query.set('address', tokens[Currency.USDC]);
+    }
     if (amount) {
-        const _decimals = currency === Currency.USDC ? decimals[Currency.USDC] : decimals[Currency.ETH];
+        const decimals = currency === Currency.USDC ? DECIMALS[Currency.USDC] : DECIMALS[Currency.ETH];
         const formattableNumber = new FormattableNumber(amount);
-        formattableNumber.moveDecimalSeparator(-_decimals);
-        query.set('uint256', `${formattableNumber.toString()}e${_decimals}`);
+        formattableNumber.moveDecimalSeparator(-decimals);
+        const amountName = schema === 'ethereum' ? 'value' : 'uint256';
+        query.set(amountName, `${formattableNumber.toString()}e${decimals}`);
     }
     if (gasPrice) {
         const formattableNumber = new FormattableNumber(gasPrice);
@@ -343,12 +350,6 @@ export function createEthereumRequestLink(
     if (gasLimit) {
         const formattableNumber = new FormattableNumber(gasLimit);
         query.set('gasLimit', formattableNumber.toString());
-    }
-    if (currency !== Currency.ETH && recipient) {
-        query.set('address', recipient);
-    } else if (chainId && currency === Currency.USDC) {
-        const tokens = getSupportedTokens(chainId);
-        query.set('address', tokens[Currency.USDC]);
     }
     const params = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
 
@@ -369,16 +370,25 @@ function isUnsignedInteger(value: number | bigint | BigInteger) {
     return !value.isNegative();
 }
 
+function getEthereumBlochainName(chainId?: number) {
+    if (!chainId) throw new Error(`Unsupported chain: ${chainId}`);
+
+    switch (chainId) {
+        case ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET:
+        case ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET:
+            return 'ethereum';
+        case ETHEREUM_CHAIN_ID.POLYGON_MAINNET:
+        case ETHEREUM_CHAIN_ID.POLYGON_MUMBAI_TESTNET:
+            return 'polygon';
+        default:
+            return undefined;
+    }
+}
+
 function validEthereumAddress(address: string): boolean {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
 function getSupportedTokens(chainId: number) {
-    const chain = SUPPORTED_TOKENS[chainId as keyof typeof SUPPORTED_TOKENS];
-    if (chain) return chain;
-
-    // eslint-disable-next-line no-console
-    console.warn(`Unsupported chain: ${chainId}. Falling back to Ethereum Mainnet.`);
-
-    return SUPPORTED_TOKENS[ETHEREUM_CHAINS_ID.ETHEREUM_MAINNET];
+    return SUPPORTED_TOKENS[chainId as keyof typeof SUPPORTED_TOKENS];
 }
