@@ -129,7 +129,7 @@ describe('RequestLinkEncoding', () => {
         }
     });
 
-    it('can create ETH request links', () => {
+    it('can create native ETH request links', () => {
         const address = '0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359';
         const vectors = [{
             link: `ethereum:${address}@1`,
@@ -190,7 +190,140 @@ describe('RequestLinkEncoding', () => {
         }
     });
 
-    it('can create USDC on polygon request links', () => {
+    it('can create USDC on ETH request links', () => {
+        const recipientAddress = '0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359';
+        const usdcMainAddress = '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d';
+        const usdcGoerliAddress = '0xde637d4c445ca2aae8f782ffac8d2971b93a4998';
+        const vectors = [{
+            link: `ethereum:${usdcMainAddress}@1/transfer?address=${recipientAddress}`,
+            currency: RequestLinkEncoding.Currency.USDC,
+            recipientAddress,
+            amount: undefined,
+            gasPrice: undefined,
+            gasLimit: undefined,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
+        }, {
+            link: `ethereum:${usdcGoerliAddress}@5/transfer?address=${recipientAddress}`,
+            currency: RequestLinkEncoding.Currency.USDC,
+            recipientAddress,
+            amount: undefined,
+            gasPrice: undefined,
+            gasLimit: undefined,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET,
+        }, {
+            link: `ethereum:${usdcMainAddress}@1/transfer?address=${recipientAddress}&uint256=2014000000000e6`,
+            currency: RequestLinkEncoding.Currency.USDC,
+            recipientAddress,
+            amount: BigInteger('2.014e18'),
+            gasPrice: undefined,
+            gasLimit: undefined,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
+        }, {
+            link: `ethereum:${usdcMainAddress}@1/transfer?address=${recipientAddress}`
+                + '&uint256=2014000000000e6&gasPrice=9e9',
+            currency: RequestLinkEncoding.Currency.USDC,
+            recipientAddress,
+            amount: BigInteger('2.014e18'),
+            gasPrice: 9e9,
+            gasLimit: undefined,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
+        }, {
+            link: `ethereum:${usdcMainAddress}@1/transfer?address=${recipientAddress}`
+                + '&uint256=2014000000000e6&gasPrice=9e9&gasLimit=20000',
+            currency: RequestLinkEncoding.Currency.USDC,
+            recipientAddress,
+            amount: BigInteger('2.014e18'),
+            gasPrice: 9e9,
+            gasLimit: 2e4,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
+        }, {
+            link: `ethereum:${usdcGoerliAddress}@5/transfer?address=${recipientAddress}`
+                + '&uint256=2014000000000e6&gasPrice=9e9&gasLimit=20000',
+            amount: BigInteger('2.014e18'),
+            currency: RequestLinkEncoding.Currency.USDC,
+            recipientAddress,
+            gasPrice: 9e9,
+            gasLimit: 2e4,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET,
+        }] as const;
+
+        // Create links
+        for (const vector of vectors) {
+            const options: RequestLinkEncoding.GeneralRequestLinkOptions = {
+                currency: vector.currency,
+                amount: vector.amount,
+                gasPrice: vector.gasPrice,
+                gasLimit: vector.gasLimit,
+                chainId: vector.chainId,
+            };
+
+            const link = RequestLinkEncoding.createRequestLink(vector.recipientAddress, options);
+            expect(link).toEqual(vector.link);
+        }
+    });
+
+    it('can create native Polygon request links', () => {
+        const address = '0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359';
+        const vectors = [{
+            link: `polygon:${address}@137`,
+            address,
+            amount: undefined,
+            gasPrice: undefined,
+            gasLimit: undefined,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
+        }, {
+            link: `polygon:${address}@137?value=2.014e18`,
+            address,
+            amount: BigInteger('2.014e18'),
+            gasPrice: undefined,
+            gasLimit: undefined,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
+        }, {
+            link: `polygon:${address}@137?value=2.014e18&gasPrice=9e9`,
+            address,
+            amount: BigInteger('2.014e18'),
+            gasPrice: 9e9,
+            gasLimit: undefined,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
+        }, {
+            link: `polygon:${address}@137?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            address,
+            amount: BigInteger('2.014e18'),
+            gasPrice: 9e9,
+            gasLimit: 2e4,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
+        }, {
+            link: `polygon:${address}@137?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            address,
+            amount: BigInteger('2.014e18'),
+            gasPrice: 9e9,
+            gasLimit: 2e4,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
+        }, {
+            link: `polygon:${address}@80001?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            address,
+            amount: BigInteger('2.014e18'),
+            gasPrice: 9e9,
+            gasLimit: 2e4,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MUMBAI_TESTNET,
+        }];
+
+        // Create links
+        for (const vector of vectors) {
+            const options: RequestLinkEncoding.GeneralRequestLinkOptions = {
+                currency: RequestLinkEncoding.Currency.ETH,
+                amount: vector.amount,
+                gasPrice: vector.gasPrice,
+                gasLimit: vector.gasLimit,
+                chainId: vector.chainId,
+            };
+
+            const link = RequestLinkEncoding.createRequestLink(vector.address, options);
+            expect(link).toEqual(vector.link);
+        }
+    });
+
+    it('can create USDC on Polygon request links', () => {
         const { SUPPORTED_TOKENS, ETHEREUM_CHAIN_ID, Currency } = RequestLinkEncoding;
         const recipientAddress = '0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359';
         const mainnetUsdcContract = SUPPORTED_TOKENS[ETHEREUM_CHAIN_ID.POLYGON_MAINNET][Currency.USDC];
