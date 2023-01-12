@@ -132,35 +132,40 @@ describe('RequestLinkEncoding', () => {
     it('can create native ETH request links', () => {
         const address = '0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359';
         const vectors = [{
-            link: `ethereum:${address}@1`,
+            link: `ethereum:${address}`,
+            currency: RequestLinkEncoding.Currency.ETH,
             address,
             amount: undefined,
             gasPrice: undefined,
             gasLimit: undefined,
-            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
+            chainId: undefined,
         }, {
-            link: `ethereum:${address}@1?value=2.014e18`,
+            link: `ethereum:${address}?value=2.014e18`,
+            currency: RequestLinkEncoding.Currency.ETH,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: undefined,
             gasLimit: undefined,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
         }, {
-            link: `ethereum:${address}@1?value=2.014e18&gasPrice=9e9`,
+            link: `ethereum:${address}?value=2.014e18&gasPrice=9e9`,
+            currency: RequestLinkEncoding.Currency.ETH,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: 9e9,
             gasLimit: undefined,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
         }, {
-            link: `ethereum:${address}@1?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            link: `ethereum:${address}?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            currency: RequestLinkEncoding.Currency.ETH,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: 9e9,
             gasLimit: 2e4,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
         }, {
-            link: `ethereum:${address}@1?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            link: `ethereum:${address}?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            currency: RequestLinkEncoding.Currency.ETH,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: 9e9,
@@ -168,17 +173,18 @@ describe('RequestLinkEncoding', () => {
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
         }, {
             link: `ethereum:${address}@5?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            currency: RequestLinkEncoding.Currency.ETH,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: 9e9,
             gasLimit: 2e4,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET,
-        }];
+        }] as const;
 
         // Create links
         for (const vector of vectors) {
             const options: RequestLinkEncoding.GeneralRequestLinkOptions = {
-                currency: RequestLinkEncoding.Currency.ETH,
+                currency: vector.currency,
                 amount: vector.amount,
                 gasPrice: vector.gasPrice,
                 gasLimit: vector.gasLimit,
@@ -195,7 +201,7 @@ describe('RequestLinkEncoding', () => {
         const usdcMainAddress = '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d';
         const usdcGoerliAddress = '0xde637d4c445ca2aae8f782ffac8d2971b93a4998';
         const vectors = [{
-            link: `ethereum:${usdcMainAddress}@1/transfer?address=${recipientAddress}`,
+            link: `ethereum:${usdcMainAddress}/transfer?address=${recipientAddress}`,
             currency: RequestLinkEncoding.Currency.USDC,
             recipientAddress,
             amount: undefined,
@@ -211,7 +217,7 @@ describe('RequestLinkEncoding', () => {
             gasLimit: undefined,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET,
         }, {
-            link: `ethereum:${usdcMainAddress}@1/transfer?address=${recipientAddress}&uint256=2014000000000e6`,
+            link: `ethereum:${usdcMainAddress}/transfer?address=${recipientAddress}&uint256=2014000000000e6`,
             currency: RequestLinkEncoding.Currency.USDC,
             recipientAddress,
             amount: BigInteger('2.014e18'),
@@ -219,7 +225,7 @@ describe('RequestLinkEncoding', () => {
             gasLimit: undefined,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
         }, {
-            link: `ethereum:${usdcMainAddress}@1/transfer?address=${recipientAddress}`
+            link: `ethereum:${usdcMainAddress}/transfer?address=${recipientAddress}`
                 + '&uint256=2014000000000e6&gasPrice=9e9',
             currency: RequestLinkEncoding.Currency.USDC,
             recipientAddress,
@@ -228,7 +234,7 @@ describe('RequestLinkEncoding', () => {
             gasLimit: undefined,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
         }, {
-            link: `ethereum:${usdcMainAddress}@1/transfer?address=${recipientAddress}`
+            link: `ethereum:${usdcMainAddress}/transfer?address=${recipientAddress}`
                 + '&uint256=2014000000000e6&gasPrice=9e9&gasLimit=20000',
             currency: RequestLinkEncoding.Currency.USDC,
             recipientAddress,
@@ -266,6 +272,7 @@ describe('RequestLinkEncoding', () => {
         const address = '0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359';
         const vectors = [{
             link: `polygon:${address}@137`,
+            currency: RequestLinkEncoding.Currency.MATIC,
             address,
             amount: undefined,
             gasPrice: undefined,
@@ -273,6 +280,7 @@ describe('RequestLinkEncoding', () => {
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
         }, {
             link: `polygon:${address}@137?value=2.014e18`,
+            currency: RequestLinkEncoding.Currency.MATIC,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: undefined,
@@ -280,6 +288,7 @@ describe('RequestLinkEncoding', () => {
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
         }, {
             link: `polygon:${address}@137?value=2.014e18&gasPrice=9e9`,
+            currency: RequestLinkEncoding.Currency.MATIC,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: 9e9,
@@ -287,6 +296,7 @@ describe('RequestLinkEncoding', () => {
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
         }, {
             link: `polygon:${address}@137?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            currency: RequestLinkEncoding.Currency.MATIC,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: 9e9,
@@ -294,6 +304,7 @@ describe('RequestLinkEncoding', () => {
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
         }, {
             link: `polygon:${address}@137?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            currency: RequestLinkEncoding.Currency.MATIC,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: 9e9,
@@ -301,17 +312,18 @@ describe('RequestLinkEncoding', () => {
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
         }, {
             link: `polygon:${address}@80001?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
+            currency: RequestLinkEncoding.Currency.MATIC,
             address,
             amount: BigInteger('2.014e18'),
             gasPrice: 9e9,
             gasLimit: 2e4,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MUMBAI_TESTNET,
-        }];
+        }] as const;
 
         // Create links
         for (const vector of vectors) {
             const options: RequestLinkEncoding.GeneralRequestLinkOptions = {
-                currency: RequestLinkEncoding.Currency.ETH,
+                currency: vector.currency,
                 amount: vector.amount,
                 gasPrice: vector.gasPrice,
                 gasLimit: vector.gasLimit,
@@ -383,4 +395,26 @@ describe('RequestLinkEncoding', () => {
             expect(link).toEqual(vector.link);
         }
     });
+
+    it('should throw error due to bad argumnets', () => {
+        expect(() => RequestLinkEncoding.createRequestLink('', {
+            currency: RequestLinkEncoding.Currency.ETH,
+        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError(`Recipient is required`);
+
+        expect(() => RequestLinkEncoding.createRequestLink('0x123', {
+            currency: 'UnkonwnToken' as unknown as RequestLinkEncoding.Currency,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
+        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError(`Unsupported currency`);
+
+        expect(() => RequestLinkEncoding.createRequestLink('0x123', {
+            currency: RequestLinkEncoding.Currency.ETH,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
+        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError(`Invalid recipient address`);
+    });
+
+    expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
+        currency: RequestLinkEncoding.Currency.ETH,
+        chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
+        contractAddress: '0x123',
+    } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError(`Invalid contract address`);
 });
