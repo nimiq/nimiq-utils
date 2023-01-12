@@ -8,6 +8,7 @@ export enum Currency {
     NIM = 'nim',
     BTC = 'btc',
     ETH = 'eth',
+    MATIC = 'matic',
     USDC = 'usdc',
 }
 
@@ -15,6 +16,7 @@ const DECIMALS = {
     [Currency.NIM]: 5,
     [Currency.BTC]: 8,
     [Currency.ETH]: 18,
+    [Currency.MATIC]: 18,
     [Currency.USDC]: 6,
 } as const;
 
@@ -70,7 +72,7 @@ export type EthereumRequestLinkOptions = {
             chainId: typeof ETHEREUM_CHAIN_ID[keyof typeof ETHEREUM_CHAIN_ID],
             contractAddress: undefined
         } | {
-            chainId: number,
+            chainId?: number,
             // Explicitly specify the contract address to send the transaction to.
             // Otherwise, the address is derived from the chainId and the currency.
             contractAddress?: string
@@ -80,7 +82,7 @@ export type EthereumRequestLinkOptions = {
 export type GeneralRequestLinkOptions =
     ({ currency: Currency.NIM } & NimiqRequestLinkOptions)
     | ({ currency: Currency.BTC } & BitcoinRequestLinkOptions)
-    | ({ currency: Currency.ETH | Currency.USDC } & EthereumRequestLinkOptions);
+    | ({ currency: Currency.ETH | Currency.MATIC | Currency.USDC } & EthereumRequestLinkOptions);
 
 // Can be used with an options object or with the legacy function signature for creating a Nim request link.
 // If using the legacy function signature, amountOrOptions can be given as a value in Nim.
@@ -97,9 +99,9 @@ export function createRequestLink(
             case Currency.BTC:
                 return createBitcoinRequestLink(recipient, amountOrOptions);
             case Currency.ETH:
-                return createEthereumRequestLink(recipient, Currency.ETH, amountOrOptions);
+            case Currency.MATIC:
             case Currency.USDC:
-                return createEthereumRequestLink(recipient, Currency.USDC, amountOrOptions);
+                return createEthereumRequestLink(recipient, (amountOrOptions as GeneralRequestLinkOptions).currency, amountOrOptions);
             default:
                 throw new Error('Unsupported currency.');
         }
@@ -297,7 +299,7 @@ export function createBitcoinRequestLink(
 
 export function createEthereumRequestLink(
     recipient: string,
-    currency: Currency.ETH | Currency.USDC,
+    currency: Currency,
     options: EthereumRequestLinkOptions,
 ): string {
     if (!recipient) throw new Error('Recipient is required');
@@ -312,11 +314,10 @@ export function createEthereumRequestLink(
         throw new TypeError(`Invalid contract address: ${contractAddress}. Valid format: ^0x[a-fA-F0-9]{40}$`);
     }
 
-    const nativeToken = isNativeToken(currency);
     const schema = getEthereumBlochainName(chainId);
 
     let targetAddress = '';
-    if (currency === Currency.ETH) {
+    if (isNativeToken(currency)) {
         targetAddress = recipient;
     } else if (contractAddress) {
         targetAddress = contractAddress;
@@ -326,18 +327,18 @@ export function createEthereumRequestLink(
         throw new Error('No contract address or chainId provided');
     }
 
-    const chainIdString = chainId !== undefined ? `@${chainId}` : '';
+    const chainIdString = chainId !== undefined && chainId !== ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET ? `@${chainId}` : '';
     const functionName = currency === Currency.USDC ? '/transfer' : '';
 
     const query = new URLSearchParams();
-    if (!nativeToken) { // address only relevant for non-native tokens (e.g. ETH and MATIC should be omitted)
-        query.set('address', recipient || getContractAddress(chainId, currency));
+    if (!isNativeToken(currency)) { // address only relevant for non-native tokens (e.g. ETH and MATIC should be omitted)
+        query.set('address', recipient);
     }
     if (amount) {
         const decimals = DECIMALS[currency];
         const formattableNumber = new FormattableNumber(amount);
         formattableNumber.moveDecimalSeparator(-decimals);
-        const amountName = nativeToken ? 'value' : 'uint256';
+        const amountName = isNativeToken(currency) ? 'value' : 'uint256';
         query.set(amountName, `${formattableNumber.toString()}e${decimals}`);
     }
     if (gasPrice) {
@@ -369,7 +370,10 @@ function isUnsignedInteger(value: number | bigint | BigInteger) {
 }
 
 function getEthereumBlochainName(chainId?: number) {
-    if (!chainId) throw new Error(`Unsupported chain: ${chainId}`);
+    if (!chainId) {
+        // To maintain backwards compatibility, default to ethereum
+        return 'ethereum';
+    }
 
     switch (chainId) {
         case ETHEREUM_CHAIN_ID.POLYGON_MAINNET:
@@ -387,12 +391,16 @@ function validEthereumAddress(address: string): boolean {
 }
 
 function isNativeToken(currency: Currency): boolean {
-    return currency === Currency.ETH;
+    return [Currency.ETH, Currency.MATIC].includes(currency);
 }
 
 // Return the contract address for the given chainId and currency. If no contract address is known for the given
 // chainId and currency, return empty string.
 function getContractAddress(chainId: number, currency: Currency) {
     const tokens = SUPPORTED_TOKENS[chainId as keyof typeof SUPPORTED_TOKENS];
-    return tokens[currency as unknown as keyof typeof tokens] as string || '';
+    const contractAddress = tokens[currency as unknown as keyof typeof tokens] as string | undefined;
+    if (!contractAddress) {
+        throw new Error(`Unsupported token: ${currency} on chain: ${chainId}`);
+    }
+    return contractAddress;
 }
