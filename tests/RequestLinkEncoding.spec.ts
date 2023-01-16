@@ -396,25 +396,25 @@ describe('RequestLinkEncoding', () => {
         }
     });
 
-    it('should throw error due to bad argumnets', () => {
+    it('should throw error due to bad arguments', () => {
         expect(() => RequestLinkEncoding.createRequestLink('', {
             currency: RequestLinkEncoding.Currency.ETH,
-        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError(`Recipient is required`);
+        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError('Recipient is required');
 
         expect(() => RequestLinkEncoding.createRequestLink('0x123', {
             currency: 'UnkonwnToken' as unknown as RequestLinkEncoding.Currency,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
-        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError(`Unsupported currency`);
+        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError('Unsupported currency');
 
         expect(() => RequestLinkEncoding.createRequestLink('0x123', {
             currency: RequestLinkEncoding.Currency.ETH,
             chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
-        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError(`Invalid recipient address`);
-    });
+        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError('Invalid recipient address');
 
-    expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
-        currency: RequestLinkEncoding.Currency.ETH,
-        chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
-        contractAddress: '0x123',
-    } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError(`Invalid contract address`);
+        expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
+            currency: RequestLinkEncoding.Currency.ETH,
+            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET,
+            contractAddress: '0x123',
+        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError('Invalid contract address');
+    });
 });

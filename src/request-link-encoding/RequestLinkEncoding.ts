@@ -101,7 +101,8 @@ export function createRequestLink(
             case Currency.ETH:
             case Currency.MATIC:
             case Currency.USDC:
-                return createEthereumRequestLink(recipient, (amountOrOptions as GeneralRequestLinkOptions).currency, amountOrOptions);
+                return createEthereumRequestLink(recipient, (amountOrOptions as GeneralRequestLinkOptions).currency,
+                    amountOrOptions);
             default:
                 throw new Error('Unsupported currency.');
         }
@@ -304,13 +305,13 @@ export function createEthereumRequestLink(
 ): string {
     if (!recipient) throw new Error('Recipient is required');
     const { amount, gasPrice, gasLimit, chainId, contractAddress } = options;
-    if (recipient && !validEthereumAddress(recipient)) {
+    if (recipient && !validateEthereumAddress(recipient)) {
         throw new TypeError(`Invalid recipient address: ${recipient}. Valid format: ^0x[a-fA-F0-9]{40}$`);
     }
     if (amount && !isUnsignedInteger(amount)) throw new TypeError('Invalid amount');
     if (gasPrice && !isUnsignedInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
     if (gasLimit && !isUnsignedInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
-    if (contractAddress && !validEthereumAddress(contractAddress)) {
+    if (contractAddress && !validateEthereumAddress(contractAddress)) {
         throw new TypeError(`Invalid contract address: ${contractAddress}. Valid format: ^0x[a-fA-F0-9]{40}$`);
     }
 
@@ -331,7 +332,8 @@ export function createEthereumRequestLink(
     const functionName = currency === Currency.USDC ? '/transfer' : '';
 
     const query = new URLSearchParams();
-    if (!isNativeToken(currency)) { // address only relevant for non-native tokens (e.g. ETH and MATIC should be omitted)
+    if (!isNativeToken(currency)) {
+        // the address only relevant for non-native tokens (e.g. ETH and MATIC should be omitted)
         query.set('address', recipient);
     }
     if (amount) {
@@ -370,23 +372,18 @@ function isUnsignedInteger(value: number | bigint | BigInteger) {
 }
 
 function getEthereumBlochainName(chainId?: number) {
-    if (!chainId) {
-        // To maintain backwards compatibility, default to ethereum
-        return 'ethereum';
-    }
-
     switch (chainId) {
         case ETHEREUM_CHAIN_ID.POLYGON_MAINNET:
         case ETHEREUM_CHAIN_ID.POLYGON_MUMBAI_TESTNET:
             return 'polygon';
         case ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET:
         case ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET:
-        default:
+        default: // To maintain backwards compatibility, default to ethereum
             return 'ethereum';
     }
 }
 
-function validEthereumAddress(address: string): boolean {
+function validateEthereumAddress(address: string): boolean {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
@@ -400,7 +397,8 @@ function getContractAddress(chainId: number, currency: Currency) {
     const tokens = SUPPORTED_TOKENS[chainId as keyof typeof SUPPORTED_TOKENS];
     const contractAddress = tokens[currency as unknown as keyof typeof tokens] as string | undefined;
     if (!contractAddress) {
-        throw new Error(`Unsupported token: ${currency} on chain: ${chainId}`);
+        throw new Error(`Unsupported token: ${currency} on chain ${chainId}.
+        You need to specify the 'contractAddress' option.`);
     }
     return contractAddress;
 }
