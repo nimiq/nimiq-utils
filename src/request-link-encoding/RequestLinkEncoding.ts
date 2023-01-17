@@ -101,8 +101,11 @@ export function createRequestLink(
             case Currency.ETH:
             case Currency.MATIC:
             case Currency.USDC:
-                return createEthereumRequestLink(recipient, (amountOrOptions as GeneralRequestLinkOptions).currency,
-                    amountOrOptions);
+                return createEthereumRequestLink(
+                    recipient,
+                    (amountOrOptions as GeneralRequestLinkOptions).currency,
+                    amountOrOptions,
+                );
             default:
                 throw new Error('Unsupported currency.');
         }
@@ -325,7 +328,7 @@ export function createEthereumRequestLink(
     } else if (chainId) {
         targetAddress = getContractAddress(chainId, currency);
     } else {
-        throw new Error('No contract address or chainId provided');
+        throw new Error('No contractAddress or chainId provided');
     }
 
     const chainIdString = chainId !== undefined && chainId !== ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET ? `@${chainId}` : '';
@@ -333,7 +336,7 @@ export function createEthereumRequestLink(
 
     const query = new URLSearchParams();
     if (!isNativeToken(currency)) {
-        // the address only relevant for non-native tokens (e.g. ETH and MATIC should be omitted)
+        // the address parameter is only relevant for ERC20 tokens
         query.set('address', recipient);
     }
     if (amount) {
