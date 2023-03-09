@@ -19,10 +19,7 @@ export class Clipboard {
         const selection = document.getSelection()!;
         const originalRange = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
 
-        const activeInput = document.activeElement
-            && (document.activeElement.nodeName === 'INPUT' || document.activeElement.nodeName === 'TEXTAREA')
-            ? document.activeElement as HTMLInputElement | HTMLTextAreaElement
-            : null;
+        const activeElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
         document.body.append(element);
         element.select();
@@ -40,10 +37,13 @@ export class Clipboard {
 
         element.remove();
 
-        if (activeInput) {
-            // Inputs retain their selection on blur. We just have to refocus again.
-            activeInput.focus();
-        } else if (originalRange) {
+        if (activeElement) {
+            activeElement.focus();
+        }
+        if (originalRange
+            && !(activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement)) {
+            // We don't have to do this for inputs and textareas as they retain their selection on blur. Refocusing them
+            // was enough to recover the original selection.
             selection.removeAllRanges();
             selection.addRange(originalRange);
         }
