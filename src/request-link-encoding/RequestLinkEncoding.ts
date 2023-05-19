@@ -58,7 +58,7 @@ export interface NimiqRequestLinkOptions {
 
 export interface BitcoinRequestLinkOptions {
     amount?: number, // in Satoshi
-    fee?: number, // suggested fee in BTC, might be ignored
+    fee?: number, // suggested fee in Satoshi, might be ignored
     label?: string,
     message?: string,
 }
@@ -101,11 +101,7 @@ export function createRequestLink(
             case Currency.ETH:
             case Currency.MATIC:
             case Currency.USDC:
-                return createEthereumRequestLink(
-                    recipient,
-                    (amountOrOptions as GeneralRequestLinkOptions).currency,
-                    amountOrOptions,
-                );
+                return createEthereumRequestLink(recipient, amountOrOptions.currency, amountOrOptions);
             default:
                 throw new Error('Unsupported currency.');
         }
@@ -116,59 +112,35 @@ export function createRequestLink(
     return createNimiqRequestLink(recipient, { amount, message, basePath });
 }
 
-interface LegacyParsedRequestLink {
-    recipient: string,
-    amount: number | null,
-    message: string | null,
-}
-
-interface ParsedRequestLink extends NimiqRequestLinkOptions {
+type ParsedRequestLink = GeneralRequestLinkOptions & {
     recipient: string,
 }
 
-export function parseRequestLink(requestLink: string | URL, requiredBasePath?: string, useNewApi?: false)
-    : null | LegacyParsedRequestLink; // legacy function signature
-export function parseRequestLink(requestLink: string | URL, requiredBasePath: string | undefined, useNewApi: true)
-    : null | ParsedRequestLink;
-export function parseRequestLink(
-    requestLink: string | URL,
-    requiredBasePath?: string,
-    useNewApi?: boolean, // temporary option to distinguish legacy usage that returned amount in NIM
-): null | ParsedRequestLink | LegacyParsedRequestLink {
-    const protocol = requestLink instanceof URL
-        ? requestLink.protocol
-        : (requestLink.match(/^[^:]+:/) || ['https:'])[0];
+export function parseRequestLink<C extends Currency.NIM | Currency.BTC>(requestLink: string | URL, options: {
+    currencies?: C[], // defaults to all supported currencies
+    isValidAddress?: C extends Exclude<C, Currency.NIM> // supported for currencies other than NIM
+        ? Partial<Record<Exclude<C, Currency.NIM>, (address: string) => boolean>>
+        : never,
+    expectedNimiqSafeRequestLinkBasePath?: C extends Currency.NIM ? string : never, // supported for NIM
+} = {}): null | Extract<ParsedRequestLink, { currency: C }> {
+    const currencies = options.currencies || [Currency.NIM, Currency.BTC];
+    const isValidAddress: Partial<Record<Currency, (address: string) => boolean>> = options.isValidAddress || {};
+    const { expectedNimiqSafeRequestLinkBasePath } = options;
+    const url = toUrl(requestLink);
+    if (!url) return null;
+    const addCurrencyToResult = (parsedRequestLink: Omit<ParsedRequestLink, 'currency'> | null, currency: Currency)
+        : any => (parsedRequestLink ? { ...parsedRequestLink, currency } : null);
 
-    if (!/^http(s)?:$/i.test(protocol) && !isNimiqUriProtocol(protocol)) {
-        // currently only nimiq web link parsing supported
-        throw new Error(`Parsing links for protocol ${protocol} is currently not supported.`);
+    if (currencies.includes(Currency.NIM) && /^(web\+)?nim(iq)?:$/i.test(url.protocol)) {
+        return addCurrencyToResult(parseNimiqUriRequestLink(url), Currency.NIM);
     }
-
-    if (!useNewApi) {
-        // eslint-disable-next-line no-console
-        console.warn('parseRequestLink with amounts in NIM and null for non-existing values has been deprecated. '
-            + 'Please set useNewApi to true to signal usage of the new parseRequestLink method. Note that useNewApi '
-            + 'is a temporary flag that will be removed once parseRequestLink switches to returning amounts in '
-            + 'the smallest unit and undefined for non-existing values by default after a transition period.');
+    if (currencies.includes(Currency.NIM) && /^https?:$/i.test(url.protocol)) {
+        return addCurrencyToResult(parseNimiqSafeRequestLink(url, expectedNimiqSafeRequestLinkBasePath), Currency.NIM);
     }
-
-    let parsedNimiqRequestLink;
-
-    if (isNimiqUriProtocol(protocol)) {
-        parsedNimiqRequestLink = parseNimiqUriRequestLink(requestLink);
-    } else {
-        parsedNimiqRequestLink = parseNimiqSafeRequestLink(requestLink, requiredBasePath);
+    if (currencies.includes(Currency.BTC) && /^bitcoin:$/i.test(url.protocol)) {
+        return addCurrencyToResult(parseBitcoinRequestLink(url, isValidAddress[Currency.BTC]), Currency.BTC);
     }
-
-    if (useNewApi || !parsedNimiqRequestLink) return parsedNimiqRequestLink;
-
-    const { recipient, amount, message } = parsedNimiqRequestLink;
-
-    return {
-        recipient,
-        amount: amount ? amount / (10 ** DECIMALS[Currency.NIM]) : null,
-        message: message || null,
-    };
+    return null;
 }
 
 export function createNimiqRequestLink(
@@ -212,10 +184,10 @@ export function createNimiqRequestLink(
 
 export function parseNimiqSafeRequestLink(
     requestLink: string | URL,
-    requiredBasePath?: string,
-): null | ParsedRequestLink {
-    const url = toUrl(requestLink, '://');
-    if (!url || (requiredBasePath && url.host !== requiredBasePath)) return null;
+    expectedBasePath?: string,
+): null | (NimiqRequestLinkOptions & { recipient: string }) {
+    const url = toUrl(requestLink);
+    if (!url || (expectedBasePath && url.host !== expectedBasePath)) return null;
 
     // check whether it's a request link
     const requestRegex = /_request\/(([^/]+)(\/[^/]*){0,2})_/;
@@ -229,9 +201,10 @@ export function parseNimiqSafeRequestLink(
     return parseNimiqParams({ recipient, amount, message });
 }
 
-export function parseNimiqUriRequestLink(requestLink: string | URL): null | ParsedRequestLink {
-    const url = toUrl(requestLink, ':');
-    if (!url) return null;
+export function parseNimiqUriRequestLink(requestLink: string | URL)
+: null | (NimiqRequestLinkOptions & { recipient: string }) {
+    const url = toUrl(requestLink);
+    if (!url || !/^(web\+)?nim(iq)?:$/i.test(url.protocol)) return null;
 
     // Fetch options
     const recipient = url.pathname;
@@ -240,22 +213,6 @@ export function parseNimiqUriRequestLink(requestLink: string | URL): null | Pars
     const message = url.searchParams.get('message') || undefined;
 
     return parseNimiqParams({ recipient, amount, label, message });
-}
-
-function toUrl(link: string | URL, requiredChars: string): null | URL {
-    if (link instanceof URL) return link;
-
-    if (!link.includes(requiredChars)) {
-        // The protocol doesn't matter after this function, so we add
-        // a dummy protocol, so that the string parses as an URL.
-        link = `dummy${requiredChars}${link}`;
-    }
-
-    try {
-        return new URL(link);
-    } catch (e) {
-        return null;
-    }
 }
 
 type NimiqParams = { recipient: string, amount?: string, label?: string, message?: string };
@@ -297,8 +254,50 @@ export function createBitcoinRequestLink(
             : encodeURIComponent(option.toString());
         query.push(`${key}=${formattedValue}`);
     }, '');
-    const queryString = query.length ? `?${query.join('&')}` : ''; // also urlEncodes the values
+    const queryString = query.length ? `?${query.join('&')}` : '';
     return `bitcoin:${recipient}${queryString}`;
+}
+
+export function parseBitcoinRequestLink(requestLink: string | URL, isValidAddress?: (address: string) => boolean)
+: null | (BitcoinRequestLinkOptions & { recipient: string }) {
+    const url = toUrl(requestLink);
+    if (!url || !/^bitcoin:$/i.test(url.protocol)) return null;
+
+    const recipient = url.pathname;
+    const amount = url.searchParams.get('amount') || undefined;
+    const fee = url.searchParams.get('fee') || undefined;
+    const label = url.searchParams.get('label') || undefined;
+    const message = url.searchParams.get('message') || undefined;
+
+    if (!recipient || (isValidAddress && !isValidAddress(recipient))) return null; // recipient is required
+
+    const parsedAmount = amount ? Math.round(parseFloat(amount) * (10 ** DECIMALS[Currency.BTC])) : undefined;
+    if (typeof parsedAmount === 'number' && Number.isNaN(parsedAmount)) return null;
+
+    const parsedFee = fee ? Math.round(parseFloat(fee) * (10 ** DECIMALS[Currency.BTC])) : undefined;
+    if (typeof parsedFee === 'number' && Number.isNaN(parsedFee)) return null;
+
+    const parsedLabel = label ? decodeURIComponent(label) : undefined;
+    const parsedMessage = message ? decodeURIComponent(message) : undefined;
+
+    return { recipient, amount: parsedAmount, fee: parsedFee, label: parsedLabel, message: parsedMessage };
+}
+
+function toUrl(link: string | URL): null | URL {
+    if (link instanceof URL) return link;
+
+    if (!link.includes(':')) {
+        // If the link does not include a protocol, include a protocol to be parseable as URL. We assume https by
+        // default, but it could be any dummy protocol. The // after the : can be omitted. If a request link format
+        // requires a specific protocol, it is checked by the parsing method itself.
+        link = `https:${link}`;
+    }
+
+    try {
+        return new URL(link);
+    } catch (e) {
+        return null;
+    }
 }
 
 export function createEthereumRequestLink(
@@ -358,10 +357,6 @@ export function createEthereumRequestLink(
     const params = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
 
     return `${schema}:${targetAddress}${chainIdString}${functionName}${params}`;
-}
-
-function isNimiqUriProtocol(link: string): boolean {
-    return /^(web\+)?nim(iq)?:$/i.test(link);
 }
 
 function isUnsignedInteger(value: number | bigint | BigInteger) {

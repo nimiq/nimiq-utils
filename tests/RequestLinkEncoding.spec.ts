@@ -24,7 +24,10 @@ describe('RequestLinkEncoding', () => {
 
         // Parse links
         for (const vector of vectors) {
-            const parsed = RequestLinkEncoding.parseRequestLink(vector.link, undefined, true);
+            const parsed = RequestLinkEncoding.parseRequestLink(
+                vector.link,
+                { currencies: [RequestLinkEncoding.Currency.NIM] },
+            );
             expect(parsed!.recipient).toEqual(vector.address);
             expect(parsed!.amount).toEqual(vector.amount);
             expect(parsed!.message).toEqual(vector.message);
@@ -67,7 +70,10 @@ describe('RequestLinkEncoding', () => {
 
         // Parse links
         for (const vector of vectors) {
-            const parsed = RequestLinkEncoding.parseRequestLink(vector.link, undefined, true);
+            const parsed = RequestLinkEncoding.parseRequestLink(
+                vector.link,
+                { currencies: [RequestLinkEncoding.Currency.NIM] },
+            );
             expect(parsed!.recipient).toEqual(vector.address);
             expect(parsed!.amount).toEqual(vector.amount);
             expect(parsed!.message).toEqual(vector.message);
@@ -87,39 +93,57 @@ describe('RequestLinkEncoding', () => {
         }
     });
 
-    it('can create BTC request links', () => {
+    it('can parse and create BTC request links', () => {
         const vectors = [{
             link: 'bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W',
             address: '175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W',
             amount: undefined,
+            fee: undefined,
             message: undefined,
             label: undefined,
         }, {
             link: 'bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W?label=Luke-Jr',
             address: '175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W',
             amount: undefined,
+            fee: undefined,
             message: undefined,
             label: 'Luke-Jr',
         }, {
             link: 'bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W?amount=20.3&label=Luke-Jr',
             address: '175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W',
             amount: 20.3 * 1e8,
+            fee: undefined,
             message: undefined,
             label: 'Luke-Jr',
         }, {
-            link: 'bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W?amount=50&label=Luke-Jr'
+            link: 'bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W?amount=50&fee=0.0123&label=Luke-Jr'
                 + '&message=Donation%20for%20project%20xyz',
             address: '175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W',
             amount: 50 * 1e8,
+            fee: 0.0123 * 1e8,
             message: 'Donation for project xyz',
             label: 'Luke-Jr',
         }];
+
+        // Parse links
+        for (const vector of vectors) {
+            const parsed = RequestLinkEncoding.parseRequestLink(
+                vector.link,
+                { currencies: [RequestLinkEncoding.Currency.BTC] },
+            );
+            expect(parsed!.recipient).toEqual(vector.address);
+            expect(parsed!.amount).toEqual(vector.amount);
+            expect(parsed!.fee).toEqual(vector.fee);
+            expect(parsed!.label).toEqual(vector.label);
+            expect(parsed!.message).toEqual(vector.message);
+        }
 
         // Create links
         for (const vector of vectors) {
             const options: RequestLinkEncoding.GeneralRequestLinkOptions = {
                 currency: RequestLinkEncoding.Currency.BTC,
                 amount: vector.amount,
+                fee: vector.fee,
                 message: vector.message,
                 label: vector.label,
             };
