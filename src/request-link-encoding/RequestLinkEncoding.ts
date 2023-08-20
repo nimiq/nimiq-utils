@@ -20,24 +20,30 @@ const DECIMALS = {
     [Currency.USDC]: 6,
 } as const;
 
-export const ETHEREUM_CHAIN_ID = {
-    ETHEREUM_MAINNET: 1,
-    ETHEREUM_GOERLI_TESTNET: 5,
-    POLYGON_MAINNET: 137,
-    POLYGON_MUMBAI_TESTNET: 80001,
-} as const;
+// Uses chain ids as values.
+export enum EthereumChain {
+    ETHEREUM_MAINNET = 1,
+    ETHEREUM_GOERLI_TESTNET = 5,
+    POLYGON_MAINNET = 137,
+    POLYGON_MUMBAI_TESTNET = 80001,
+}
+
+enum EthereumBlockchainName {
+    ETHEREUM = 'ethereum',
+    POLYGON = 'polygon',
+}
 
 export const SUPPORTED_TOKENS = {
-    [ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET]: {
+    [EthereumChain.ETHEREUM_MAINNET]: {
         [Currency.USDC]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     },
-    [ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET]: {
+    [EthereumChain.ETHEREUM_GOERLI_TESTNET]: {
         [Currency.USDC]: '0xde637d4c445ca2aae8f782ffac8d2971b93a4998',
     },
-    [ETHEREUM_CHAIN_ID.POLYGON_MAINNET]: {
+    [EthereumChain.POLYGON_MAINNET]: {
         [Currency.USDC]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     },
-    [ETHEREUM_CHAIN_ID.POLYGON_MUMBAI_TESTNET]: {
+    [EthereumChain.POLYGON_MUMBAI_TESTNET]: {
         [Currency.USDC]: '0x0fa8781a83e46826621b3bc094ea2a0212e71b23',
     },
 } as const;
@@ -69,7 +75,7 @@ export type EthereumRequestLinkOptions = {
     gasLimit?: number, // integer in gas units, same as parameter 'gas' as specified in EIP681
 } & (
         {
-            chainId: typeof ETHEREUM_CHAIN_ID[keyof typeof ETHEREUM_CHAIN_ID],
+            chainId: EthereumChain,
             contractAddress: undefined
         } | {
             chainId?: number,
@@ -331,7 +337,7 @@ export function createEthereumRequestLink(
         throw new Error('No contractAddress or chainId provided');
     }
 
-    const chainIdString = chainId !== undefined && chainId !== ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET ? `@${chainId}` : '';
+    const chainIdString = chainId !== undefined && chainId !== EthereumChain.ETHEREUM_MAINNET ? `@${chainId}` : '';
     const functionName = currency === Currency.USDC ? '/transfer' : '';
 
     const query = new URLSearchParams();
@@ -370,17 +376,18 @@ function isUnsignedInteger(value: number | bigint | BigInteger) {
     return !value.isNegative();
 }
 
-function getEthereumBlochainName(chainIdOrNativeCurrency?: number | Currency.ETH | Currency.MATIC) {
+function getEthereumBlochainName(chainIdOrNativeCurrency?: number | Currency.ETH | Currency.MATIC)
+: EthereumBlockchainName {
     switch (chainIdOrNativeCurrency) {
-        case ETHEREUM_CHAIN_ID.POLYGON_MAINNET:
-        case ETHEREUM_CHAIN_ID.POLYGON_MUMBAI_TESTNET:
+        case EthereumChain.POLYGON_MAINNET:
+        case EthereumChain.POLYGON_MUMBAI_TESTNET:
         case Currency.MATIC:
-            return 'polygon';
-        case ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET:
-        case ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET:
+            return EthereumBlockchainName.POLYGON;
+        case EthereumChain.ETHEREUM_MAINNET:
+        case EthereumChain.ETHEREUM_GOERLI_TESTNET:
         case Currency.ETH:
-        default: // To maintain backwards compatibility, default to ethereum
-            return 'ethereum';
+        default: // To maintain backwards compatibility, default to ethereum, which also conforms to the standard
+            return EthereumBlockchainName.ETHEREUM;
     }
 }
 
