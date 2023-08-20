@@ -360,10 +360,10 @@ describe('RequestLinkEncoding', () => {
     });
 
     it('can create USDC on Polygon request links', () => {
-        const { SUPPORTED_TOKENS, EthereumChain, Currency } = RequestLinkEncoding;
+        const { ETHEREUM_SUPPORTED_TOKENS, EthereumChain, Currency } = RequestLinkEncoding;
         const recipientAddress = '0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359';
-        const mainnetUsdcContract = SUPPORTED_TOKENS[EthereumChain.POLYGON_MAINNET][Currency.USDC];
-        const mumbaiUsdcContract = SUPPORTED_TOKENS[EthereumChain.POLYGON_MUMBAI_TESTNET][Currency.USDC];
+        const mainnetUsdcContract = ETHEREUM_SUPPORTED_TOKENS[EthereumChain.POLYGON_MAINNET][Currency.USDC];
+        const mumbaiUsdcContract = ETHEREUM_SUPPORTED_TOKENS[EthereumChain.POLYGON_MUMBAI_TESTNET][Currency.USDC];
 
         const vectors = [{
             link: `polygon:${mainnetUsdcContract}@137/transfer?address=${recipientAddress}`,

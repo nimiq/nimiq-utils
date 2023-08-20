@@ -33,7 +33,7 @@ enum EthereumBlockchainName {
     POLYGON = 'polygon',
 }
 
-export const SUPPORTED_TOKENS = {
+export const ETHEREUM_SUPPORTED_TOKENS = {
     [EthereumChain.ETHEREUM_MAINNET]: {
         [Currency.USDC]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     },
@@ -324,7 +324,7 @@ export function createEthereumRequestLink(
         throw new TypeError(`Invalid contract address: ${contractAddress}. Valid format: ^0x[a-fA-F0-9]{40}$`);
     }
 
-    const schema = getEthereumBlochainName(chainId || (currency !== Currency.USDC ? currency : undefined));
+    const schema = getEthereumBlockchainName(chainId || (currency !== Currency.USDC ? currency : undefined));
 
     let targetAddress = '';
     if (isNativeToken(currency)) {
@@ -332,7 +332,7 @@ export function createEthereumRequestLink(
     } else if (contractAddress) {
         targetAddress = contractAddress;
     } else if (chainId) {
-        targetAddress = getContractAddress(chainId, currency);
+        targetAddress = getEthereumContractAddress(chainId, currency);
     } else {
         throw new Error('No contractAddress or chainId provided');
     }
@@ -376,7 +376,7 @@ function isUnsignedInteger(value: number | bigint | BigInteger) {
     return !value.isNegative();
 }
 
-function getEthereumBlochainName(chainIdOrNativeCurrency?: number | Currency.ETH | Currency.MATIC)
+function getEthereumBlockchainName(chainIdOrNativeCurrency?: number | Currency.ETH | Currency.MATIC)
 : EthereumBlockchainName {
     switch (chainIdOrNativeCurrency) {
         case EthereumChain.POLYGON_MAINNET:
@@ -401,8 +401,8 @@ function isNativeToken(currency: Currency): boolean {
 
 // Return the contract address for the given chainId and currency. If no contract address is known for the given
 // chainId and currency, return empty string.
-function getContractAddress(chainId: number, currency: Currency) {
-    const tokens = SUPPORTED_TOKENS[chainId as keyof typeof SUPPORTED_TOKENS];
+function getEthereumContractAddress(chainId: number, currency: Currency) {
+    const tokens = ETHEREUM_SUPPORTED_TOKENS[chainId as keyof typeof ETHEREUM_SUPPORTED_TOKENS];
     const contractAddress = tokens[currency as unknown as keyof typeof tokens] as string | undefined;
     if (!contractAddress) {
         throw new Error(`Unsupported token: ${currency} on chain ${chainId}.
