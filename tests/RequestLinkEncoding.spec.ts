@@ -295,13 +295,13 @@ describe('RequestLinkEncoding', () => {
     it('can create native Polygon request links', () => {
         const address = '0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359';
         const vectors = [{
-            link: `polygon:${address}@137`,
+            link: `polygon:${address}`,
             currency: RequestLinkEncoding.Currency.MATIC,
             address,
             amount: undefined,
             gasPrice: undefined,
             gasLimit: undefined,
-            chainId: RequestLinkEncoding.ETHEREUM_CHAIN_ID.POLYGON_MAINNET,
+            chainId: undefined,
         }, {
             link: `polygon:${address}@137?value=2.014e18`,
             currency: RequestLinkEncoding.Currency.MATIC,

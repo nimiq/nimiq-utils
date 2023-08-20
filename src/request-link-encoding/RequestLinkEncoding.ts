@@ -302,7 +302,7 @@ function toUrl(link: string | URL): null | URL {
 
 export function createEthereumRequestLink(
     recipient: string,
-    currency: Currency,
+    currency: Currency.ETH | Currency.MATIC | Currency.USDC,
     options: EthereumRequestLinkOptions,
 ): string {
     if (!recipient) throw new Error('Recipient is required');
@@ -313,11 +313,12 @@ export function createEthereumRequestLink(
     if (amount && !isUnsignedInteger(amount)) throw new TypeError('Invalid amount');
     if (gasPrice && !isUnsignedInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
     if (gasLimit && !isUnsignedInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
+    if (chainId && !isUnsignedInteger(chainId)) throw new TypeError('Invalid chainId');
     if (contractAddress && !validateEthereumAddress(contractAddress)) {
         throw new TypeError(`Invalid contract address: ${contractAddress}. Valid format: ^0x[a-fA-F0-9]{40}$`);
     }
 
-    const schema = getEthereumBlochainName(chainId);
+    const schema = getEthereumBlochainName(chainId || (currency !== Currency.USDC ? currency : undefined));
 
     let targetAddress = '';
     if (isNativeToken(currency)) {
@@ -369,13 +370,15 @@ function isUnsignedInteger(value: number | bigint | BigInteger) {
     return !value.isNegative();
 }
 
-function getEthereumBlochainName(chainId?: number) {
-    switch (chainId) {
+function getEthereumBlochainName(chainIdOrNativeCurrency?: number | Currency.ETH | Currency.MATIC) {
+    switch (chainIdOrNativeCurrency) {
         case ETHEREUM_CHAIN_ID.POLYGON_MAINNET:
         case ETHEREUM_CHAIN_ID.POLYGON_MUMBAI_TESTNET:
+        case Currency.MATIC:
             return 'polygon';
         case ETHEREUM_CHAIN_ID.ETHEREUM_MAINNET:
         case ETHEREUM_CHAIN_ID.ETHEREUM_GOERLI_TESTNET:
+        case Currency.ETH:
         default: // To maintain backwards compatibility, default to ethereum
             return 'ethereum';
     }
