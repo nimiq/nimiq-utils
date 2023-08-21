@@ -1,5 +1,5 @@
 import { ValidationUtils } from '../validation-utils/ValidationUtils';
-import { FormattableNumber } from '../formattable-number/FormattableNumber';
+import { FormattableNumber, toNonScientificNumberString } from '../formattable-number/FormattableNumber';
 
 // this imports only the type without bundling the library
 type BigInteger = import('big-integer').BigInteger;
@@ -47,6 +47,25 @@ export const ETHEREUM_SUPPORTED_TOKENS = {
         [Currency.USDC]: '0x0fa8781a83e46826621b3bc094ea2a0212e71b23',
     },
 } as const;
+type EthereumSupportedTokenCurrencies = keyof (
+    (typeof ETHEREUM_SUPPORTED_TOKENS)[keyof typeof ETHEREUM_SUPPORTED_TOKENS]);
+const ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP: Record<string, [EthereumChain, EthereumSupportedTokenCurrencies]> = {};
+for (const [chainId, chainContracts] of Object.entries(ETHEREUM_SUPPORTED_TOKENS)) {
+    for (const [currency, address] of Object.entries(chainContracts)) {
+        ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[address] = [
+            parseInt(chainId, 10),
+            currency as EthereumSupportedTokenCurrencies,
+        ];
+    }
+}
+
+// for parsing the path part of an eip681 link: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-681.md#syntax
+const ETHEREUM_PATH_REGEX = new RegExp('^'
+    + '(?:pay-)?' // optional "pay-" suffix of the schema prefix
+    + '([^@/?]+)' // mandatory target address
+    + '(?:@([^/?]+))?' // optional chain id
+    + '(?:/([^?]+))?' // optional function name
+    + '$');
 
 export enum NimiqRequestLinkType {
     SAFE = 'safe', // Nimiq Safe format: https://safe.nimiq.com/#_request/...
@@ -118,24 +137,37 @@ export function createRequestLink(
     return createNimiqRequestLink(recipient, { amount, message, basePath });
 }
 
-type ParsedRequestLink = GeneralRequestLinkOptions & {
+type ParsedRequestLink<Currencies extends Currency> = (
+    // for if Currencies includes Currency.NIM, Currency.BTC or Currency.ETH | Currency.MATIC | Currency.USDC
+    Extract<GeneralRequestLinkOptions, { currency: Currencies }>
+    // for if Currencies includes a subset of Currency.ETH | Currency.MATIC | Currency.USDC
+    // Restrict currency in return type to Currencies.
+    | (Currencies extends Currency.ETH | Currency.MATIC | Currency.USDC
+        ? Omit<
+            Extract<GeneralRequestLinkOptions, { currency: Currency.ETH | Currency.MATIC | Currency.USDC }>,
+            'currency'
+        > & { currency: Exclude<Currencies, Currency.NIM | Currency.BTC> }
+        : never
+    )
+) & {
     recipient: string,
-}
+};
 
-export function parseRequestLink<C extends Currency.NIM | Currency.BTC>(requestLink: string | URL, options: {
+export function parseRequestLink<C extends Currency>(requestLink: string | URL, options: {
     currencies?: C[], // defaults to all supported currencies
-    isValidAddress?: C extends Exclude<C, Currency.NIM> // supported for currencies other than NIM
-        ? Partial<Record<Exclude<C, Currency.NIM>, (address: string) => boolean>>
+    isValidAddress?: C extends Exclude<C, Currency.NIM> // Supported for currencies other than NIM. MATIC and USDC use
+        // the entry for ETH if provided.
+        ? Partial<Record<Exclude<C, Currency.NIM | Currency.MATIC | Currency.USDC>, (address: string) => boolean>>
         : never,
     expectedNimiqSafeRequestLinkBasePath?: C extends Currency.NIM ? string : never, // supported for NIM
-} = {}): null | Extract<ParsedRequestLink, { currency: C }> {
-    const currencies = options.currencies || [Currency.NIM, Currency.BTC];
+} = {}): null | ParsedRequestLink<C> {
+    const currencies = options.currencies || Object.values(Currency);
     const isValidAddress: Partial<Record<Currency, (address: string) => boolean>> = options.isValidAddress || {};
     const { expectedNimiqSafeRequestLinkBasePath } = options;
     const url = toUrl(requestLink);
     if (!url) return null;
-    const addCurrencyToResult = (parsedRequestLink: Omit<ParsedRequestLink, 'currency'> | null, currency: Currency)
-        : any => (parsedRequestLink ? { ...parsedRequestLink, currency } : null);
+    const addCurrencyToResult = (parsedRequestLink: Omit<ParsedRequestLink<any>, 'currency'> | null, currency: Currency)
+        : any | null => (parsedRequestLink ? { ...parsedRequestLink, currency } : null);
 
     if (currencies.includes(Currency.NIM) && /^(web\+)?nim(iq)?:$/i.test(url.protocol)) {
         return addCurrencyToResult(parseNimiqUriRequestLink(url), Currency.NIM);
@@ -145,6 +177,13 @@ export function parseRequestLink<C extends Currency.NIM | Currency.BTC>(requestL
     }
     if (currencies.includes(Currency.BTC) && /^bitcoin:$/i.test(url.protocol)) {
         return addCurrencyToResult(parseBitcoinRequestLink(url, isValidAddress[Currency.BTC]), Currency.BTC);
+    }
+    if ([Currency.ETH, Currency.MATIC, Currency.USDC].some((currency) => currencies.includes(currency))
+        && new RegExp(`^(${Object.values(EthereumBlockchainName).join('|')}):$`, 'i').test(url.protocol)) {
+        const parsedRequestLink = parseEthereumRequestLink(url, isValidAddress[Currency.ETH]);
+        if (parsedRequestLink && currencies.includes(parsedRequestLink.currency)) {
+            return parsedRequestLink as ParsedRequestLink<C>;
+        }
     }
     return null;
 }
@@ -230,15 +269,13 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
         .replace(/(.)(?=(.{4})+$)/g, '$1 '); // reformat with spaces, forming blocks of 4 chars
     if (!ValidationUtils.isValidAddress(recipient)) return null; // recipient is required
 
-    const parsedAmount = params.amount
-        ? Math.round(parseFloat(params.amount) * (10 ** DECIMALS[Currency.NIM]))
-        : undefined;
-    if (typeof parsedAmount === 'number' && Number.isNaN(parsedAmount)) return null;
+    const amount = params.amount ? Math.round(parseFloat(params.amount) * (10 ** DECIMALS[Currency.NIM])) : undefined;
+    if (typeof amount === 'number' && Number.isNaN(amount)) return null;
 
-    const parsedLabel = params.label ? decodeURIComponent(params.label) : undefined;
-    const parsedMessage = params.message ? decodeURIComponent(params.message) : undefined;
+    const label = params.label ? decodeURIComponent(params.label) : undefined;
+    const message = params.message ? decodeURIComponent(params.message) : undefined;
 
-    return { recipient, amount: parsedAmount, label: parsedLabel, message: parsedMessage };
+    return { recipient, amount, label, message };
 }
 
 // following BIP21
@@ -270,23 +307,162 @@ export function parseBitcoinRequestLink(requestLink: string | URL, isValidAddres
     if (!url || !/^bitcoin:$/i.test(url.protocol)) return null;
 
     const recipient = url.pathname;
-    const amount = url.searchParams.get('amount') || undefined;
-    const fee = url.searchParams.get('fee') || undefined;
-    const label = url.searchParams.get('label') || undefined;
-    const message = url.searchParams.get('message') || undefined;
+    const rawAmount = url.searchParams.get('amount') || undefined;
+    const rawFee = url.searchParams.get('fee') || undefined;
+    const rawLabel = url.searchParams.get('label') || undefined;
+    const rawMessage = url.searchParams.get('message') || undefined;
 
     if (!recipient || (isValidAddress && !isValidAddress(recipient))) return null; // recipient is required
 
-    const parsedAmount = amount ? Math.round(parseFloat(amount) * (10 ** DECIMALS[Currency.BTC])) : undefined;
-    if (typeof parsedAmount === 'number' && Number.isNaN(parsedAmount)) return null;
+    const amount = rawAmount ? Math.round(parseFloat(rawAmount) * (10 ** DECIMALS[Currency.BTC])) : undefined;
+    if (typeof amount === 'number' && Number.isNaN(amount)) return null;
 
-    const parsedFee = fee ? Math.round(parseFloat(fee) * (10 ** DECIMALS[Currency.BTC])) : undefined;
-    if (typeof parsedFee === 'number' && Number.isNaN(parsedFee)) return null;
+    const fee = rawFee ? Math.round(parseFloat(rawFee) * (10 ** DECIMALS[Currency.BTC])) : undefined;
+    if (typeof fee === 'number' && Number.isNaN(fee)) return null;
 
-    const parsedLabel = label ? decodeURIComponent(label) : undefined;
-    const parsedMessage = message ? decodeURIComponent(message) : undefined;
+    const label = rawLabel ? decodeURIComponent(rawLabel) : undefined;
+    const message = rawMessage ? decodeURIComponent(rawMessage) : undefined;
 
-    return { recipient, amount: parsedAmount, fee: parsedFee, label: parsedLabel, message: parsedMessage };
+    return { recipient, amount, fee, label, message };
+}
+
+// Following eip681. ETH, Matic and USDC (both on Ethereum and Polygon) are supported. The only supported smart contract
+// function for USDC is /transfer. Deviating from the standard, we use polygon: instead of ethereum: as protocol for
+// requests on the Polygon chain which is what many other wallets and exchanges do, too.
+export function createEthereumRequestLink(
+    recipient: string, // addresses only; no support for ENS names
+    currency: Currency.ETH | Currency.MATIC | Currency.USDC,
+    options: EthereumRequestLinkOptions,
+): string {
+    const { amount, gasPrice, gasLimit, chainId, contractAddress } = options;
+    if (!recipient || !validateEthereumAddress(recipient)) {
+        throw new TypeError(`Invalid recipient address: ${recipient}.`);
+    }
+    if (amount && !isUnsignedInteger(amount)) throw new TypeError('Invalid amount');
+    if (gasPrice && !isUnsignedInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
+    if (gasLimit && !isUnsignedInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
+    if (chainId && !isUnsignedInteger(chainId)) throw new TypeError('Invalid chainId');
+    if (contractAddress && !validateEthereumAddress(contractAddress)) {
+        throw new TypeError(`Invalid contract address: ${contractAddress}.`);
+    }
+
+    const protocol = `${getEthereumBlockchainName(chainId || (currency !== Currency.USDC ? currency : undefined))}:`;
+    const isNativeToken = [Currency.ETH, Currency.MATIC].includes(currency);
+
+    let targetAddress = '';
+    if (isNativeToken) {
+        targetAddress = recipient;
+    } else if (contractAddress) {
+        targetAddress = contractAddress;
+    } else if (chainId) {
+        targetAddress = getEthereumContractAddress(chainId, currency);
+    } else {
+        throw new Error('No contractAddress or chainId provided');
+    }
+
+    const chainIdString = chainId !== undefined && chainId !== EthereumChain.ETHEREUM_MAINNET ? `@${chainId}` : '';
+    const functionString = !isNativeToken ? '/transfer' : '';
+
+    const query = new URLSearchParams();
+    if (!isNativeToken) {
+        query.set('address', recipient);
+    }
+    if (amount) {
+        const decimals = DECIMALS[currency];
+        const formattableNumber = new FormattableNumber(amount);
+        formattableNumber.moveDecimalSeparator(-decimals);
+        const amountParam = isNativeToken ? 'value' : 'uint256';
+        query.set(amountParam, `${formattableNumber.toString()}e${decimals}`);
+    }
+    if (gasPrice) {
+        // Gas price is in native currency, currently ETH or Matic, which both have 18 decimals. Render as GWei.
+        const formattableNumber = new FormattableNumber(gasPrice);
+        formattableNumber.moveDecimalSeparator(-9);
+        query.set('gasPrice', `${formattableNumber.toString()}e9`);
+    }
+    if (gasLimit) {
+        query.set('gasLimit', toNonScientificNumberString(gasLimit));
+    }
+    const params = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
+
+    return `${protocol}${targetAddress}${chainIdString}${functionString}${params}`;
+}
+
+// Following eip681. Support is limited to ETH, Matic and USDC (both on Ethereum and Polygon) and /transfer as the only
+// smart contract function. Scanning request links for contracts other than those defined in ETHEREUM_SUPPORTED_TOKENS
+// or chain ids not defined in the EthereumChain enum is not supported as those might refer to a currency other than the
+// supported ones. If support for that would be needed in the future, undefined could be returned as currency, alongside
+// the parsed chain id and/or contract address.
+export function parseEthereumRequestLink(
+    requestLink: string | URL,
+    isValidAddress: (address: string) => boolean = validateEthereumAddress,
+): null | (EthereumRequestLinkOptions & {
+    currency: Currency.ETH | Currency.MATIC | Currency.USDC,
+    recipient: string,
+}) {
+    const url = toUrl(requestLink);
+    if (!url
+        || !new RegExp(`^(${Object.values(EthereumBlockchainName).join('|')}):$`, 'i').test(url.protocol)) return null;
+
+    const [, targetAddress, rawChainId, rawFunctionName] = url.pathname.match(ETHEREUM_PATH_REGEX) || [] as undefined[];
+
+    if (!targetAddress || !isValidAddress(targetAddress)) return null; // target address is required
+
+    // Note that we limit support of scanning contract request links to contracts specified in ETHEREUM_SUPPORTED_TOKENS
+    const contractInfo = getEthereumContractInfo(targetAddress);
+    const [contractChainId, contractCurrency] = contractInfo || [] as undefined[];
+    const isContract = !!contractInfo;
+    const contractAddress = isContract ? targetAddress : undefined;
+
+    const chainId = rawChainId ? parseInt(rawChainId, 10) : (
+        contractChainId
+        // Guess the chain from the protocol. If the protocol is 'ethereum:' don't assume the ethereum chain though,
+        // because it's a valid protocol for other chains too, according to the standard.
+        || (url.protocol === `${EthereumBlockchainName.POLYGON}:` ? EthereumChain.POLYGON_MAINNET : undefined)
+    );
+    if (typeof chainId === 'number' && (
+        Number.isNaN(chainId)
+        || !Object.values(EthereumChain).includes(chainId)
+        // While technically the contract id is a valid address, regular or for another contract, on other chain ids,
+        // it is highly unlikely that it's actually the user's intention to receive funds there.
+        || (typeof contractChainId === 'number' && chainId !== contractChainId)
+    )) return null;
+
+    const currency = contractCurrency
+        || (chainId ? getEthereumCurrency(chainId) : undefined)
+        // Fallback to the protocol, which was checked to contain a valid EthereumBlockchainName in the beginning.
+        || getEthereumCurrency(url.protocol.match(/[^:]+/)![0].toLowerCase() as EthereumBlockchainName);
+
+    const functionName = rawFunctionName ? decodeURIComponent(rawFunctionName) : undefined;
+    if ((!!functionName !== isContract) || (functionName && functionName !== 'transfer')) {
+        // A functionName needs to be specified for contracts, and a supported contract needs to be detected if a
+        // functionName is set. Additionally, the only supported contract function is transfer.
+        return null;
+    }
+
+    const rawContractRecipient = url.searchParams.get('address') || undefined;
+    const rawAmount = url.searchParams.get(isContract ? 'uint256' : 'value') || undefined;
+    const rawGasPrice = url.searchParams.get('gasPrice') || undefined;
+    const rawGasLimit = url.searchParams.get('gasLimit') || undefined;
+
+    const contractRecipient = rawContractRecipient ? decodeURIComponent(rawContractRecipient) : undefined;
+    if ((!!contractRecipient !== isContract) || (contractRecipient && !isValidAddress(contractRecipient))) return null;
+    const recipient = contractRecipient || targetAddress;
+
+    let amount: number | bigint | undefined;
+    let gasPrice: number | bigint | undefined;
+    let gasLimit: number | undefined;
+    try {
+        amount = rawAmount ? parseUnsignedInteger(rawAmount) : undefined;
+        gasPrice = rawGasPrice ? parseUnsignedInteger(rawGasPrice) : undefined;
+        const parsedGasLimit = rawGasLimit ? parseUnsignedInteger(rawGasLimit) : undefined;
+        if (typeof parsedGasLimit === 'bigint') return null;
+        gasLimit = parsedGasLimit;
+    } catch (e) {
+        return null;
+    }
+
+    return { currency, recipient, amount, gasPrice, gasLimit, chainId, contractAddress };
 }
 
 function toUrl(link: string | URL): null | URL {
@@ -306,67 +482,7 @@ function toUrl(link: string | URL): null | URL {
     }
 }
 
-export function createEthereumRequestLink(
-    recipient: string,
-    currency: Currency.ETH | Currency.MATIC | Currency.USDC,
-    options: EthereumRequestLinkOptions,
-): string {
-    if (!recipient) throw new Error('Recipient is required');
-    const { amount, gasPrice, gasLimit, chainId, contractAddress } = options;
-    if (recipient && !validateEthereumAddress(recipient)) {
-        throw new TypeError(`Invalid recipient address: ${recipient}. Valid format: ^0x[a-fA-F0-9]{40}$`);
-    }
-    if (amount && !isUnsignedInteger(amount)) throw new TypeError('Invalid amount');
-    if (gasPrice && !isUnsignedInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
-    if (gasLimit && !isUnsignedInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
-    if (chainId && !isUnsignedInteger(chainId)) throw new TypeError('Invalid chainId');
-    if (contractAddress && !validateEthereumAddress(contractAddress)) {
-        throw new TypeError(`Invalid contract address: ${contractAddress}. Valid format: ^0x[a-fA-F0-9]{40}$`);
-    }
-
-    const schema = getEthereumBlockchainName(chainId || (currency !== Currency.USDC ? currency : undefined));
-
-    let targetAddress = '';
-    if (isNativeToken(currency)) {
-        targetAddress = recipient;
-    } else if (contractAddress) {
-        targetAddress = contractAddress;
-    } else if (chainId) {
-        targetAddress = getEthereumContractAddress(chainId, currency);
-    } else {
-        throw new Error('No contractAddress or chainId provided');
-    }
-
-    const chainIdString = chainId !== undefined && chainId !== EthereumChain.ETHEREUM_MAINNET ? `@${chainId}` : '';
-    const functionName = currency === Currency.USDC ? '/transfer' : '';
-
-    const query = new URLSearchParams();
-    if (!isNativeToken(currency)) {
-        // the address parameter is only relevant for ERC20 tokens
-        query.set('address', recipient);
-    }
-    if (amount) {
-        const decimals = DECIMALS[currency];
-        const formattableNumber = new FormattableNumber(amount);
-        formattableNumber.moveDecimalSeparator(-decimals);
-        const amountName = isNativeToken(currency) ? 'value' : 'uint256';
-        query.set(amountName, `${formattableNumber.toString()}e${decimals}`);
-    }
-    if (gasPrice) {
-        const formattableNumber = new FormattableNumber(gasPrice);
-        formattableNumber.moveDecimalSeparator(-9); // render as GWei
-        query.set('gasPrice', `${formattableNumber.toString()}e9`);
-    }
-    if (gasLimit) {
-        const formattableNumber = new FormattableNumber(gasLimit);
-        query.set('gasLimit', formattableNumber.toString());
-    }
-    const params = query.toString() ? `?${query.toString()}` : ''; // also urlEncodes the values
-
-    return `${schema}:${targetAddress}${chainIdString}${functionName}${params}`;
-}
-
-function isUnsignedInteger(value: number | bigint | BigInteger) {
+function isUnsignedInteger(value: number | bigint | BigInteger): boolean {
     if (typeof value === 'number') {
         return Number.isInteger(value) && value >= 0;
     }
@@ -374,6 +490,23 @@ function isUnsignedInteger(value: number | bigint | BigInteger) {
         return value >= 0;
     }
     return !value.isNegative();
+}
+
+function parseUnsignedInteger(value: string): number | bigint {
+    value = toNonScientificNumberString(value); // Resolves scientific notation and throws for invalid number strings.
+    let result: number | bigint = parseFloat(value); // Parse to a number first, for browsers without bigint support.
+    if (result < 0) throw new Error('Value is negative');
+    if (!Number.isSafeInteger(result)) {
+        // Non-integer, non-safe integer larger than Number.MAX_SAFE_INTEGER or NaN (which it can't really be as
+        // toNonScientificNumberString parses only valid numbers). Try parsing again as bigint, which supports integers
+        // above Number.MAX_SAFE_INTEGER, and throws for actual invalid or non-integer numbers.
+        result = BigInt(value); // eslint-disable-line no-undef
+    }
+    return result;
+}
+
+function validateEthereumAddress(address: string): boolean {
+    return /^0x[a-f0-9]{40}$/i.test(address);
 }
 
 function getEthereumBlockchainName(chainIdOrNativeCurrency?: number | Currency.ETH | Currency.MATIC)
@@ -391,22 +524,39 @@ function getEthereumBlockchainName(chainIdOrNativeCurrency?: number | Currency.E
     }
 }
 
-function validateEthereumAddress(address: string): boolean {
-    return /^0x[a-fA-F0-9]{40}$/.test(address);
+function getEthereumCurrency(chainIdOrBlockchainName: number): Currency.ETH | Currency.MATIC | undefined;
+function getEthereumCurrency(chainIdOrBlockchainName: EthereumBlockchainName): Currency.ETH | Currency.MATIC;
+function getEthereumCurrency(chainIdOrBlockchainName: number | EthereumBlockchainName)
+: Currency.ETH | Currency.MATIC | undefined {
+    switch (chainIdOrBlockchainName) {
+        case EthereumChain.ETHEREUM_MAINNET:
+        case EthereumChain.ETHEREUM_GOERLI_TESTNET:
+        case EthereumBlockchainName.ETHEREUM:
+            return Currency.ETH;
+        case EthereumChain.POLYGON_MAINNET:
+        case EthereumChain.POLYGON_MUMBAI_TESTNET:
+        case EthereumBlockchainName.POLYGON:
+            return Currency.MATIC;
+        default: // don't make any assumption for unknown chainIds or blockchain names
+            return undefined;
+    }
 }
 
-function isNativeToken(currency: Currency): boolean {
-    return [Currency.ETH, Currency.MATIC].includes(currency);
-}
-
-// Return the contract address for the given chainId and currency. If no contract address is known for the given
-// chainId and currency, return empty string.
-function getEthereumContractAddress(chainId: number, currency: Currency) {
+// Return known contract address for the given chainId and currency.
+function getEthereumContractAddress(chainId: number, currency: Currency): string {
     const tokens = ETHEREUM_SUPPORTED_TOKENS[chainId as keyof typeof ETHEREUM_SUPPORTED_TOKENS];
+    if (!tokens) {
+        throw new Error(`Unsupported chainId: ${chainId}. You need to specify the 'contractAddress' option.`);
+    }
     const contractAddress = tokens[currency as unknown as keyof typeof tokens] as string | undefined;
     if (!contractAddress) {
-        throw new Error(`Unsupported token: ${currency} on chain ${chainId}.
-        You need to specify the 'contractAddress' option.`);
+        throw new Error(`Unsupported token: ${currency} on chain ${chainId}. `
+            + 'You need to specify the \'contractAddress\' option.');
     }
     return contractAddress;
+}
+
+// Return the chainId and currency for known contract address.
+function getEthereumContractInfo(contractAddress: string): null | [EthereumChain, EthereumSupportedTokenCurrencies] {
+    return ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[contractAddress.toLowerCase()] || null;
 }
