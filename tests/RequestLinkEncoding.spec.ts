@@ -386,9 +386,9 @@ describe('RequestLinkEncoding', () => {
         const mumbaiUsdcContract = ETHEREUM_SUPPORTED_TOKENS[EthereumChain.POLYGON_MUMBAI_TESTNET][Currency.USDC];
 
         const vectors = [{
-            link: `polygon:${mainnetUsdcContract}@137/transfer?address=${recipientAddress}`,
+            link: `polygon:${mainnetUsdcContract}/transfer?address=${recipientAddress}`,
             address: recipientAddress,
-            chainId: RequestLinkEncoding.EthereumChain.POLYGON_MAINNET,
+            chainId: undefined,
             contractAddress: mainnetUsdcContract,
             amount: undefined,
             gasPrice: undefined,

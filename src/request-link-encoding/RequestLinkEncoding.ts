@@ -334,7 +334,9 @@ export function createEthereumRequestLink(
     currency: Currency.ETH | Currency.MATIC | Currency.USDC,
     options: EthereumRequestLinkOptions,
 ): string {
-    const { amount, gasPrice, gasLimit, chainId, contractAddress } = options;
+    const { amount, gasPrice, gasLimit, chainId } = options;
+    const contractAddress = options.contractAddress
+        || (chainId ? getEthereumContractAddress(chainId, currency) : undefined);
     if (!recipient || !validateEthereumAddress(recipient)) {
         throw new TypeError(`Invalid recipient address: ${recipient}.`);
     }
@@ -346,16 +348,25 @@ export function createEthereumRequestLink(
         throw new TypeError(`Invalid contract address: ${contractAddress}.`);
     }
 
-    const protocol = `${getEthereumBlockchainName(chainId || (currency !== Currency.USDC ? currency : undefined))}:`;
-    const isNativeToken = [Currency.ETH, Currency.MATIC].includes(currency);
+    let blockchainName: EthereumBlockchainName;
+    if (chainId) {
+        blockchainName = getEthereumBlockchainName(chainId);
+    } else if (isNativeEthereumCurrency(currency)) {
+        blockchainName = getEthereumBlockchainName(currency);
+    } else if (contractAddress) {
+        const [contractChainId] = getEthereumContractInfo(contractAddress) || [] as undefined[];
+        blockchainName = contractChainId ? getEthereumBlockchainName(contractChainId) : EthereumBlockchainName.ETHEREUM;
+    } else {
+        blockchainName = EthereumBlockchainName.ETHEREUM;
+    }
+    const protocol = `${blockchainName}:`;
 
+    const isNativeToken = isNativeEthereumCurrency(currency);
     let targetAddress = '';
     if (isNativeToken) {
         targetAddress = recipient;
     } else if (contractAddress) {
         targetAddress = contractAddress;
-    } else if (chainId) {
-        targetAddress = getEthereumContractAddress(chainId, currency);
     } else {
         throw new Error('No contractAddress or chainId provided');
     }
@@ -505,11 +516,15 @@ function parseUnsignedInteger(value: string): number | bigint {
     return result;
 }
 
+function isNativeEthereumCurrency(currency: Currency): currency is Currency.ETH | Currency.MATIC {
+    return [Currency.ETH, Currency.MATIC].includes(currency);
+}
+
 function validateEthereumAddress(address: string): boolean {
     return /^0x[a-f0-9]{40}$/i.test(address);
 }
 
-function getEthereumBlockchainName(chainIdOrNativeCurrency?: number | Currency.ETH | Currency.MATIC)
+function getEthereumBlockchainName(chainIdOrNativeCurrency: number | Currency.ETH | Currency.MATIC)
 : EthereumBlockchainName {
     switch (chainIdOrNativeCurrency) {
         case EthereumChain.POLYGON_MAINNET:
@@ -543,7 +558,8 @@ function getEthereumCurrency(chainIdOrBlockchainName: number | EthereumBlockchai
 }
 
 // Return known contract address for the given chainId and currency.
-function getEthereumContractAddress(chainId: number, currency: Currency): string {
+function getEthereumContractAddress(chainId: number, currency: Currency): null | string {
+    if (isNativeEthereumCurrency(currency)) return null;
     const tokens = ETHEREUM_SUPPORTED_TOKENS[chainId as keyof typeof ETHEREUM_SUPPORTED_TOKENS];
     if (!tokens) {
         throw new Error(`Unsupported chainId: ${chainId}. You need to specify the 'contractAddress' option.`);
