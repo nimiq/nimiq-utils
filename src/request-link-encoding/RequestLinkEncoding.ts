@@ -49,7 +49,8 @@ export const ETHEREUM_SUPPORTED_TOKENS = {
 } as const;
 type EthereumSupportedTokenCurrencies = keyof (
     (typeof ETHEREUM_SUPPORTED_TOKENS)[keyof typeof ETHEREUM_SUPPORTED_TOKENS]);
-const ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP: Record<string, [EthereumChain, EthereumSupportedTokenCurrencies]> = {};
+export const ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP
+    : Record<string, [EthereumChain, EthereumSupportedTokenCurrencies]> = {};
 for (const [chainId, chainContracts] of Object.entries(ETHEREUM_SUPPORTED_TOKENS)) {
     for (const [currency, address] of Object.entries(chainContracts)) {
         ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[address] = [
@@ -326,9 +327,10 @@ export function parseBitcoinRequestLink(requestLink: string | URL, isValidAddres
     return { recipient, amount, fee, label, message };
 }
 
-// Following eip681. ETH, Matic and USDC (both on Ethereum and Polygon) are supported. The only supported smart contract
-// function for USDC is /transfer. Deviating from the standard, we use polygon: instead of ethereum: as protocol for
-// requests on the Polygon chain which is what many other wallets and exchanges do, too.
+// Following eip681. ETH, Matic and USDC (both on Ethereum and Polygon) are directly supported. For other currencies, a
+// custom contract address can be manually specified. However, the only supported smart contract function is /transfer.
+// Deviating from the standard, we use polygon: instead of ethereum: as protocol for requests on the Polygon chain which
+// is what many other wallets and exchanges do, too.
 export function createEthereumRequestLink(
     recipient: string, // addresses only; no support for ENS names
     currency: Currency.ETH | Currency.MATIC | Currency.USDC,
@@ -348,41 +350,46 @@ export function createEthereumRequestLink(
         throw new TypeError(`Invalid contract address: ${contractAddress}.`);
     }
 
-    let blockchainName: EthereumBlockchainName;
-    if (chainId) {
-        blockchainName = getEthereumBlockchainName(chainId);
-    } else if (isNativeEthereumCurrency(currency)) {
-        blockchainName = getEthereumBlockchainName(currency);
-    } else if (contractAddress) {
-        const [contractChainId] = getEthereumContractInfo(contractAddress) || [] as undefined[];
-        blockchainName = contractChainId ? getEthereumBlockchainName(contractChainId) : EthereumBlockchainName.ETHEREUM;
-    } else {
-        blockchainName = EthereumBlockchainName.ETHEREUM;
-    }
+    // For determining the protocol, (known) chain ids have the highest priority, because they indisputably identify the
+    // chain/protocol. Then, the chain ids associated to our known contracts (which are also valid addresses on other
+    // chain ids, which is very unlikely the users intention though). If the user passed no custom chain id or contract
+    // address, or custom ones for which we don't know the associated blockchain name, the protocol is determined based
+    // on the (native) currency, such that the user can pick the protocol via the currency. If the protocol can't be
+    // determined based on these checks, we fall back to "ethereum:" which is valid for all chain ids, according to the
+    // standard.
+    const blockchainName = (chainId ? getEthereumBlockchainName(chainId) : null)
+        || (contractAddress ? getEthereumBlockchainName((getEthereumContractInfo(contractAddress) || [-1])[0]) : null)
+        || getEthereumBlockchainName(currency)
+        || EthereumBlockchainName.ETHEREUM;
     const protocol = `${blockchainName}:`;
 
-    const isNativeToken = isNativeEthereumCurrency(currency);
-    let targetAddress = '';
-    if (isNativeToken) {
-        targetAddress = recipient;
-    } else if (contractAddress) {
+    let targetAddress: string;
+    if (contractAddress) {
+        // For determining the target address, the contractAddress has priority, even if the requested currency is a
+        // native currency, as the user might have provided a custom contractAddress, and the native currency just to
+        // determine the protocol.
         targetAddress = contractAddress;
+    } else if (isNativeEthereumCurrency(currency)) {
+        targetAddress = recipient;
     } else {
-        throw new Error('No contractAddress or chainId provided');
+        // Not a native currency, and no contractAddress, or chainId from which the contractAddress could be determined
+        // in the beginning was passed.
+        throw new Error(`No contractAddress or chainId provided for ${currency} transaction`);
     }
 
+    const isContract = !!contractAddress;
     const chainIdString = chainId !== undefined && chainId !== EthereumChain.ETHEREUM_MAINNET ? `@${chainId}` : '';
-    const functionString = !isNativeToken ? '/transfer' : '';
+    const functionString = isContract ? '/transfer' : '';
 
     const query = new URLSearchParams();
-    if (!isNativeToken) {
+    if (isContract) {
         query.set('address', recipient);
     }
     if (amount) {
         const decimals = DECIMALS[currency];
         const formattableNumber = new FormattableNumber(amount);
         formattableNumber.moveDecimalSeparator(-decimals);
-        const amountParam = isNativeToken ? 'value' : 'uint256';
+        const amountParam = isContract ? 'uint256' : 'value';
         query.set(amountParam, `${formattableNumber.toString()}e${decimals}`);
     }
     if (gasPrice) {
@@ -524,25 +531,26 @@ function validateEthereumAddress(address: string): boolean {
     return /^0x[a-f0-9]{40}$/i.test(address);
 }
 
-function getEthereumBlockchainName(chainIdOrNativeCurrency: number | Currency.ETH | Currency.MATIC)
-: EthereumBlockchainName {
+function getEthereumBlockchainName(chainIdOrNativeCurrency: number | Currency)
+: null | EthereumBlockchainName {
     switch (chainIdOrNativeCurrency) {
+        case EthereumChain.ETHEREUM_MAINNET:
+        case EthereumChain.ETHEREUM_GOERLI_TESTNET:
+        case Currency.ETH:
+            return EthereumBlockchainName.ETHEREUM;
         case EthereumChain.POLYGON_MAINNET:
         case EthereumChain.POLYGON_MUMBAI_TESTNET:
         case Currency.MATIC:
             return EthereumBlockchainName.POLYGON;
-        case EthereumChain.ETHEREUM_MAINNET:
-        case EthereumChain.ETHEREUM_GOERLI_TESTNET:
-        case Currency.ETH:
-        default: // To maintain backwards compatibility, default to ethereum, which also conforms to the standard
-            return EthereumBlockchainName.ETHEREUM;
+        default: // don't make any assumption for unknown chainIds or non-native Ethereum currencies
+            return null;
     }
 }
 
-function getEthereumCurrency(chainIdOrBlockchainName: number): Currency.ETH | Currency.MATIC | undefined;
+function getEthereumCurrency(chainIdOrBlockchainName: number): null | Currency.ETH | Currency.MATIC;
 function getEthereumCurrency(chainIdOrBlockchainName: EthereumBlockchainName): Currency.ETH | Currency.MATIC;
 function getEthereumCurrency(chainIdOrBlockchainName: number | EthereumBlockchainName)
-: Currency.ETH | Currency.MATIC | undefined {
+: null | Currency.ETH | Currency.MATIC {
     switch (chainIdOrBlockchainName) {
         case EthereumChain.ETHEREUM_MAINNET:
         case EthereumChain.ETHEREUM_GOERLI_TESTNET:
@@ -553,7 +561,7 @@ function getEthereumCurrency(chainIdOrBlockchainName: number | EthereumBlockchai
         case EthereumBlockchainName.POLYGON:
             return Currency.MATIC;
         default: // don't make any assumption for unknown chainIds or blockchain names
-            return undefined;
+            return null;
     }
 }
 
