@@ -184,13 +184,6 @@ describe('RequestLinkEncoding', () => {
             gasLimit: 2e4,
             chainId: RequestLinkEncoding.EthereumChain.ETHEREUM_MAINNET,
         }, {
-            link: `ethereum:${address}?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
-            address,
-            amount: BigInteger('2.014e18'),
-            gasPrice: 9e9,
-            gasLimit: 2e4,
-            chainId: RequestLinkEncoding.EthereumChain.ETHEREUM_MAINNET,
-        }, {
             link: `ethereum:${address}@5?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
             address,
             amount: BigInteger('2.014e18'),
@@ -344,13 +337,6 @@ describe('RequestLinkEncoding', () => {
             gasLimit: 2e4,
             chainId: RequestLinkEncoding.EthereumChain.POLYGON_MAINNET,
         }, {
-            link: `polygon:${address}@137?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
-            address,
-            amount: BigInteger('2.014e18'),
-            gasPrice: 9e9,
-            gasLimit: 2e4,
-            chainId: RequestLinkEncoding.EthereumChain.POLYGON_MAINNET,
-        }, {
             link: `polygon:${address}@80001?value=2.014e18&gasPrice=9e9&gasLimit=20000`,
             address,
             amount: BigInteger('2.014e18'),
@@ -478,14 +464,40 @@ describe('RequestLinkEncoding', () => {
         for (const currency of [Currency.ETH, Currency.MATIC, Currency.USDC] as const) {
             for (const chainId of [undefined, ...knownChainIds, customChainId]) {
                 for (const contractAddress of [undefined, ...knownContracts, customContractAddress]) {
-                    if (chainId !== customChainId && contractAddress !== customContractAddress) {
+                    if (
                         // Test vectors should include at least one custom component.
+                        (chainId !== customChainId && contractAddress !== customContractAddress)
+                        // For contract currencies (USDC) on a custom chain id, the contract address is required. This
+                        // is tested separately in the next test case.
+                        || (currency === Currency.USDC && !contractAddress)
+                    ) {
                         continue; // eslint-disable-line no-continue
                     }
                     for (const amount of [undefined, `2.014e${currency !== Currency.USDC ? 18 : 6}`]) {
                         for (const gasPrice of [undefined, '9e9']) {
                             for (const gasLimit of [undefined, 100000]) {
-                                const options = {
+                                const [contractChainId] = ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[
+                                    contractAddress || ''] || [null];
+                                const chainName = EthereumChain[chainId || -1]
+                                    || EthereumChain[contractChainId || -1] || '';
+                                const protocol = /^ethereum/i.test(chainName) ? 'ethereum:'
+                                    : /^polygon/i.test(chainName) ? 'polygon:'
+                                        : currency === Currency.MATIC ? 'polygon:'
+                                            : 'ethereum:';
+                                const targetAddress = contractAddress || recipientAddress;
+                                const chainIdPart = chainId && chainId !== EthereumChain.ETHEREUM_MAINNET
+                                    ? `@${chainId}`
+                                    : '';
+                                const functionPart = contractAddress ? '/transfer' : '';
+                                const query = new URLSearchParams();
+                                if (contractAddress) query.set('address', recipientAddress);
+                                if (amount) query.set(contractAddress ? 'uint256' : 'value', amount);
+                                if (gasPrice) query.set('gasPrice', gasPrice);
+                                if (gasLimit) query.set('gasLimit', gasLimit.toString());
+                                const params = query.toString() ? `?${query.toString()}` : '';
+                                const link = `${protocol}${targetAddress}${chainIdPart}${functionPart}${params}`;
+
+                                expect(RequestLinkEncoding.createRequestLink(recipientAddress, {
                                     currency,
                                     /* eslint-disable no-undef */
                                     amount: amount ? BigInt(toNonScientificNumberString(amount)) : undefined,
@@ -494,40 +506,10 @@ describe('RequestLinkEncoding', () => {
                                     gasLimit,
                                     chainId,
                                     contractAddress,
-                                };
-                                if (currency === Currency.USDC && !contractAddress) {
-                                    // For contract currencies on a custom chain id, the contract address is required.
-                                    expect(() => RequestLinkEncoding.createRequestLink(recipientAddress, options))
-                                        .toThrowError('Unsupported chainId: 123. You need to specify the '
-                                            + '\'contractAddress\' option');
-                                } else {
-                                    const [contractChainId] = ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[
-                                        contractAddress || ''] || [null];
-                                    const chainName = EthereumChain[chainId || -1]
-                                        || EthereumChain[contractChainId || -1] || '';
-                                    const protocol = /^ethereum/i.test(chainName) ? 'ethereum:'
-                                        : /^polygon/i.test(chainName) ? 'polygon:'
-                                            : currency === Currency.MATIC ? 'polygon:'
-                                                : 'ethereum:';
-                                    const targetAddress = contractAddress || recipientAddress;
-                                    const chainIdPart = chainId && chainId !== EthereumChain.ETHEREUM_MAINNET
-                                        ? `@${chainId}`
-                                        : '';
-                                    const functionPart = contractAddress ? '/transfer' : '';
-                                    const query = new URLSearchParams();
-                                    if (contractAddress) query.set('address', recipientAddress);
-                                    if (amount) query.set(contractAddress ? 'uint256' : 'value', amount);
-                                    if (gasPrice) query.set('gasPrice', gasPrice);
-                                    if (gasLimit) query.set('gasLimit', gasLimit.toString());
-                                    const params = query.toString() ? `?${query.toString()}` : '';
-                                    const link = `${protocol}${targetAddress}${chainIdPart}${functionPart}${params}`;
+                                })).toEqual(link);
 
-                                    expect(RequestLinkEncoding.createRequestLink(recipientAddress, options))
-                                        .toEqual(link);
-
-                                    // Note: parsing of links with custom chainId or contractAddress is currently not
-                                    // supported.
-                                }
+                                // Note: parsing of links with custom chainId or contractAddress is currently not
+                                // supported.
                             }
                         }
                     }
@@ -536,12 +518,12 @@ describe('RequestLinkEncoding', () => {
         }
     });
 
-    it('should throw error due to bad arguments', () => {
+    it('should throw error for Ethereum link creation due to bad arguments', () => {
         expect(() => RequestLinkEncoding.createRequestLink('', {
             currency: RequestLinkEncoding.Currency.ETH,
-        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError('Invalid recipient address: .');
+        })).toThrowError('Invalid recipient address: .');
 
-        expect(() => RequestLinkEncoding.createRequestLink('0x123', {
+        expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
             currency: 'UnkonwnToken' as unknown as RequestLinkEncoding.Currency,
             chainId: RequestLinkEncoding.EthereumChain.ETHEREUM_MAINNET,
         } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError('Unsupported currency');
@@ -549,12 +531,30 @@ describe('RequestLinkEncoding', () => {
         expect(() => RequestLinkEncoding.createRequestLink('0x123', {
             currency: RequestLinkEncoding.Currency.ETH,
             chainId: RequestLinkEncoding.EthereumChain.ETHEREUM_MAINNET,
-        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError('Invalid recipient address');
+        })).toThrowError('Invalid recipient address');
 
         expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
             currency: RequestLinkEncoding.Currency.ETH,
             chainId: RequestLinkEncoding.EthereumChain.ETHEREUM_MAINNET,
             contractAddress: '0x123',
-        } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError('Invalid contract address');
+        })).toThrowError('Invalid contract address');
+
+        expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
+            currency: RequestLinkEncoding.Currency.USDC,
+        })).toThrowError('No contractAddress or chainId provided for usdc transaction');
+
+        expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
+            currency: RequestLinkEncoding.Currency.USDC,
+            chainId: 123,
+        })).toThrowError('Unsupported chainId: 123. You need to specify the \'contractAddress\' option.');
+
+        for (const option of ['amount', 'gasPrice', 'gasLimit', 'chainId']) {
+            for (const value of [-1, 0.5]) {
+                expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
+                    currency: RequestLinkEncoding.Currency.ETH,
+                    [option]: value,
+                })).toThrowError(`Invalid ${option}`);
+            }
+        }
     });
 });
