@@ -350,15 +350,22 @@ export function createEthereumRequestLink(
         throw new TypeError(`Invalid contract address: ${contractAddress}.`);
     }
 
+    const [contractChainId] = (contractAddress ? getEthereumContractInfo(contractAddress) : null)
+        || [] as undefined[];
+    if (chainId !== undefined && contractChainId !== undefined && chainId !== contractChainId) {
+        // The chain id does not match the chain id associated to the known contract address, which is possible as it's
+        // also a valid address on other chain ids, but very unlikely the user's intention.
+        throw new Error('chainId does not match chain id associated to contractAddress');
+    }
+
     // For determining the protocol, (known) chain ids have the highest priority, because they indisputably identify the
-    // chain/protocol. Then, the chain ids associated to our known contracts (which are also valid addresses on other
-    // chain ids, which is very unlikely the users intention though). If the user passed no custom chain id or contract
-    // address, or custom ones for which we don't know the associated blockchain name, the protocol is determined based
-    // on the (native) currency, such that the user can pick the protocol via the currency. If the protocol can't be
-    // determined based on these checks, we fall back to "ethereum:" which is valid for all chain ids, according to the
-    // standard.
+    // chain/protocol. Then, the chain ids associated to our known contracts. If the user passed no known chain id or
+    // contract address, or custom ones for which we don't know the associated blockchain name, the protocol is
+    // determined based on the (native) currency, such that the user can pick the protocol via the currency. If the
+    // protocol can't be determined based on these checks, we fall back to "ethereum:" which is valid for all chain ids,
+    // according to the standard.
     const blockchainName = (chainId ? getEthereumBlockchainName(chainId) : null)
-        || (contractAddress ? getEthereumBlockchainName((getEthereumContractInfo(contractAddress) || [-1])[0]) : null)
+        || (contractChainId ? getEthereumBlockchainName(contractChainId) : null)
         || getEthereumBlockchainName(currency)
         || EthereumBlockchainName.ETHEREUM;
     const protocol = `${blockchainName}:`;

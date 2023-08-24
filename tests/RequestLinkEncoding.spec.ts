@@ -518,7 +518,7 @@ describe('RequestLinkEncoding', () => {
         }
     });
 
-    it('should throw error for Ethereum link creation due to bad arguments', () => {
+    it('should throw error for Ethereum link creation with to bad arguments', () => {
         expect(() => RequestLinkEncoding.createRequestLink('', {
             currency: RequestLinkEncoding.Currency.ETH,
         })).toThrowError('Invalid recipient address: .');
@@ -547,6 +547,14 @@ describe('RequestLinkEncoding', () => {
             currency: RequestLinkEncoding.Currency.USDC,
             chainId: 123,
         })).toThrowError('Unsupported chainId: 123. You need to specify the \'contractAddress\' option.');
+
+        expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
+            currency: Currency.USDC,
+            chainId: RequestLinkEncoding.EthereumChain.ETHEREUM_MAINNET,
+            contractAddress: RequestLinkEncoding.ETHEREUM_SUPPORTED_TOKENS
+                // eslint-disable-next-line no-unexpected-multiline
+                [RequestLinkEncoding.EthereumChain.ETHEREUM_GOERLI_TESTNET][RequestLinkEncoding.Currency.USDC],
+        })).toThrowError('chainId does not match chain id associated to contractAddress');
 
         for (const option of ['amount', 'gasPrice', 'gasLimit', 'chainId']) {
             for (const value of [-1, 0.5]) {
