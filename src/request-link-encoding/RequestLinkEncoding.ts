@@ -196,7 +196,7 @@ export function createNimiqRequestLink(
     const { amount, message, label, basePath, type = NimiqRequestLinkType.SAFE } = options;
 
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
-    if (amount && !isUnsignedInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
+    if (amount && !isUnsignedSafeInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
     if (label && typeof label !== 'string') throw new Error(`Not a valid label: ${label}`);
 
@@ -271,7 +271,7 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
     if (!ValidationUtils.isValidAddress(recipient)) return null; // recipient is required
 
     const amount = params.amount ? Math.round(parseFloat(params.amount) * (10 ** DECIMALS[Currency.NIM])) : undefined;
-    if (typeof amount === 'number' && Number.isNaN(amount)) return null;
+    if (typeof amount === 'number' && !isUnsignedSafeInteger(amount)) return null;
 
     const label = params.label ? decodeURIComponent(params.label) : undefined;
     const message = params.message ? decodeURIComponent(params.message) : undefined;
@@ -285,8 +285,8 @@ export function createBitcoinRequestLink(
     options: BitcoinRequestLinkOptions = {},
 ): string {
     if (!recipient) throw new Error('Recipient is required');
-    if (options.amount && !isUnsignedInteger(options.amount)) throw new TypeError('Invalid amount');
-    if (options.fee && !isUnsignedInteger(options.fee)) throw new TypeError('Invalid fee');
+    if (options.amount && !isUnsignedSafeInteger(options.amount)) throw new TypeError('Invalid amount');
+    if (options.fee && !isUnsignedSafeInteger(options.fee)) throw new TypeError('Invalid fee');
     const query: string[] = [];
     const validQueryKeys: ['amount', 'fee', 'label', 'message'] = ['amount', 'fee', 'label', 'message'];
     validQueryKeys.forEach((key) => {
@@ -316,10 +316,10 @@ export function parseBitcoinRequestLink(requestLink: string | URL, isValidAddres
     if (!recipient || (isValidAddress && !isValidAddress(recipient))) return null; // recipient is required
 
     const amount = rawAmount ? Math.round(parseFloat(rawAmount) * (10 ** DECIMALS[Currency.BTC])) : undefined;
-    if (typeof amount === 'number' && Number.isNaN(amount)) return null;
+    if (typeof amount === 'number' && !isUnsignedSafeInteger(amount)) return null;
 
     const fee = rawFee ? Math.round(parseFloat(rawFee) * (10 ** DECIMALS[Currency.BTC])) : undefined;
-    if (typeof fee === 'number' && Number.isNaN(fee)) return null;
+    if (typeof fee === 'number' && !isUnsignedSafeInteger(fee)) return null;
 
     const label = rawLabel ? decodeURIComponent(rawLabel) : undefined;
     const message = rawMessage ? decodeURIComponent(rawMessage) : undefined;
@@ -342,10 +342,10 @@ export function createEthereumRequestLink(
     if (!recipient || !validateEthereumAddress(recipient)) {
         throw new TypeError(`Invalid recipient address: ${recipient}.`);
     }
-    if (amount && !isUnsignedInteger(amount)) throw new TypeError('Invalid amount');
-    if (gasPrice && !isUnsignedInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
-    if (gasLimit && !isUnsignedInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
-    if (chainId && !isUnsignedInteger(chainId)) throw new TypeError('Invalid chainId');
+    if (amount && !isUnsignedSafeInteger(amount)) throw new TypeError('Invalid amount');
+    if (gasPrice && !isUnsignedSafeInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
+    if (gasLimit && !isUnsignedSafeInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
+    if (chainId && !isUnsignedSafeInteger(chainId)) throw new TypeError('Invalid chainId');
     if (contractAddress && !validateEthereumAddress(contractAddress)) {
         throw new TypeError(`Invalid contract address: ${contractAddress}.`);
     }
@@ -446,7 +446,7 @@ export function parseEthereumRequestLink(
         || (url.protocol === `${EthereumBlockchainName.POLYGON}:` ? EthereumChain.POLYGON_MAINNET : undefined)
     );
     if (typeof chainId === 'number' && (
-        Number.isNaN(chainId)
+        !isUnsignedSafeInteger(chainId)
         || !Object.values(EthereumChain).includes(chainId)
         // While technically the contract id is a valid address, regular or for another contract, on other chain ids,
         // it is highly unlikely that it's actually the user's intention to receive funds there.
@@ -507,9 +507,9 @@ function toUrl(link: string | URL): null | URL {
     }
 }
 
-function isUnsignedInteger(value: number | bigint | BigInteger): boolean {
+function isUnsignedSafeInteger(value: number | bigint | BigInteger): boolean {
     if (typeof value === 'number') {
-        return Number.isInteger(value) && value >= 0;
+        return Number.isSafeInteger(value) && value >= 0;
     }
     if (typeof value === 'bigint') {
         return value >= 0;

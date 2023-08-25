@@ -336,7 +336,7 @@ describe('RequestLinkEncoding', () => {
         })).toThrowError('chainId does not match chain id associated to contractAddress');
 
         for (const option of ['amount', 'gasPrice', 'gasLimit', 'chainId']) {
-            for (const value of [-1, 0.5]) {
+            for (const value of [-1, 0.5, Number.MAX_SAFE_INTEGER + 1]) {
                 expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
                     currency: Currency.ETH,
                     [option]: value,
