@@ -242,7 +242,8 @@ export function parseNimiqSafeRequestLink(
 
     // parse options
     const optionsSubstr = requestRegexMatch[1];
-    const [recipient, amount, message] = optionsSubstr.split('/');
+    const [recipient, amount, message] = optionsSubstr.split('/')
+        .map((part) => (part ? decodeURIComponent(part) : part));
 
     return parseNimiqParams({ recipient, amount, message });
 }
@@ -273,8 +274,7 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
     const amount = params.amount ? Math.round(parseFloat(params.amount) * (10 ** DECIMALS[Currency.NIM])) : undefined;
     if (typeof amount === 'number' && !isUnsignedSafeInteger(amount)) return null;
 
-    const label = params.label ? decodeURIComponent(params.label) : undefined;
-    const message = params.message ? decodeURIComponent(params.message) : undefined;
+    const { label, message } = params;
 
     return { recipient, amount, label, message };
 }
@@ -308,10 +308,10 @@ export function parseBitcoinRequestLink(requestLink: string | URL, isValidAddres
     if (!url || !/^bitcoin:$/i.test(url.protocol)) return null;
 
     const recipient = url.pathname;
-    const rawAmount = url.searchParams.get('amount') || undefined;
-    const rawFee = url.searchParams.get('fee') || undefined;
-    const rawLabel = url.searchParams.get('label') || undefined;
-    const rawMessage = url.searchParams.get('message') || undefined;
+    const rawAmount = url.searchParams.get('amount');
+    const rawFee = url.searchParams.get('fee');
+    const label = url.searchParams.get('label') || undefined;
+    const message = url.searchParams.get('message') || undefined;
 
     if (!recipient || (isValidAddress && !isValidAddress(recipient))) return null; // recipient is required
 
@@ -320,9 +320,6 @@ export function parseBitcoinRequestLink(requestLink: string | URL, isValidAddres
 
     const fee = rawFee ? Math.round(parseFloat(rawFee) * (10 ** DECIMALS[Currency.BTC])) : undefined;
     if (typeof fee === 'number' && !isUnsignedSafeInteger(fee)) return null;
-
-    const label = rawLabel ? decodeURIComponent(rawLabel) : undefined;
-    const message = rawMessage ? decodeURIComponent(rawMessage) : undefined;
 
     return { recipient, amount, fee, label, message };
 }
@@ -465,12 +462,11 @@ export function parseEthereumRequestLink(
         return null;
     }
 
-    const rawContractRecipient = url.searchParams.get('address') || undefined;
-    const rawAmount = url.searchParams.get(isContract ? 'uint256' : 'value') || undefined;
-    const rawGasPrice = url.searchParams.get('gasPrice') || undefined;
-    const rawGasLimit = url.searchParams.get('gasLimit') || undefined;
+    const contractRecipient = url.searchParams.get('address');
+    const rawAmount = url.searchParams.get(isContract ? 'uint256' : 'value');
+    const rawGasPrice = url.searchParams.get('gasPrice');
+    const rawGasLimit = url.searchParams.get('gasLimit');
 
-    const contractRecipient = rawContractRecipient ? decodeURIComponent(rawContractRecipient) : undefined;
     if ((!!contractRecipient !== isContract) || (contractRecipient && !isValidAddress(contractRecipient))) return null;
     const recipient = contractRecipient || targetAddress;
 
