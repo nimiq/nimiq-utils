@@ -33,6 +33,9 @@ enum EthereumBlockchainName {
     POLYGON = 'polygon',
 }
 
+export const ETHEREUM_SUPPORTED_NATIVE_CURRENCIES = [Currency.ETH, Currency.MATIC] as const;
+type EthereumSupportedNativeCurrency = (typeof ETHEREUM_SUPPORTED_NATIVE_CURRENCIES)[number];
+
 export const ETHEREUM_SUPPORTED_TOKENS = {
     [EthereumChain.ETHEREUM_MAINNET]: {
         [Currency.USDC]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
@@ -47,18 +50,20 @@ export const ETHEREUM_SUPPORTED_TOKENS = {
         [Currency.USDC]: '0x0fa8781a83e46826621b3bc094ea2a0212e71b23',
     },
 } as const;
-type EthereumSupportedTokenCurrencies = keyof (
+type EthereumSupportedTokenCurrency = keyof (
     (typeof ETHEREUM_SUPPORTED_TOKENS)[keyof typeof ETHEREUM_SUPPORTED_TOKENS]);
 export const ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP
-    : Record<string, [EthereumChain, EthereumSupportedTokenCurrencies]> = {};
+    : Record<string, [EthereumChain, EthereumSupportedTokenCurrency]> = {};
 for (const [chainId, chainContracts] of Object.entries(ETHEREUM_SUPPORTED_TOKENS)) {
     for (const [currency, address] of Object.entries(chainContracts)) {
         ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[address] = [
             parseInt(chainId, 10),
-            currency as EthereumSupportedTokenCurrencies,
+            currency as EthereumSupportedTokenCurrency,
         ];
     }
 }
+
+type EthereumSupportedCurrency = EthereumSupportedNativeCurrency | EthereumSupportedTokenCurrency;
 
 // for parsing the path part of an eip681 link: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-681.md#syntax
 const ETHEREUM_PATH_REGEX = new RegExp('^'
@@ -108,7 +113,7 @@ export type EthereumRequestLinkOptions = {
 export type GeneralRequestLinkOptions =
     ({ currency: Currency.NIM } & NimiqRequestLinkOptions)
     | ({ currency: Currency.BTC } & BitcoinRequestLinkOptions)
-    | ({ currency: Currency.ETH | Currency.MATIC | Currency.USDC } & EthereumRequestLinkOptions);
+    | ({ currency: EthereumSupportedCurrency } & EthereumRequestLinkOptions);
 
 // Can be used with an options object or with the legacy function signature for creating a Nim request link.
 // If using the legacy function signature, amountOrOptions can be given as a value in Nim.
@@ -139,15 +144,15 @@ export function createRequestLink(
 }
 
 type ParsedRequestLink<Currencies extends Currency> = (
-    // for if Currencies includes Currency.NIM, Currency.BTC or Currency.ETH | Currency.MATIC | Currency.USDC
+    // for if Currencies includes Currency.NIM, Currency.BTC or EthereumSupportedCurrency
     Extract<GeneralRequestLinkOptions, { currency: Currencies }>
-    // for if Currencies includes a subset of Currency.ETH | Currency.MATIC | Currency.USDC
+    // for if Currencies includes a subset of EthereumSupportedCurrency
     // Restrict currency in return type to Currencies.
-    | (Currencies extends Currency.ETH | Currency.MATIC | Currency.USDC
+    | (Currencies extends EthereumSupportedCurrency
         ? Omit<
-            Extract<GeneralRequestLinkOptions, { currency: Currency.ETH | Currency.MATIC | Currency.USDC }>,
+            Extract<GeneralRequestLinkOptions, { currency: EthereumSupportedCurrency }>,
             'currency'
-        > & { currency: Exclude<Currencies, Currency.NIM | Currency.BTC> }
+        > & { currency: Extract<Currencies, EthereumSupportedCurrency> }
         : never
     )
 ) & {
@@ -179,7 +184,7 @@ export function parseRequestLink<C extends Currency>(requestLink: string | URL, 
     if (currencies.includes(Currency.BTC) && /^bitcoin:$/i.test(url.protocol)) {
         return addCurrencyToResult(parseBitcoinRequestLink(url, isValidAddress[Currency.BTC]), Currency.BTC);
     }
-    if ([Currency.ETH, Currency.MATIC, Currency.USDC].some((currency) => currencies.includes(currency))
+    if ([...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES, Currency.USDC].some((currency) => currencies.includes(currency))
         && new RegExp(`^(${Object.values(EthereumBlockchainName).join('|')}):$`, 'i').test(url.protocol)) {
         const parsedRequestLink = parseEthereumRequestLink(url, isValidAddress[Currency.ETH]);
         if (parsedRequestLink && currencies.includes(parsedRequestLink.currency)) {
@@ -330,7 +335,7 @@ export function parseBitcoinRequestLink(requestLink: string | URL, isValidAddres
 // is what many other wallets and exchanges do, too.
 export function createEthereumRequestLink(
     recipient: string, // addresses only; no support for ENS names
-    currency: Currency.ETH | Currency.MATIC | Currency.USDC,
+    currency: EthereumSupportedCurrency,
     options: EthereumRequestLinkOptions,
 ): string {
     const { amount, gasPrice, gasLimit, chainId } = options;
@@ -419,7 +424,7 @@ export function parseEthereumRequestLink(
     requestLink: string | URL,
     isValidAddress: (address: string) => boolean = validateEthereumAddress,
 ): null | (EthereumRequestLinkOptions & {
-    currency: Currency.ETH | Currency.MATIC | Currency.USDC,
+    currency: EthereumSupportedCurrency,
     recipient: string,
 }) {
     const url = toUrl(requestLink);
@@ -526,8 +531,8 @@ function parseUnsignedInteger(value: string): number | bigint {
     return result;
 }
 
-function isNativeEthereumCurrency(currency: Currency): currency is Currency.ETH | Currency.MATIC {
-    return [Currency.ETH, Currency.MATIC].includes(currency);
+function isNativeEthereumCurrency(currency: Currency): currency is EthereumSupportedNativeCurrency {
+    return (ETHEREUM_SUPPORTED_NATIVE_CURRENCIES as readonly Currency[]).includes(currency);
 }
 
 function validateEthereumAddress(address: string): boolean {
@@ -550,10 +555,10 @@ function getEthereumBlockchainName(chainIdOrNativeCurrency: number | Currency)
     }
 }
 
-function getEthereumCurrency(chainIdOrBlockchainName: number): null | Currency.ETH | Currency.MATIC;
-function getEthereumCurrency(chainIdOrBlockchainName: EthereumBlockchainName): Currency.ETH | Currency.MATIC;
+function getEthereumCurrency(chainIdOrBlockchainName: number): null | EthereumSupportedNativeCurrency;
+function getEthereumCurrency(chainIdOrBlockchainName: EthereumBlockchainName): EthereumSupportedNativeCurrency;
 function getEthereumCurrency(chainIdOrBlockchainName: number | EthereumBlockchainName)
-: null | Currency.ETH | Currency.MATIC {
+: null | EthereumSupportedNativeCurrency {
     switch (chainIdOrBlockchainName) {
         case EthereumChain.ETHEREUM_MAINNET:
         case EthereumChain.ETHEREUM_GOERLI_TESTNET:
@@ -584,6 +589,6 @@ function getEthereumContractAddress(chainId: number, currency: Currency): null |
 }
 
 // Return the chainId and currency for known contract address.
-function getEthereumContractInfo(contractAddress: string): null | [EthereumChain, EthereumSupportedTokenCurrencies] {
+function getEthereumContractInfo(contractAddress: string): null | [EthereumChain, EthereumSupportedTokenCurrency] {
     return ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[contractAddress.toLowerCase()] || null;
 }

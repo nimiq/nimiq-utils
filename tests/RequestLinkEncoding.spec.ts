@@ -156,6 +156,7 @@ describe('RequestLinkEncoding', () => {
 
     it('can parse and create ETH and ETH token request links', () => {
         const {
+            ETHEREUM_SUPPORTED_NATIVE_CURRENCIES,
             ETHEREUM_SUPPORTED_TOKENS,
             ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP,
             EthereumChain,
@@ -171,7 +172,7 @@ describe('RequestLinkEncoding', () => {
         // Note: the test samples will include tests for known contract addresses on the "wrong" chain and chain ids for
         // a mismatching currency, but that's fine as contracts and chain ids are prioritized over the passed currency
         // in createEthereumRequestLink and parseEthereumRequestLink.
-        for (const currency of [Currency.ETH, Currency.MATIC, Currency.USDC] as const) {
+        for (const currency of [...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES, Currency.USDC] as const) {
             for (const chainId of [undefined, ...knownEthereumChainIds, customChainId]) {
                 for (const contractAddress of [undefined, ...knownEthereumContracts, customContractAddress]) {
                     for (const amount of [undefined, `2.014e${currency !== Currency.USDC ? 18 : 6}`]) {
@@ -232,7 +233,7 @@ describe('RequestLinkEncoding', () => {
 
                                 const parseResult = RequestLinkEncoding.parseRequestLink(
                                     link,
-                                    { currencies: [Currency.ETH, Currency.MATIC, Currency.USDC] },
+                                    { currencies: [...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES, Currency.USDC] },
                                 );
 
                                 // Link should only not be parseable when the chainId contradicts the expected chain id
