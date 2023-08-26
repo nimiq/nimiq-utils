@@ -36,7 +36,7 @@ enum EthereumBlockchainName {
 export const ETHEREUM_SUPPORTED_NATIVE_CURRENCIES = [Currency.ETH, Currency.MATIC] as const;
 type EthereumSupportedNativeCurrency = (typeof ETHEREUM_SUPPORTED_NATIVE_CURRENCIES)[number];
 
-export const ETHEREUM_SUPPORTED_TOKENS = {
+export const ETHEREUM_SUPPORTED_CONTRACTS = {
     [EthereumChain.ETHEREUM_MAINNET]: {
         [Currency.USDC]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     },
@@ -50,20 +50,20 @@ export const ETHEREUM_SUPPORTED_TOKENS = {
         [Currency.USDC]: '0x0fa8781a83e46826621b3bc094ea2a0212e71b23',
     },
 } as const;
-type EthereumSupportedTokenCurrency = keyof (
-    (typeof ETHEREUM_SUPPORTED_TOKENS)[keyof typeof ETHEREUM_SUPPORTED_TOKENS]);
-export const ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP
-    : Record<string, [EthereumChain, EthereumSupportedTokenCurrency]> = {};
-for (const [chainId, chainContracts] of Object.entries(ETHEREUM_SUPPORTED_TOKENS)) {
+type EthereumSupportedContractCurrency = keyof (
+    (typeof ETHEREUM_SUPPORTED_CONTRACTS)[keyof typeof ETHEREUM_SUPPORTED_CONTRACTS]);
+export const ETHEREUM_SUPPORTED_CONTRACTS_REVERSE_LOOKUP
+    : Record<string, [EthereumChain, EthereumSupportedContractCurrency]> = {};
+for (const [chainId, chainContracts] of Object.entries(ETHEREUM_SUPPORTED_CONTRACTS)) {
     for (const [currency, address] of Object.entries(chainContracts)) {
-        ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[address] = [
+        ETHEREUM_SUPPORTED_CONTRACTS_REVERSE_LOOKUP[address] = [
             parseInt(chainId, 10),
-            currency as EthereumSupportedTokenCurrency,
+            currency as EthereumSupportedContractCurrency,
         ];
     }
 }
 
-type EthereumSupportedCurrency = EthereumSupportedNativeCurrency | EthereumSupportedTokenCurrency;
+type EthereumSupportedCurrency = EthereumSupportedNativeCurrency | EthereumSupportedContractCurrency;
 
 // for parsing the path part of an eip681 link: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-681.md#syntax
 const ETHEREUM_PATH_REGEX = new RegExp('^'
@@ -416,8 +416,8 @@ export function createEthereumRequestLink(
 }
 
 // Following eip681. Support is limited to ETH, Matic and USDC (both on Ethereum and Polygon) and /transfer as the only
-// smart contract function. Scanning request links for contracts other than those defined in ETHEREUM_SUPPORTED_TOKENS
-// or chain ids not defined in the EthereumChain enum is not supported as those might refer to a currency other than the
+// contract function. Scanning request links for contracts other than those defined in ETHEREUM_SUPPORTED_CONTRACTS or
+// chain ids not defined in the EthereumChain enum is not supported as those might refer to a currency other than the
 // supported ones. If support for that would be needed in the future, undefined could be returned as currency, alongside
 // the parsed chain id and/or contract address.
 export function parseEthereumRequestLink(
@@ -435,7 +435,7 @@ export function parseEthereumRequestLink(
 
     if (!targetAddress || !isValidAddress(targetAddress)) return null; // target address is required
 
-    // Note that we limit support of scanning contract request links to contracts specified in ETHEREUM_SUPPORTED_TOKENS
+    // Note that we limit support of contract request links to contracts specified in ETHEREUM_SUPPORTED_CONTRACTS
     const contractInfo = getEthereumContractInfo(targetAddress);
     const [contractChainId, contractCurrency] = contractInfo || [] as undefined[];
     const isContract = !!contractInfo;
@@ -576,19 +576,19 @@ function getEthereumCurrency(chainIdOrBlockchainName: number | EthereumBlockchai
 // Return known contract address for the given chainId and currency.
 function getEthereumContractAddress(chainId: number, currency: Currency): null | string {
     if (isNativeEthereumCurrency(currency)) return null;
-    const tokens = ETHEREUM_SUPPORTED_TOKENS[chainId as keyof typeof ETHEREUM_SUPPORTED_TOKENS];
-    if (!tokens) {
+    const contracts = ETHEREUM_SUPPORTED_CONTRACTS[chainId as keyof typeof ETHEREUM_SUPPORTED_CONTRACTS];
+    if (!contracts) {
         throw new Error(`Unsupported chainId: ${chainId}. You need to specify the 'contractAddress' option.`);
     }
-    const contractAddress = tokens[currency as unknown as keyof typeof tokens] as string | undefined;
+    const contractAddress = contracts[currency as unknown as keyof typeof contracts] as string | undefined;
     if (!contractAddress) {
-        throw new Error(`Unsupported token: ${currency} on chain ${chainId}. `
+        throw new Error(`Unsupported contract: ${currency} on chain ${chainId}. `
             + 'You need to specify the \'contractAddress\' option.');
     }
     return contractAddress;
 }
 
 // Return the chainId and currency for known contract address.
-function getEthereumContractInfo(contractAddress: string): null | [EthereumChain, EthereumSupportedTokenCurrency] {
-    return ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[contractAddress.toLowerCase()] || null;
+function getEthereumContractInfo(contractAddress: string): null | [EthereumChain, EthereumSupportedContractCurrency] {
+    return ETHEREUM_SUPPORTED_CONTRACTS_REVERSE_LOOKUP[contractAddress.toLowerCase()] || null;
 }

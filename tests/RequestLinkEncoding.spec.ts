@@ -154,16 +154,16 @@ describe('RequestLinkEncoding', () => {
         }
     });
 
-    it('can parse and create ETH and ETH token request links', () => {
+    it('can parse and create ETH and ETH contract request links', () => {
         const {
             ETHEREUM_SUPPORTED_NATIVE_CURRENCIES,
-            ETHEREUM_SUPPORTED_TOKENS,
-            ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP,
+            ETHEREUM_SUPPORTED_CONTRACTS,
+            ETHEREUM_SUPPORTED_CONTRACTS_REVERSE_LOOKUP,
             EthereumChain,
         } = RequestLinkEncoding;
         const knownEthereumChainIds = Object.values(EthereumChain)
             .filter((value) => typeof value === 'number') as number[]; // filter out enum reverse mappings
-        const knownEthereumContracts = Object.keys(ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP);
+        const knownEthereumContracts = Object.keys(ETHEREUM_SUPPORTED_CONTRACTS_REVERSE_LOOKUP);
 
         const recipientAddress = '0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359';
         const customChainId = 123;
@@ -182,11 +182,11 @@ describe('RequestLinkEncoding', () => {
                                 // RequestLinkEncoding.createEthereumLink
                                 const effectiveContractAddress = contractAddress
                                     // @ts-ignore only Currency.USDC is a defined index
-                                    || (ETHEREUM_SUPPORTED_TOKENS[chainId] || {})[currency];
+                                    || (ETHEREUM_SUPPORTED_CONTRACTS[chainId] || {})[currency];
                                 const [
                                     contractChainId,
                                     contractCurrency,
-                                ] = ETHEREUM_SUPPORTED_TOKENS_REVERSE_LOOKUP[effectiveContractAddress || '']
+                                ] = ETHEREUM_SUPPORTED_CONTRACTS_REVERSE_LOOKUP[effectiveContractAddress || '']
                                     || [] as undefined[];
                                 const chainName = EthereumChain[chainId || -1]
                                     || EthereumChain[contractChainId || -1] || '';
@@ -252,7 +252,7 @@ describe('RequestLinkEncoding', () => {
                                 const expectedCurrency = contractCurrency || chainCurrency;
                                 if ((!chainId && !contractAddress && currency !== Currency.USDC) || (contractAddress
                                     // @ts-ignore only Currency.USDC is a defined index
-                                    ? contractAddress === ETHEREUM_SUPPORTED_TOKENS[contractChainId][currency]
+                                    ? contractAddress === ETHEREUM_SUPPORTED_CONTRACTS[contractChainId][currency]
                                     : chainId && currency === chainCurrency
                                 )) {
                                     // Cross-check our test implementation for when the parsed currency should match the
@@ -262,11 +262,11 @@ describe('RequestLinkEncoding', () => {
                                     //   invalid currency though if no contract address and chain id are provided, see
                                     //   link creation error handling above.
                                     // - the contract address is set and matches what's defined for the input currency
-                                    //   and chainId in ETHEREUM_SUPPORTED_TOKENS. Note that if the contract address is
-                                    //   set, it has to be one of our known contracts at this point, because the parsing
-                                    //   returns null for unknown contracts. Also note, that the contract chain id has
-                                    //   to match the input chain id if it's set, as otherwise the parsing would also
-                                    //   have returned null.
+                                    //   and chainId in ETHEREUM_SUPPORTED_CONTRACTS. Note that if the contract address
+                                    //   is set, it has to be one of our known contracts at this point, because the
+                                    //   parsing returns null for unknown contracts. Also note, that the contract chain
+                                    //   id has to match the input chain id if it's set, as otherwise the parsing would
+                                    //   also have returned null.
                                     // - chainId set and is a known chainId for the given currency and the contract
                                     //   address is not set (because it has priority over the chainId). Note that if it
                                     //   is set, it has to be one of our known chain ids at this point, because the
@@ -304,7 +304,7 @@ describe('RequestLinkEncoding', () => {
         })).toThrowError('Invalid recipient address: .');
 
         expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
-            currency: 'UnkonwnToken' as unknown as RequestLinkEncoding.Currency,
+            currency: 'UnkonwnCurrency' as unknown as RequestLinkEncoding.Currency,
             chainId: RequestLinkEncoding.EthereumChain.ETHEREUM_MAINNET,
         } as RequestLinkEncoding.GeneralRequestLinkOptions)).toThrowError('Unsupported currency');
 
@@ -331,7 +331,7 @@ describe('RequestLinkEncoding', () => {
         expect(() => RequestLinkEncoding.createRequestLink('0xfb6916095ca1df60bb79Ce92ce3ea74c37c5d359', {
             currency: Currency.USDC,
             chainId: RequestLinkEncoding.EthereumChain.ETHEREUM_MAINNET,
-            contractAddress: RequestLinkEncoding.ETHEREUM_SUPPORTED_TOKENS
+            contractAddress: RequestLinkEncoding.ETHEREUM_SUPPORTED_CONTRACTS
                 // eslint-disable-next-line no-unexpected-multiline
                 [RequestLinkEncoding.EthereumChain.ETHEREUM_GOERLI_TESTNET][Currency.USDC],
         })).toThrowError('chainId does not match chain id associated to contractAddress');
