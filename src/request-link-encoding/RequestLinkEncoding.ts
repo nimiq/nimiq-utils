@@ -161,9 +161,16 @@ type ParsedRequestLink<Currencies extends Currency> = (
 
 export function parseRequestLink<C extends Currency>(requestLink: string | URL, options: {
     currencies?: C[], // defaults to all supported currencies
-    isValidAddress?: C extends Exclude<C, Currency.NIM> // Supported for currencies other than NIM. MATIC and USDC use
-        // the entry for ETH if provided.
-        ? Partial<Record<Exclude<C, Currency.NIM | Currency.MATIC | Currency.USDC>, (address: string) => boolean>>
+    // Supported for currencies other than NIM. MATIC and USDC use the entry for ETH if provided.
+    isValidAddress?: C extends Exclude<C, Currency.NIM>
+        ? Partial<Record<
+            Exclude<
+                // If C includes one or more of EthereumSupportedCurrency, an entry for Currency.ETH can be passed.
+                C | (C extends EthereumSupportedCurrency ? Currency.ETH : never),
+                Currency.NIM | Currency.MATIC | Currency.USDC
+            >,
+            (address: string) => boolean
+        >>
         : never,
     expectedNimiqSafeRequestLinkBasePath?: C extends Currency.NIM ? string : never, // supported for NIM
 } = {}): null | ParsedRequestLink<C> {
