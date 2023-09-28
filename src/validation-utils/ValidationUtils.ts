@@ -9,6 +9,13 @@ export class ValidationUtils {
         }
     }
 
+    static normalizeAddress(address: string) {
+        return address
+            .toUpperCase() // format as uppercase
+            .replace(/[\s+-]|%20/g, '') // strip spaces and dashes
+            .replace(/(.)(?=(.{4})+$)/g, '$1 '); // reformat with spaces, forming blocks of 4 chars
+    }
+
     // Copied from: https://github.com/nimiq-network/core/blob/master/src/main/generic/consensus/base/account/Address.js
 
     static isUserFriendlyAddress(str: string) {

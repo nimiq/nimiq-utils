@@ -278,9 +278,7 @@ type NimiqParams = { recipient: string, amount?: string, label?: string, message
 type ParsedNimiqParams = Omit<NimiqParams, 'amount'> & { amount?: number };
 
 function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
-    const recipient = params.recipient
-        .replace(/[ +-]|%20/g, '') // strip spaces and dashes
-        .replace(/(.)(?=(.{4})+$)/g, '$1 '); // reformat with spaces, forming blocks of 4 chars
+    const recipient = ValidationUtils.normalizeAddress(params.recipient);
     if (!ValidationUtils.isValidAddress(recipient)) return null; // recipient is required
 
     const amount = params.amount ? Math.round(parseFloat(params.amount) * (10 ** DECIMALS[Currency.NIM])) : undefined;
