@@ -159,23 +159,29 @@ type ParsedRequestLink<Currencies extends Currency> = (
     recipient: string,
 };
 
+// Record<Currency, (address: string) => ReturnType> for currencies other than NIM.
+// Not supported for NIM because for NIM we apply address checks by default via ValidationUtils.
+// MATIC and USDC use the entry for ETH if provided.
+type AddressChecks<Currencies extends Currency, ReturnType> = Currencies extends Exclude<Currencies, Currency.NIM>
+    ? Partial<Record<
+        Exclude<
+            // If Currencies include one or more of EthereumSupportedCurrency, an entry for Currency.ETH can be passed.
+            Currencies | (Currencies extends EthereumSupportedCurrency ? Currency.ETH : never),
+            Currency.NIM | Currency.MATIC | Currency.USDC
+        >,
+        (address: string) => ReturnType
+    >>
+    : never;
+
 export function parseRequestLink<C extends Currency>(requestLink: string | URL, options: {
     currencies?: C[], // defaults to all supported currencies
-    // Supported for currencies other than NIM. MATIC and USDC use the entry for ETH if provided.
-    isValidAddress?: C extends Exclude<C, Currency.NIM>
-        ? Partial<Record<
-            Exclude<
-                // If C includes one or more of EthereumSupportedCurrency, an entry for Currency.ETH can be passed.
-                C | (C extends EthereumSupportedCurrency ? Currency.ETH : never),
-                Currency.NIM | Currency.MATIC | Currency.USDC
-            >,
-            (address: string) => boolean
-        >>
-        : never,
+    isValidAddress?: AddressChecks<C, boolean>,
+    normalizeAddress?: AddressChecks<C, string>,
     expectedNimiqSafeRequestLinkBasePath?: C extends Currency.NIM ? string : never, // supported for NIM
 } = {}): null | ParsedRequestLink<C> {
     const currencies = options.currencies || Object.values(Currency);
     const isValidAddress: Partial<Record<Currency, (address: string) => boolean>> = options.isValidAddress || {};
+    const normalizeAddress: Partial<Record<Currency, (address: string) => string>> = options.normalizeAddress || {};
     const { expectedNimiqSafeRequestLinkBasePath } = options;
     const url = toUrl(requestLink);
     if (!url) return null;
@@ -189,11 +195,18 @@ export function parseRequestLink<C extends Currency>(requestLink: string | URL, 
         return addCurrencyToResult(parseNimiqSafeRequestLink(url, expectedNimiqSafeRequestLinkBasePath), Currency.NIM);
     }
     if (currencies.includes(Currency.BTC) && /^bitcoin:$/i.test(url.protocol)) {
-        return addCurrencyToResult(parseBitcoinRequestLink(url, isValidAddress[Currency.BTC]), Currency.BTC);
+        return addCurrencyToResult(
+            parseBitcoinRequestLink(url, isValidAddress[Currency.BTC], normalizeAddress[Currency.BTC]),
+            Currency.BTC,
+        );
     }
     if ([...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES, Currency.USDC].some((currency) => currencies.includes(currency))
         && new RegExp(`^(${Object.values(EthereumBlockchainName).join('|')}):$`, 'i').test(url.protocol)) {
-        const parsedRequestLink = parseEthereumRequestLink(url, isValidAddress[Currency.ETH]);
+        const parsedRequestLink = parseEthereumRequestLink(
+            url,
+            isValidAddress[Currency.ETH],
+            normalizeAddress[Currency.ETH],
+        );
         if (parsedRequestLink && currencies.includes(parsedRequestLink.currency)) {
             return parsedRequestLink as ParsedRequestLink<C>;
         }
@@ -312,12 +325,15 @@ export function createBitcoinRequestLink(
     return `bitcoin:${recipient}${queryString}`;
 }
 
-export function parseBitcoinRequestLink(requestLink: string | URL, isValidAddress?: (address: string) => boolean)
-: null | (BitcoinRequestLinkOptions & { recipient: string }) {
+export function parseBitcoinRequestLink(
+    requestLink: string | URL,
+    isValidAddress?: (address: string) => boolean,
+    normalizeAddress?: (address: string) => string,
+): null | (BitcoinRequestLinkOptions & { recipient: string }) {
     const url = toUrl(requestLink);
     if (!url || !/^bitcoin:$/i.test(url.protocol)) return null;
 
-    const recipient = url.pathname;
+    const recipient = normalizeAddress ? normalizeAddress(url.pathname) : url.pathname;
     const rawAmount = url.searchParams.get('amount');
     const rawFee = url.searchParams.get('fee');
     const label = url.searchParams.get('label') || undefined;
@@ -428,6 +444,7 @@ export function createEthereumRequestLink(
 export function parseEthereumRequestLink(
     requestLink: string | URL,
     isValidAddress: (address: string) => boolean = validateEthereumAddress,
+    normalizeAddress: (address: string) => string = (address) => address,
 ): null | (EthereumRequestLinkOptions & {
     currency: EthereumSupportedCurrency,
     recipient: string,
@@ -438,13 +455,13 @@ export function parseEthereumRequestLink(
 
     const [, targetAddress, rawChainId, rawFunctionName] = url.pathname.match(ETHEREUM_PATH_REGEX) || [] as undefined[];
 
-    if (!targetAddress || !isValidAddress(targetAddress)) return null; // target address is required
+    if (!targetAddress || !isValidAddress(normalizeAddress(targetAddress))) return null; // target address is required
 
     // Note that we limit support of contract request links to contracts specified in ETHEREUM_SUPPORTED_CONTRACTS
     const contractInfo = getEthereumContractInfo(targetAddress);
     const [contractChainId, contractCurrency] = contractInfo || [] as undefined[];
     const isContract = !!contractInfo;
-    const contractAddress = isContract ? targetAddress : undefined;
+    const contractAddress = isContract ? normalizeAddress(targetAddress) : undefined;
 
     const chainId = rawChainId ? parseInt(rawChainId, 10) : (
         contractChainId
@@ -472,13 +489,15 @@ export function parseEthereumRequestLink(
         return null;
     }
 
-    const contractRecipient = url.searchParams.get('address');
+    const contractRecipient = url.searchParams.get('address')
+        ? normalizeAddress(url.searchParams.get('address')!)
+        : undefined;
     const rawAmount = url.searchParams.get(isContract ? 'uint256' : 'value');
     const rawGasPrice = url.searchParams.get('gasPrice');
     const rawGasLimit = url.searchParams.get('gasLimit');
 
     if ((!!contractRecipient !== isContract) || (contractRecipient && !isValidAddress(contractRecipient))) return null;
-    const recipient = contractRecipient || targetAddress;
+    const recipient = contractRecipient || normalizeAddress(targetAddress);
 
     let amount: number | bigint | undefined;
     let gasPrice: number | bigint | undefined;

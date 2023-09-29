@@ -298,7 +298,7 @@ describe('RequestLinkEncoding', () => {
         }
     });
 
-    it('should throw error for Ethereum link creation with to bad arguments', () => {
+    it('should throw error for Ethereum link creation with bad arguments', () => {
         expect(() => RequestLinkEncoding.createRequestLink('', {
             currency: Currency.ETH,
         })).toThrowError('Invalid recipient address: .');
@@ -342,6 +342,43 @@ describe('RequestLinkEncoding', () => {
                     currency: Currency.ETH,
                     [option]: value,
                 })).toThrowError(`Invalid ${option}`);
+            }
+        }
+    });
+
+    it('can normalize addresses in request links', () => {
+        const vectors = [{
+            link: 'nimiq:nq24-458e-67e1%20c90m+c0xq+146b%20ce6r jmyr e27s',
+            recipient: 'NQ24 458E 67E1 C90M C0XQ 146B CE6R JMYR E27S',
+        }, {
+            link: 'bitcoin:BC1P596KRFCPAEAFY5Z76VR3HJQDX8H5VY5QHKMLXNKT4GG5D0788DPQATVLSQ',
+            recipient: 'bc1p596krfcpaeafy5z76vr3hjqdx8h5vy5qhkmlxnkt4gg5d0788dpqatvlsq',
+        }, {
+            link: 'ethereum:0xABCDEFABCDabcdefabcd012345678901234567890123456789/transfer?'
+                + 'address=0x01234567890123456789ABCDEFABCDabcdefabcd',
+            contractAddress: '0xabcdefabcdabcdefabcd012345678901234567890123456789',
+            recipient: '0x01234567890123456789abcdefabcdabcdefabcd',
+        }];
+
+        // Parse links
+        for (const vector of vectors) {
+            const parsed = RequestLinkEncoding.parseRequestLink(
+                vector.link,
+                {
+                    // Dummy normalization for testing.
+                    normalizeAddress: {
+                        [Currency.BTC]: (address) => address.toLowerCase(),
+                        [Currency.ETH]: (address) => address.toLowerCase(),
+                    },
+                },
+            );
+            expect(parsed).toBeDefined();
+            if (!parsed) continue; // eslint-disable-line no-continue
+            expect(parsed.recipient).toBe(vector.recipient);
+            if ('contractAddress' in parsed) {
+                expect(parsed.contractAddress).toBe(vector.contractAddress);
+            } else {
+                expect(vector.contractAddress).toBeUndefined();
             }
         }
     });
