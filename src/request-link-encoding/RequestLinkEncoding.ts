@@ -225,12 +225,13 @@ export function createNimiqRequestLink(
     if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
     if (label && typeof label !== 'string') throw new Error(`Not a valid label: ${label}`);
 
+    recipient = ValidationUtils.normalizeAddress(recipient).replace(/ /g, ''); // normalize and strip spaces
     const amountNim = amount
         ? new FormattableNumber(amount).moveDecimalSeparator(-DECIMALS[Currency.NIM]).toString()
         : '';
 
     // Assemble params
-    const query = [['recipient', recipient.replace(/ /g, '')]]; // strip spaces from address
+    const query = [['recipient', recipient]];
     if (amountNim || message || label) query.push(['amount', amountNim || '']);
     if (message || label) query.push(['message', encodeURIComponent(message || '')]);
     if (label) query.push(['label', encodeURIComponent(label)]);
@@ -304,7 +305,7 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
 
 // following BIP21
 export function createBitcoinRequestLink(
-    recipient: string,
+    recipient: string, // expected to be normalized
     options: BitcoinRequestLinkOptions = {},
 ): string {
     if (!recipient) throw new Error('Recipient is required');
@@ -355,7 +356,7 @@ export function parseBitcoinRequestLink(
 // Deviating from the standard, we use polygon: instead of ethereum: as protocol for requests on the Polygon chain which
 // is what many other wallets and exchanges do, too.
 export function createEthereumRequestLink(
-    recipient: string, // addresses only; no support for ENS names
+    recipient: string, // addresses only; no support for ENS names; expected to be normalized
     currency: EthereumSupportedCurrency,
     options: EthereumRequestLinkOptions,
 ): string {
