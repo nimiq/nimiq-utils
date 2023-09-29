@@ -247,7 +247,7 @@ export function createNimiqRequestLink(
     // Create URI scheme `nimiq:` links
     if (type === NimiqRequestLinkType.URI || type === NimiqRequestLinkType.WEBURI) {
         const address = query.shift()![1];
-        const params = query.map(([key, param]) => `${key}=${param}`);
+        const params = query.map(([key, value]) => (value ? `${key}=${value}` : '')).filter((param) => !!param);
         return `${type}:${address}${params.length ? '?' : ''}${params.join('&')}`;
     }
 
