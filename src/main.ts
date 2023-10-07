@@ -9,3 +9,4 @@ export * from './request-link-encoding/RequestLinkEncoding';
 export { default as Tweenable } from './tweenable/Tweenable';
 export * from './utf8-tools/Utf8Tools';
 export * from './validation-utils/ValidationUtils';
+import * as Web3Utils from './web3-utils/Web3Utils'; export { Web3Utils };
