@@ -1,5 +1,6 @@
 import { ValidationUtils } from '../validation-utils/ValidationUtils';
 import { FormattableNumber, toNonScientificNumberString } from '../formattable-number/FormattableNumber';
+import { Utf8Tools } from '../utf8-tools/Utf8Tools';
 
 // this imports only the type without bundling the library
 type BigInteger = import('big-integer').BigInteger;
@@ -222,7 +223,11 @@ export function createNimiqRequestLink(
 
     if (!ValidationUtils.isValidAddress(recipient)) throw new Error(`Not a valid address: ${recipient}`);
     if (amount && !isUnsignedSafeInteger(amount)) throw new Error(`Not a valid amount: ${amount}`);
-    if (message && typeof message !== 'string') throw new Error(`Not a valid message: ${message}`);
+    if (message && (
+        typeof message !== 'string'
+        // Message length is limited to 64 bytes, see BasicAccount.verifyIncomingTransaction in Nimiq core.
+        || Utf8Tools.stringToUtf8ByteArray(message).byteLength > 64
+    )) throw new Error(`Not a valid message: ${message}`);
     if (label && typeof label !== 'string') throw new Error(`Not a valid label: ${label}`);
 
     recipient = ValidationUtils.normalizeAddress(recipient).replace(/ /g, ''); // normalize and strip spaces
@@ -299,6 +304,9 @@ function parseNimiqParams(params: NimiqParams): ParsedNimiqParams | null {
     if (typeof amount === 'number' && !isUnsignedSafeInteger(amount)) return null;
 
     const { label, message } = params;
+
+    // Message length is limited to 64 bytes, see BasicAccount.verifyIncomingTransaction in Nimiq core.
+    if (message && Utf8Tools.stringToUtf8ByteArray(message).byteLength > 64) return null;
 
     return { recipient, amount, label, message };
 }
