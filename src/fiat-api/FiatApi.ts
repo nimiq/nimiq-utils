@@ -77,6 +77,10 @@ export enum FiatApiSupportedFiatCurrency {
     ZAR = 'zar', // South African Rand
 }
 
+export enum FiatApiBridgedFiatCurrency {
+    CRC = 'crc', // Costa Rican Colón
+}
+
 const API_URL = 'https://api.coingecko.com/api/v3';
 const COINGECKO_COIN_IDS = {
     [FiatApiSupportedCryptoCurrency.NIM]: 'nimiq-2',
@@ -91,21 +95,72 @@ const ONE_DAY = 24 * ONE_HOUR;
 
 export async function getExchangeRates(
     cryptoCurrencies: Array<FiatApiSupportedCryptoCurrency>,
-    vsCurrencies: Array<FiatApiSupportedFiatCurrency | FiatApiSupportedCryptoCurrency>,
+    vsCurrencies: Array<FiatApiSupportedFiatCurrency | FiatApiBridgedFiatCurrency | FiatApiSupportedCryptoCurrency>,
 ): Promise<{ [crypto: string]: { [vsCurrency: string]: number | undefined } }> {
     // Make sure the crypto currencies are lower case so they match the enum (for users that might not be using
     // typescript which ensures that only valid currency tickers are passed). vsCurrencies do not be to be transformed
     // because coingecko accepts uppercase and lowercase.
     cryptoCurrencies = cryptoCurrencies.map((currency) => currency.toLowerCase() as FiatApiSupportedCryptoCurrency);
 
+    // Check for bridged currencies and fetch the exchange rate to its intermediate currency
+    const bridgedCurrencies: FiatApiBridgedFiatCurrency[] = [];
+    const bridgedExchangeRatePromises: Promise<Record<string, number> | null>[] = [];
+    for (const vsCurrency of vsCurrencies) {
+        if (!Object.values(FiatApiBridgedFiatCurrency).includes(vsCurrency as FiatApiBridgedFiatCurrency)) continue;
+        bridgedCurrencies.push(vsCurrency as FiatApiBridgedFiatCurrency);
+        switch (vsCurrency) {
+            case FiatApiBridgedFiatCurrency.CRC: {
+                // Use USD as the intermediate currency
+                if (!vsCurrencies.includes(FiatApiSupportedFiatCurrency.USD)) {
+                    vsCurrencies.push(FiatApiSupportedFiatCurrency.USD);
+                }
+
+                // Fetch today's USD-CRC exchange rate
+                const today = _timestampToUtcOffset(Date.now(), -6);
+                const todayDay = today.toISOString().split('T')[0];
+                bridgedExchangeRatePromises.push(_fetch<Record<string, number>>(
+                    `https://usd-crc-historic-rate.deno.dev/api/rates/${todayDay}/${todayDay}`,
+                ));
+                break;
+            }
+            default:
+                throw new Error(`Unsupported bridged currency: ${vsCurrency}`);
+        }
+    }
+
     const coinIds = cryptoCurrencies.map((currency) => COINGECKO_COIN_IDS[currency]);
-    const apiResult = await _fetch(`${API_URL}/simple/price`
+    const apiResult = await _fetch<Record<string, Record<string, number>>>(`${API_URL}/simple/price`
         + `?ids=${coinIds.join(',')}&vs_currencies=${vsCurrencies.join(',')}`);
     // Map coingecko coin ids back to FiatApiSupportedCryptoCurrency enum
-    return cryptoCurrencies.reduce((result, cryptoCurrency) => ({
+    const prices = cryptoCurrencies.reduce((result, cryptoCurrency) => ({
         ...result,
         [cryptoCurrency]: apiResult[COINGECKO_COIN_IDS[cryptoCurrency]],
-    }), {});
+    }), {} as { [crypto: string]: { [vsCurrency: string]: number | undefined } });
+
+    for (const bridgedCurrency of bridgedCurrencies) {
+        // eslint-disable-next-line no-await-in-loop
+        const bridgedExchangeRate = await bridgedExchangeRatePromises.shift();
+        if (!bridgedExchangeRate) continue;
+
+        for (const price of Object.entries(prices)) {
+            const cryptoCurrency = price[0];
+            const vsPrices = price[1];
+
+            switch (bridgedCurrency) {
+                case FiatApiBridgedFiatCurrency.CRC: {
+                    // Convert from USD to CRC
+                    const usdPrice = vsPrices[FiatApiSupportedFiatCurrency.USD];
+                    const crcRate = Object.values(bridgedExchangeRate)[0];
+                    prices[cryptoCurrency][bridgedCurrency] = usdPrice ? usdPrice * crcRate : undefined;
+                    break;
+                }
+                default:
+                    throw new Error(`Unsupported bridged currency: ${bridgedCurrency}`);
+            }
+        }
+    }
+
+    return prices;
 }
 
 /**
@@ -117,16 +172,70 @@ export async function getExchangeRates(
  */
 export async function getHistoricExchangeRatesByRange(
     cryptoCurrency: FiatApiSupportedCryptoCurrency,
-    vsCurrency: FiatApiSupportedFiatCurrency | FiatApiSupportedCryptoCurrency,
+    vsCurrency: FiatApiSupportedFiatCurrency | FiatApiBridgedFiatCurrency | FiatApiSupportedCryptoCurrency,
     from: number, // in milliseconds
     to: number, // in milliseconds
 ): Promise<Array<[number, number]>> {
+    let bridgedCurrency: FiatApiBridgedFiatCurrency | undefined;
+    let bridgedExchangeRatePromise: Promise<Record<string, number> | null> = Promise.resolve(null);
+    if (Object.values(FiatApiBridgedFiatCurrency).includes(vsCurrency as FiatApiBridgedFiatCurrency)) {
+        bridgedCurrency = vsCurrency as FiatApiBridgedFiatCurrency;
+
+        switch (bridgedCurrency) {
+            case FiatApiBridgedFiatCurrency.CRC: {
+                // Use USD as the intermediate currency
+                vsCurrency = FiatApiSupportedFiatCurrency.USD;
+
+                // Adapt dates to Costa Rica timezone (UTC-6, all year round)
+                const fromDate = _timestampToUtcOffset(from, -6);
+                const toDate = _timestampToUtcOffset(to, -6);
+                // Get the day portion as ISO string
+                const fromDay = fromDate.toISOString().split('T')[0];
+                const toDay = toDate.toISOString().split('T')[0];
+
+                bridgedExchangeRatePromise = _fetch<Record<string, number>>(
+                    `https://usd-crc-historic-rate.deno.dev/api/rates/${fromDay}/${toDay}`,
+                );
+                break;
+            }
+            default:
+                throw new Error(`Unsupported bridged currency: ${bridgedCurrency}`);
+        }
+    }
+
     const coinId = COINGECKO_COIN_IDS[cryptoCurrency.toLowerCase() as FiatApiSupportedCryptoCurrency];
     // Note that from and to are expected in seconds but returned timestamps are in ms.
     from = Math.floor(from / 1000);
     to = Math.ceil(to / 1000);
-    const { prices: result } = await _fetch(`${API_URL}/coins/${coinId}/market_chart/range`
-        + `?vs_currency=${vsCurrency}&from=${from}&to=${to}`);
+    const [
+        { prices: result },
+        bridgedExchangeRates,
+    ] = await Promise.all([
+        _fetch<{ prices: [number, number][] }>(
+            `${API_URL}/coins/${coinId}/market_chart/range?vs_currency=${vsCurrency}&from=${from}&to=${to}`,
+        ),
+        bridgedExchangeRatePromise,
+    ]);
+
+    if (bridgedCurrency && bridgedExchangeRates) {
+        for (let i = 0; i < result.length; ++i) {
+            const [timestamp, price] = result[i];
+            switch (bridgedCurrency) {
+                case FiatApiBridgedFiatCurrency.CRC: {
+                    // Adapt date to Costa Rica timezone (UTC-6, all year round)
+                    const date = _timestampToUtcOffset(timestamp, -6);
+                    // Get the day portion as ISO string
+                    const day = date.toISOString().split('T')[0];
+                    // Convert from USD to CRC
+                    result[i] = [timestamp, price * bridgedExchangeRates[day]];
+                    break;
+                }
+                default:
+                    throw new Error(`Unsupported bridged currency: ${bridgedCurrency}`);
+            }
+        }
+    }
+
     return result;
 }
 
@@ -135,7 +244,7 @@ export async function getHistoricExchangeRatesByRange(
  */
 export async function getHistoricExchangeRates(
     cryptoCurrency: FiatApiSupportedCryptoCurrency,
-    vsCurrency: FiatApiSupportedFiatCurrency | FiatApiSupportedCryptoCurrency,
+    vsCurrency: FiatApiSupportedFiatCurrency | FiatApiBridgedFiatCurrency | FiatApiSupportedCryptoCurrency,
     timestamps: number[],
     disableMinutlyData = false,
 ): Promise<Map<number, number|undefined>> {
@@ -252,8 +361,8 @@ function _findTimestampChunk(
     };
 }
 
-async function _fetch(input: RequestInfo, init?: RequestInit): Promise<any> {
-    let result: Response | null = null;
+async function _fetch<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+    let result: T | null = null;
     do {
         let retry = true;
         try {
@@ -285,4 +394,10 @@ async function _fetch(input: RequestInfo, init?: RequestInit): Promise<any> {
         }
     } while (!result);
     return result;
+}
+
+function _timestampToUtcOffset(timestamp: number, utcOffset: number): Date {
+    const date = new Date(timestamp);
+    date.setHours(date.getHours() + utcOffset);
+    return date;
 }
