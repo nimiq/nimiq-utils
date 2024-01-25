@@ -34,6 +34,7 @@ module.exports = {
         'prefer-const': ['error', {'destructuring': 'all'}],
         'no-nested-ternary': 'off',
         'no-restricted-syntax': ['error', ...noRestrictedSyntax],
+        'no-continue': 'off',
 
         // Typescript plugin replacements
         'no-unused-vars': 'off',
