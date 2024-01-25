@@ -48,5 +48,11 @@ module.exports = {
         'no-param-reassign': 'off',
         'import/no-unresolved': 'off',
         'no-use-before-define': 'off',
+        'no-shadow': 'off',
+        'no-dupe-class-members': 'off',
+        'no-undef': 'off',
+
+        // Allow importing TS files without extension, as Rollup takes care of that
+        'import/extensions': 'off',
     },
 };
