@@ -551,7 +551,7 @@ function parseUnsignedInteger(value: string): number | bigint {
         // Non-integer, non-safe integer larger than Number.MAX_SAFE_INTEGER or NaN (which it can't really be as
         // toNonScientificNumberString parses only valid numbers). Try parsing again as bigint, which supports integers
         // above Number.MAX_SAFE_INTEGER, and throws for actual invalid or non-integer numbers.
-        result = BigInt(value); // eslint-disable-line no-undef
+        result = BigInt(value);
     }
     return result;
 }

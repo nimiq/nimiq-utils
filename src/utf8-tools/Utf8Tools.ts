@@ -209,7 +209,7 @@ export class Utf8Tools {
         return i === bytes.length;
     }
 
-    /* eslint-disable lines-between-class-members, no-dupe-class-members */
+    /* eslint-disable lines-between-class-members */
     public static truncateToUtf8ByteLength(input: string, length: number, applyEllipsis?: boolean)
         : { result: string, didTruncate: boolean };
     public static truncateToUtf8ByteLength(input: Uint8Array, length: number, applyEllipsis?: boolean)
@@ -257,5 +257,5 @@ export class Utf8Tools {
             didTruncate: true,
         };
     }
-    /* eslint-enable lines-between-class-members, no-dupe-class-members */
+    /* eslint-enable lines-between-class-members */
 }

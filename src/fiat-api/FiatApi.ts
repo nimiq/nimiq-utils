@@ -278,7 +278,7 @@ async function _fetch(input: RequestInfo, init?: RequestInit): Promise<any> {
             // be resolved in random order.
             if (retry) {
                 // eslint-disable-next-line no-await-in-loop
-                await new Promise((resolve) => setTimeout(resolve, 15000));
+                await new Promise((resolve) => { setTimeout(resolve, 15000); });
             } else {
                 throw e;
             }
