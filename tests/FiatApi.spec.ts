@@ -29,6 +29,15 @@ describe('FiatApi', () => {
         expect(rate[FiatApiSupportedCryptoCurrency.BTC][FiatApiBridgedFiatCurrency.CRC]).toBeGreaterThan(0);
     });
 
+    it('can fetch current bridged GMD and XOF rates for BTC', async () => {
+        const rates = await getExchangeRates(
+            [FiatApiSupportedCryptoCurrency.BTC],
+            [FiatApiBridgedFiatCurrency.GMD, FiatApiBridgedFiatCurrency.XOF],
+        );
+        expect(rates[FiatApiSupportedCryptoCurrency.BTC][FiatApiBridgedFiatCurrency.GMD]).toBeGreaterThan(0);
+        expect(rates[FiatApiSupportedCryptoCurrency.BTC][FiatApiBridgedFiatCurrency.XOF]).toBeGreaterThan(0);
+    });
+
     it('can fetch historic USD rates for BTC', async () => {
         const timestamps = [
             new Date('2023-01-01T00:00:00.000Z').getTime(),

@@ -79,6 +79,8 @@ export enum FiatApiSupportedFiatCurrency {
 
 export enum FiatApiBridgedFiatCurrency {
     CRC = 'crc', // Costa Rican Colón
+    GMD = 'gmd', // Gambian Dalasi
+    XOF = 'xof', // West African CFA franc
 }
 
 const API_URL = 'https://api.coingecko.com/api/v3';
@@ -123,6 +125,19 @@ export async function getExchangeRates(
                 ));
                 break;
             }
+            case FiatApiBridgedFiatCurrency.GMD:
+            case FiatApiBridgedFiatCurrency.XOF: {
+                // Use USD as the intermediate currency
+                if (!vsCurrencies.includes(FiatApiSupportedFiatCurrency.USD)) {
+                    vsCurrencies.push(FiatApiSupportedFiatCurrency.USD);
+                }
+
+                // Fetch today's exchange rates
+                bridgedExchangeRatePromises.push(_fetch<FirebaseRawResponse>(
+                    'https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/documents/exchangerates/rates',
+                ).then(_parseCplExchangeRateResponse));
+                break;
+            }
             default:
                 throw new Error(`Unsupported bridged currency: ${vsCurrency}`);
         }
@@ -152,6 +167,14 @@ export async function getExchangeRates(
                     const usdPrice = vsPrices[FiatApiSupportedFiatCurrency.USD];
                     const crcRate = Object.values(bridgedExchangeRate)[0];
                     prices[cryptoCurrency][bridgedCurrency] = usdPrice ? usdPrice * crcRate : undefined;
+                    break;
+                }
+                case FiatApiBridgedFiatCurrency.GMD:
+                case FiatApiBridgedFiatCurrency.XOF: {
+                    // Convert from USD
+                    const usdPrice = vsPrices[FiatApiSupportedFiatCurrency.USD];
+                    const rate = bridgedExchangeRate[bridgedCurrency];
+                    prices[cryptoCurrency][bridgedCurrency] = usdPrice ? usdPrice * rate : undefined;
                     break;
                 }
                 default:
@@ -400,4 +423,84 @@ function _timestampToUtcOffset(timestamp: number, utcOffset: number): Date {
     const date = new Date(timestamp);
     date.setHours(date.getHours() + utcOffset);
     return date;
+}
+
+type FirebaseRawPrimitive = {
+    doubleValue: number,
+} | {
+    integerValue: string,
+} | {
+    stringValue: string,
+} | {
+    booleanValue: boolean,
+} | {
+    nullValue: null,
+};
+type FirebaseRawValue = FirebaseRawPrimitive | {
+    mapValue: {
+        fields: Record<string, FirebaseRawPrimitive>,
+    },
+} | {
+    arrayValue: {
+        values: FirebaseRawPrimitive[],
+    },
+};
+type FirebaseRawResponse = {
+    name: string,
+    fields: Record<string, FirebaseRawValue>,
+    createTime: string,
+    updateTime: string,
+};
+
+type FirebasePrimitive = number | string | boolean | null;
+type FirebaseValue = FirebasePrimitive | Record<string, FirebasePrimitive> | FirebasePrimitive[];
+type FirebaseResponse = Record<string, FirebaseValue>;
+
+function _parseCplExchangeRateResponse(response: FirebaseRawResponse): Record<string, number> {
+    const parsed = _parseRawFirebaseResponse(response);
+    if (!('rates' in parsed)) throw new Error('Invalid FirebaseResponse');
+
+    const result: Record<string, number> = {};
+    for (const [key, value] of Object.entries(parsed.rates as Record<string, FirebasePrimitive>)) {
+        if (typeof value !== 'number') throw new Error('Invalid FirebaseResponse');
+        result[key.toLowerCase()] = value;
+    }
+    return result;
+}
+
+function _parseRawFirebaseResponse(response: FirebaseRawResponse): FirebaseResponse {
+    const result: FirebaseResponse = {};
+    for (const [key, value] of Object.entries(response.fields)) {
+        result[key] = _parseRawFirebaseValue(value);
+    }
+    return result;
+}
+
+function _parseRawFirebaseValue(raw: FirebaseRawValue): FirebaseValue {
+    if ('mapValue' in raw) {
+        const result: Record<string, FirebasePrimitive> = {};
+        for (const [key, value] of Object.entries(raw.mapValue.fields)) {
+            result[key] = _parseRawFirebasePrimitive(value);
+        }
+        return result;
+    } else if ('arrayValue' in raw) {
+        return raw.arrayValue.values.map((value) => _parseRawFirebasePrimitive(value));
+    } else {
+        return _parseRawFirebasePrimitive(raw);
+    }
+}
+
+function _parseRawFirebasePrimitive(raw: FirebaseRawPrimitive): FirebasePrimitive {
+    if ('doubleValue' in raw) {
+        return raw.doubleValue;
+    } else if ('integerValue' in raw) {
+        return parseInt(raw.integerValue);
+    } else if ('stringValue' in raw) {
+        return raw.stringValue;
+    } else if ('booleanValue' in raw) {
+        return raw.booleanValue;
+    } else if ('nullValue' in raw) {
+        return null;
+    }
+    throw new Error('Invalid FirebaseRawPrimitive');
 }
