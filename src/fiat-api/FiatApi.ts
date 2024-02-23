@@ -83,6 +83,14 @@ export enum FiatApiBridgedFiatCurrency {
     XOF = 'xof', // West African CFA franc
 }
 
+export type FiatApiHistorySupportedBridgedFiatCurrency = FiatApiBridgedFiatCurrency.CRC;
+const HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES = {
+    [FiatApiBridgedFiatCurrency.CRC]: 'America/Costa_Rica',
+} as const;
+// Also checks no FiatApiHistorySupportedBridgedFiatCurrency is missing in HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES
+type HistorySupportedBridgedCurrencyTimezone = (typeof HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES)[
+    FiatApiHistorySupportedBridgedFiatCurrency];
+
 const API_URL = 'https://api.coingecko.com/api/v3';
 const COINGECKO_COIN_IDS = {
     [FiatApiSupportedCryptoCurrency.NIM]: 'nimiq-2',
@@ -104,82 +112,40 @@ export async function getExchangeRates(
     // because coingecko accepts uppercase and lowercase.
     cryptoCurrencies = cryptoCurrencies.map((currency) => currency.toLowerCase() as FiatApiSupportedCryptoCurrency);
 
-    // Check for bridged currencies and fetch the exchange rate to its intermediate currency
-    const bridgedCurrencies: FiatApiBridgedFiatCurrency[] = [];
-    const bridgedExchangeRatePromises: Promise<Record<string, number> | null>[] = [];
+    // Check for bridged currencies and fetch their USD exchange rates
+    const bridgedExchangeRatesPromises: Array<Promise<[FiatApiBridgedFiatCurrency, number]>> = [];
     for (const vsCurrency of vsCurrencies) {
-        if (!Object.values(FiatApiBridgedFiatCurrency).includes(vsCurrency as FiatApiBridgedFiatCurrency)) continue;
-        bridgedCurrencies.push(vsCurrency as FiatApiBridgedFiatCurrency);
-        switch (vsCurrency) {
-            case FiatApiBridgedFiatCurrency.CRC: {
-                // Use USD as the intermediate currency
-                if (!vsCurrencies.includes(FiatApiSupportedFiatCurrency.USD)) {
-                    vsCurrencies.push(FiatApiSupportedFiatCurrency.USD);
-                }
-
-                // Fetch today's USD-CRC exchange rate
-                const today = _timestampToUtcOffset(Date.now(), -6);
-                const todayDay = today.toISOString().split('T')[0];
-                bridgedExchangeRatePromises.push(_fetch<Record<string, number>>(
-                    `https://usd-crc-historic-rate.deno.dev/api/rates/${todayDay}/${todayDay}`,
-                ));
-                break;
-            }
-            case FiatApiBridgedFiatCurrency.GMD:
-            case FiatApiBridgedFiatCurrency.XOF: {
-                // Use USD as the intermediate currency
-                if (!vsCurrencies.includes(FiatApiSupportedFiatCurrency.USD)) {
-                    vsCurrencies.push(FiatApiSupportedFiatCurrency.USD);
-                }
-
-                // Fetch today's exchange rates
-                bridgedExchangeRatePromises.push(_fetch<FirebaseRawResponse>(
-                    'https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/documents/exchangerates/rates',
-                ).then(_parseCplExchangeRateResponse));
-                break;
-            }
-            default:
-                throw new Error(`Unsupported bridged currency: ${vsCurrency}`);
+        if (!_isBridgedFiatCurrency(vsCurrency)) continue;
+        bridgedExchangeRatesPromises.push(_getBridgedFiatCurrencyExchangeRate(vsCurrency)
+            .then((exchangeRate) => [vsCurrency, exchangeRate]));
+        // Bridged exchange rates are to USD, therefore we need to get the USD exchange rate.
+        if (!vsCurrencies.includes(FiatApiSupportedFiatCurrency.USD)) {
+            // Replace vsCurrencies to not push into the external array passed as argument. Note that the loop is still
+            // over the old vsCurrencies, which is not a problem though.
+            vsCurrencies = [...vsCurrencies, FiatApiSupportedFiatCurrency.USD];
         }
     }
 
     const coinIds = cryptoCurrencies.map((currency) => COINGECKO_COIN_IDS[currency]);
-    const apiResult = await _fetch<Record<string, Record<string, number>>>(`${API_URL}/simple/price`
+    const coingeckoExchangeRatesPromise = _fetch<Record<string, Record<string, number>>>(`${API_URL}/simple/price`
         + `?ids=${coinIds.join(',')}&vs_currencies=${vsCurrencies.join(',')}`);
+    const [
+        coingeckoExchangeRates,
+        ...bridgedExchangeRates
+    ] = await Promise.all([coingeckoExchangeRatesPromise, ...bridgedExchangeRatesPromises]);
     // Map coingecko coin ids back to FiatApiSupportedCryptoCurrency enum
     const prices = cryptoCurrencies.reduce((result, cryptoCurrency) => ({
         ...result,
-        [cryptoCurrency]: apiResult[COINGECKO_COIN_IDS[cryptoCurrency]],
+        [cryptoCurrency]: coingeckoExchangeRates[COINGECKO_COIN_IDS[cryptoCurrency]],
     }), {} as { [crypto: string]: { [vsCurrency: string]: number | undefined } });
 
-    for (const bridgedCurrency of bridgedCurrencies) {
-        // eslint-disable-next-line no-await-in-loop
-        const bridgedExchangeRate = await bridgedExchangeRatePromises.shift();
-        if (!bridgedExchangeRate) continue;
-
-        for (const price of Object.entries(prices)) {
-            const cryptoCurrency = price[0];
-            const vsPrices = price[1];
-
-            switch (bridgedCurrency) {
-                case FiatApiBridgedFiatCurrency.CRC: {
-                    // Convert from USD to CRC
-                    const usdPrice = vsPrices[FiatApiSupportedFiatCurrency.USD];
-                    const crcRate = Object.values(bridgedExchangeRate)[0];
-                    prices[cryptoCurrency][bridgedCurrency] = usdPrice ? usdPrice * crcRate : undefined;
-                    break;
-                }
-                case FiatApiBridgedFiatCurrency.GMD:
-                case FiatApiBridgedFiatCurrency.XOF: {
-                    // Convert from USD
-                    const usdPrice = vsPrices[FiatApiSupportedFiatCurrency.USD];
-                    const rate = bridgedExchangeRate[bridgedCurrency];
-                    prices[cryptoCurrency][bridgedCurrency] = usdPrice ? usdPrice * rate : undefined;
-                    break;
-                }
-                default:
-                    throw new Error(`Unsupported bridged currency: ${bridgedCurrency}`);
-            }
+    // Add prices calculated from bridged exchange rates, if any.
+    for (const [bridgedCurrency, bridgedExchangeRate] of bridgedExchangeRates) {
+        for (const coinPrices of Object.values(prices)) {
+            const coinUsdPrice = coinPrices[FiatApiSupportedFiatCurrency.USD];
+            coinPrices[bridgedCurrency] = bridgedExchangeRate && coinUsdPrice
+                ? bridgedExchangeRate * coinUsdPrice
+                : undefined;
         }
     }
 
@@ -195,35 +161,18 @@ export async function getExchangeRates(
  */
 export async function getHistoricExchangeRatesByRange(
     cryptoCurrency: FiatApiSupportedCryptoCurrency,
-    vsCurrency: FiatApiSupportedFiatCurrency | FiatApiBridgedFiatCurrency | FiatApiSupportedCryptoCurrency,
+    vsCurrency: FiatApiSupportedFiatCurrency | FiatApiHistorySupportedBridgedFiatCurrency
+        | FiatApiSupportedCryptoCurrency,
     from: number, // in milliseconds
     to: number, // in milliseconds
 ): Promise<Array<[number, number]>> {
-    let bridgedCurrency: FiatApiBridgedFiatCurrency | undefined;
-    let bridgedExchangeRatePromise: Promise<Record<string, number> | null> = Promise.resolve(null);
-    if (Object.values(FiatApiBridgedFiatCurrency).includes(vsCurrency as FiatApiBridgedFiatCurrency)) {
-        bridgedCurrency = vsCurrency as FiatApiBridgedFiatCurrency;
-
-        switch (bridgedCurrency) {
-            case FiatApiBridgedFiatCurrency.CRC: {
-                // Use USD as the intermediate currency
-                vsCurrency = FiatApiSupportedFiatCurrency.USD;
-
-                // Adapt dates to Costa Rica timezone (UTC-6, all year round)
-                const fromDate = _timestampToUtcOffset(from, -6);
-                const toDate = _timestampToUtcOffset(to, -6);
-                // Get the day portion as ISO string
-                const fromDay = fromDate.toISOString().split('T')[0];
-                const toDay = toDate.toISOString().split('T')[0];
-
-                bridgedExchangeRatePromise = _fetch<Record<string, number>>(
-                    `https://usd-crc-historic-rate.deno.dev/api/rates/${fromDay}/${toDay}`,
-                );
-                break;
-            }
-            default:
-                throw new Error(`Unsupported bridged currency: ${bridgedCurrency}`);
-        }
+    let bridgedCurrency: FiatApiHistorySupportedBridgedFiatCurrency | undefined;
+    let bridgedExchangeRatePromise: Promise<Record<string, number>> | undefined;
+    if (_isBridgedFiatCurrency(vsCurrency)) {
+        bridgedCurrency = vsCurrency;
+        bridgedExchangeRatePromise = _getHistoricBridgedFiatCurrencyExchangeRatesByRange(bridgedCurrency, from, to);
+        // Bridged exchange rates are to USD, therefore we need to get the USD exchange rate, too.
+        vsCurrency = FiatApiSupportedFiatCurrency.USD;
     }
 
     const coinId = COINGECKO_COIN_IDS[cryptoCurrency.toLowerCase() as FiatApiSupportedCryptoCurrency];
@@ -234,29 +183,20 @@ export async function getHistoricExchangeRatesByRange(
         { prices: result },
         bridgedExchangeRates,
     ] = await Promise.all([
-        _fetch<{ prices: [number, number][] }>(
+        _fetch<{ prices: Array<[number, number]> }>(
             `${API_URL}/coins/${coinId}/market_chart/range?vs_currency=${vsCurrency}&from=${from}&to=${to}`,
         ),
         bridgedExchangeRatePromise,
     ]);
 
     if (bridgedCurrency && bridgedExchangeRates) {
-        for (let i = 0; i < result.length; ++i) {
-            const [timestamp, price] = result[i];
-            switch (bridgedCurrency) {
-                case FiatApiBridgedFiatCurrency.CRC: {
-                    // Adapt date to Costa Rica timezone (UTC-6, all year round)
-                    const date = _timestampToUtcOffset(timestamp, -6);
-                    // Get the day portion as ISO string
-                    const day = date.toISOString().split('T')[0];
-                    // Convert from USD to CRC
-                    result[i] = [timestamp, price * bridgedExchangeRates[day]];
-                    break;
-                }
-                default:
-                    throw new Error(`Unsupported bridged currency: ${bridgedCurrency}`);
-            }
-        }
+        return result.map(([timestamp, coinUsdPrice]) => [
+            timestamp,
+            coinUsdPrice * bridgedExchangeRates[_getDateString(
+                timestamp,
+                HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES[bridgedCurrency!],
+            )],
+        ]);
     }
 
     return result;
@@ -267,7 +207,8 @@ export async function getHistoricExchangeRatesByRange(
  */
 export async function getHistoricExchangeRates(
     cryptoCurrency: FiatApiSupportedCryptoCurrency,
-    vsCurrency: FiatApiSupportedFiatCurrency | FiatApiBridgedFiatCurrency | FiatApiSupportedCryptoCurrency,
+    vsCurrency: FiatApiSupportedFiatCurrency | FiatApiHistorySupportedBridgedFiatCurrency
+        | FiatApiSupportedCryptoCurrency,
     timestamps: number[],
     disableMinutlyData = false,
 ): Promise<Map<number, number|undefined>> {
@@ -419,10 +360,73 @@ async function _fetch<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
     return result;
 }
 
-function _timestampToUtcOffset(timestamp: number, utcOffset: number): Date {
-    const date = new Date(timestamp);
-    date.setHours(date.getHours() + utcOffset);
-    return date;
+function _isBridgedFiatCurrency(currency: unknown): currency is FiatApiBridgedFiatCurrency {
+    return Object.values(FiatApiBridgedFiatCurrency).includes(currency as any);
+}
+
+/**
+ * Get today's exchange rate to USD.
+ */
+async function _getBridgedFiatCurrencyExchangeRate(bridgedFiatCurrency: FiatApiBridgedFiatCurrency): Promise<number> {
+    switch (bridgedFiatCurrency) {
+        case FiatApiBridgedFiatCurrency.CRC: {
+            const crcExchangeRates = await _getHistoricBridgedFiatCurrencyExchangeRatesByRange(
+                FiatApiBridgedFiatCurrency.CRC,
+                Date.now(),
+            );
+            // There is only a single exchange rate entry which is for the current date
+            return Object.values(crcExchangeRates)[0];
+        }
+        case FiatApiBridgedFiatCurrency.GMD:
+        case FiatApiBridgedFiatCurrency.XOF: {
+            const cplExchangeRatesResponse = await _fetch<FirebaseRawResponse>(
+                'https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/documents/'
+                + 'exchangerates/rates',
+            );
+            return _parseCplExchangeRateResponse(cplExchangeRatesResponse)[bridgedFiatCurrency];
+        }
+        default:
+            throw new Error(`Unsupported bridged currency: ${bridgedFiatCurrency}`);
+    }
+}
+
+/**
+ * Get historic exchange rates to USD.
+ */
+async function _getHistoricBridgedFiatCurrencyExchangeRatesByRange(
+    bridgedFiatCurrency: FiatApiHistorySupportedBridgedFiatCurrency,
+    from: number, // in milliseconds, inclusive
+    to: number = from, // in milliseconds, inclusive
+): Promise<Record<string, number>> {
+    if (bridgedFiatCurrency !== FiatApiBridgedFiatCurrency.CRC) {
+        // Currently only suported for CRC. Check for users that don't use typescript.
+        throw new Error(`Unsupported bridged currency for historic rates: ${bridgedFiatCurrency}`);
+    }
+    const timezone = HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES[bridgedFiatCurrency];
+    const fromDate = _getDateString(from, timezone);
+    const toDate = to === from ? fromDate : _getDateString(to, timezone);
+    return _fetch<Record<string, number>>(`https://usd-crc-historic-rate.deno.dev/api/rates/${fromDate}/${toDate}`);
+}
+
+/**
+ * Format a timestamp as a YYYY-MM-DD date string in a desired timezone.
+ */
+function _getDateString(timestamp: number | Date, timezone: HistorySupportedBridgedCurrencyTimezone): string {
+    // Define as record such that ts warns us if an entry is missing
+    const timezoneUtcOffsets: Record<HistorySupportedBridgedCurrencyTimezone, number> = {
+        'America/Costa_Rica': -6, // fixed offset all year, as Costa Rica has no daylight saving time.
+    };
+    const timezoneUtcOffset = timezoneUtcOffsets[timezone];
+    if (timezoneUtcOffset === undefined) {
+        // Arbitrary timezones could be supported via DateTimeFormat.formatToParts, but manually shifting the date is
+        // computationally slightly cheaper.
+        throw new Error(`Unsupported timezone ${timezone}`);
+    }
+
+    // Shift timestamp such that its UTC date equates the date in timezone.
+    const shiftedDate = new Date(timestamp);
+    shiftedDate.setHours(shiftedDate.getHours() + timezoneUtcOffset); // supports under-/overflow into prev/next day
+    return shiftedDate.toISOString().split('T')[0];
 }
 
 type FirebaseRawPrimitive = {
@@ -483,23 +487,27 @@ function _parseRawFirebaseValue(raw: FirebaseRawValue): FirebaseValue {
             result[key] = _parseRawFirebasePrimitive(value);
         }
         return result;
-    } else if ('arrayValue' in raw) {
-        return raw.arrayValue.values.map((value) => _parseRawFirebasePrimitive(value));
-    } else {
-        return _parseRawFirebasePrimitive(raw);
     }
+    if ('arrayValue' in raw) {
+        return raw.arrayValue.values.map((value) => _parseRawFirebasePrimitive(value));
+    }
+    return _parseRawFirebasePrimitive(raw);
 }
 
 function _parseRawFirebasePrimitive(raw: FirebaseRawPrimitive): FirebasePrimitive {
     if ('doubleValue' in raw) {
         return raw.doubleValue;
-    } else if ('integerValue' in raw) {
-        return parseInt(raw.integerValue);
-    } else if ('stringValue' in raw) {
+    }
+    if ('integerValue' in raw) {
+        return parseInt(raw.integerValue, 10);
+    }
+    if ('stringValue' in raw) {
         return raw.stringValue;
-    } else if ('booleanValue' in raw) {
+    }
+    if ('booleanValue' in raw) {
         return raw.booleanValue;
-    } else if ('nullValue' in raw) {
+    }
+    if ('nullValue' in raw) {
         return null;
     }
     throw new Error('Invalid FirebaseRawPrimitive');
