@@ -86,5 +86,5 @@ describe('FiatApi', () => {
         expect(rates.get(timestamps[1])).toBe(9894047.749291496);
         expect(rates.get(timestamps[5])).toBe(14290555.791483302);
         expect(rates.get(timestamps[6])).toBe(14244742.864549162);
-    });
+    }/* , 300000 */); // If this test ist failing, try with a higher timeout
 });
