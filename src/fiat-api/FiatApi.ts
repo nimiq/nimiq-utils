@@ -113,7 +113,7 @@ export async function getExchangeRates(
     cryptoCurrencies = cryptoCurrencies.map((currency) => currency.toLowerCase() as FiatApiSupportedCryptoCurrency);
 
     // Check for bridged currencies and fetch their USD exchange rates
-    const bridgedExchangeRatesPromises: Array<Promise<[FiatApiBridgedFiatCurrency, number]>> = [];
+    const bridgedExchangeRatesPromises: Array<Promise<[FiatApiBridgedFiatCurrency, number | undefined]>> = [];
     for (const vsCurrency of vsCurrencies) {
         if (!_isBridgedFiatCurrency(vsCurrency)) continue;
         bridgedExchangeRatesPromises.push(_getBridgedFiatCurrencyExchangeRate(vsCurrency)
@@ -167,7 +167,7 @@ export async function getHistoricExchangeRatesByRange(
     to: number, // in milliseconds
 ): Promise<Array<[number, number]>> {
     let bridgedCurrency: FiatApiHistorySupportedBridgedFiatCurrency | undefined;
-    let bridgedExchangeRatePromise: Promise<Record<string, number>> | undefined;
+    let bridgedExchangeRatePromise: Promise<Record<string, number | undefined>> | undefined;
     if (_isBridgedFiatCurrency(vsCurrency)) {
         bridgedCurrency = vsCurrency;
         bridgedExchangeRatePromise = _getHistoricBridgedFiatCurrencyExchangeRatesByRange(bridgedCurrency, from, to);
@@ -180,8 +180,8 @@ export async function getHistoricExchangeRatesByRange(
     from = Math.floor(from / 1000);
     to = Math.ceil(to / 1000);
     const [
-        { prices: result },
-        bridgedExchangeRates,
+        { prices: coingeckoHistoricRates },
+        bridgedHistoricRates,
     ] = await Promise.all([
         _fetch<{ prices: Array<[number, number]> }>(
             `${API_URL}/coins/${coinId}/market_chart/range?vs_currency=${vsCurrency}&from=${from}&to=${to}`,
@@ -189,17 +189,16 @@ export async function getHistoricExchangeRatesByRange(
         bridgedExchangeRatePromise,
     ]);
 
-    if (bridgedCurrency && bridgedExchangeRates) {
-        return result.map(([timestamp, coinUsdPrice]) => [
-            timestamp,
-            coinUsdPrice * bridgedExchangeRates[_getDateString(
-                timestamp,
-                HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES[bridgedCurrency!],
-            )],
-        ]);
+    if (bridgedCurrency && bridgedHistoricRates) {
+        // Convert exchange rates to bridged currency and omit entries for which no bridged exchange rate is available.
+        return coingeckoHistoricRates.map(([timestamp, coinUsdPrice]) => {
+            const date = _getDateString(timestamp, HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES[bridgedCurrency!]);
+            const bridgedHistoricRate = bridgedHistoricRates[date];
+            return bridgedHistoricRate ? [timestamp, coinUsdPrice * bridgedHistoricRate] : null;
+        }).filter((entry): entry is [number, number] => entry !== null);
     }
 
-    return result;
+    return coingeckoHistoricRates;
 }
 
 /**
@@ -365,16 +364,17 @@ function _isBridgedFiatCurrency(currency: unknown): currency is FiatApiBridgedFi
 }
 
 /**
- * Get today's exchange rate to USD.
+ * Get today's exchange rate to USD. Can be undefined if the user's clock is in the future.
  */
-async function _getBridgedFiatCurrencyExchangeRate(bridgedFiatCurrency: FiatApiBridgedFiatCurrency): Promise<number> {
+async function _getBridgedFiatCurrencyExchangeRate(bridgedFiatCurrency: FiatApiBridgedFiatCurrency)
+: Promise<number | undefined> {
     switch (bridgedFiatCurrency) {
         case FiatApiBridgedFiatCurrency.CRC: {
             const crcExchangeRates = await _getHistoricBridgedFiatCurrencyExchangeRatesByRange(
                 FiatApiBridgedFiatCurrency.CRC,
                 Date.now(),
             );
-            // There is only a single exchange rate entry which is for the current date
+            // There is only a single exchange rate entry, if any, which is for the current date.
             return Object.values(crcExchangeRates)[0];
         }
         case FiatApiBridgedFiatCurrency.GMD:
@@ -397,7 +397,7 @@ async function _getHistoricBridgedFiatCurrencyExchangeRatesByRange(
     bridgedFiatCurrency: FiatApiHistorySupportedBridgedFiatCurrency,
     from: number, // in milliseconds, inclusive
     to: number = from, // in milliseconds, inclusive
-): Promise<Record<string, number>> {
+): Promise<Record<string, number | undefined>> {
     if (bridgedFiatCurrency !== FiatApiBridgedFiatCurrency.CRC) {
         // Currently only suported for CRC. Check for users that don't use typescript.
         throw new Error(`Unsupported bridged currency for historic rates: ${bridgedFiatCurrency}`);
@@ -405,6 +405,7 @@ async function _getHistoricBridgedFiatCurrencyExchangeRatesByRange(
     const timezone = HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES[bridgedFiatCurrency];
     const fromDate = _getDateString(from, timezone);
     const toDate = to === from ? fromDate : _getDateString(to, timezone);
+    // Note: entries for future dates are omitted and thus basically undefined which is reflected in the return type.
     return _fetch<Record<string, number>>(`https://usd-crc-historic-rate.deno.dev/api/rates/${fromDate}/${toDate}`);
 }
 
