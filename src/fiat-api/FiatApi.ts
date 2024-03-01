@@ -94,6 +94,16 @@ const HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES = {
 type HistorySupportedBridgedCurrencyTimezone = (typeof HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES)[
     FiatApiHistorySupportedBridgedFiatCurrency];
 
+// Bridged fiat currencies using CryptoPayment.link API as bridge. Notably, these do not support historic rates.
+// In reality, more currencies are supported, check for what's included in the response returned by the api.
+const CPL_API_BRIDGED_FIAT_CURRENCIES: Array<Exclude<
+    FiatApiBridgedFiatCurrency,
+    FiatApiHistorySupportedBridgedFiatCurrency
+>> = [
+    FiatApiBridgedFiatCurrency.GMD,
+    FiatApiBridgedFiatCurrency.XOF,
+];
+
 const API_URL = 'https://api.coingecko.com/api/v3';
 const COINGECKO_COIN_IDS = {
     [FiatApiSupportedCryptoCurrency.NIM]: 'nimiq-2',
@@ -116,15 +126,13 @@ export async function getExchangeRates(
     cryptoCurrencies = cryptoCurrencies.map((currency) => currency.toLowerCase() as FiatApiSupportedCryptoCurrency);
 
     // Check for bridged currencies and fetch their USD exchange rates
-    const bridgedExchangeRatesPromises: Array<Promise<[FiatApiBridgedFiatCurrency, number | undefined]>> = [];
-    for (const vsCurrency of vsCurrencies) {
-        if (!isBridgedFiatCurrency(vsCurrency)) continue;
-        bridgedExchangeRatesPromises.push(_getBridgedFiatCurrencyExchangeRate(vsCurrency)
-            .then((exchangeRate) => [vsCurrency, exchangeRate]));
+    const bridgedVsCurrencies = vsCurrencies.filter(isBridgedFiatCurrency);
+    let bridgedExchangeRatesPromise: Promise<Partial<Record<FiatApiBridgedFiatCurrency, number|undefined>>> | undefined;
+    if (bridgedVsCurrencies.length) {
+        bridgedExchangeRatesPromise = _getBridgedFiatCurrencyExchangeRates(bridgedVsCurrencies);
         // Bridged exchange rates are to USD, therefore we need to get the USD exchange rate.
         if (!vsCurrencies.includes(FiatApiSupportedFiatCurrency.USD)) {
-            // Replace vsCurrencies to not push into the external array passed as argument. Note that the loop is still
-            // over the old vsCurrencies, which is not a problem though.
+            // Replace vsCurrencies to not push into the external array passed as argument.
             vsCurrencies = [...vsCurrencies, FiatApiSupportedFiatCurrency.USD];
         }
     }
@@ -134,8 +142,8 @@ export async function getExchangeRates(
         + `?ids=${coinIds.join(',')}&vs_currencies=${vsCurrencies.join(',')}`);
     const [
         coingeckoExchangeRates,
-        ...bridgedExchangeRates
-    ] = await Promise.all([coingeckoExchangeRatesPromise, ...bridgedExchangeRatesPromises]);
+        bridgedExchangeRates,
+    ] = await Promise.all([coingeckoExchangeRatesPromise, bridgedExchangeRatesPromise]);
     // Map coingecko coin ids back to FiatApiSupportedCryptoCurrency enum
     const prices = cryptoCurrencies.reduce((result, cryptoCurrency) => ({
         ...result,
@@ -143,7 +151,7 @@ export async function getExchangeRates(
     }), {} as { [crypto: string]: { [vsCurrency: string]: number | undefined } });
 
     // Add prices calculated from bridged exchange rates, if any.
-    for (const [bridgedCurrency, bridgedExchangeRate] of bridgedExchangeRates) {
+    for (const [bridgedCurrency, bridgedExchangeRate] of Object.entries(bridgedExchangeRates || {})) {
         for (const coinPrices of Object.values(prices)) {
             const coinUsdPrice = coinPrices[FiatApiSupportedFiatCurrency.USD];
             coinPrices[bridgedCurrency] = bridgedExchangeRate && coinUsdPrice
@@ -373,30 +381,42 @@ export function isHistorySupportedFiatCurrency(currency: unknown)
 }
 
 /**
- * Get today's exchange rate to USD. Can be undefined if the user's clock is in the future.
+ * Get today's exchange rates to USD. Rates can be undefined if the user's clock is in the future.
  */
-async function _getBridgedFiatCurrencyExchangeRate(bridgedFiatCurrency: FiatApiBridgedFiatCurrency)
-: Promise<number | undefined> {
-    switch (bridgedFiatCurrency) {
-        case FiatApiBridgedFiatCurrency.CRC: {
-            const crcExchangeRates = await _getHistoricBridgedFiatCurrencyExchangeRatesByRange(
-                FiatApiBridgedFiatCurrency.CRC,
-                Date.now(),
-            );
-            // There is only a single exchange rate entry, if any, which is for the current date.
-            return Object.values(crcExchangeRates)[0];
-        }
-        case FiatApiBridgedFiatCurrency.GMD:
-        case FiatApiBridgedFiatCurrency.XOF: {
-            const cplExchangeRatesResponse = await _fetch<FirebaseRawResponse>(
-                'https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/documents/'
-                + 'exchangerates/rates',
-            );
-            return _parseCplExchangeRateResponse(cplExchangeRatesResponse)[bridgedFiatCurrency];
-        }
-        default:
-            throw new Error(`Unsupported bridged currency: ${bridgedFiatCurrency}`);
+async function _getBridgedFiatCurrencyExchangeRates(bridgedFiatCurrencies: FiatApiBridgedFiatCurrency[])
+: Promise<Partial<Record<FiatApiBridgedFiatCurrency, number | undefined>>> {
+    const apiPromises: Array<Promise<Partial<Record<FiatApiBridgedFiatCurrency, number | undefined>>>> = [];
+
+    if (bridgedFiatCurrencies.includes(FiatApiBridgedFiatCurrency.CRC)) {
+        apiPromises.push(_getHistoricBridgedFiatCurrencyExchangeRatesByRange(
+            FiatApiBridgedFiatCurrency.CRC,
+            Date.now(),
+        ).then((crcExchangeRates) => ({
+            // There is only a single entry in crcExchangeRates, if any, which is for the current date.
+            [FiatApiBridgedFiatCurrency.CRC]: Object.values(crcExchangeRates)[0],
+        })));
     }
+
+    const cplApiFiatCurrencies = CPL_API_BRIDGED_FIAT_CURRENCIES.filter((c) => bridgedFiatCurrencies.includes(c));
+    if (cplApiFiatCurrencies.length) {
+        apiPromises.push(_fetch<FirebaseRawResponse>(
+            'https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/documents/'
+                + 'exchangerates/rates',
+        ).then((cplExchangeRatesResponse) => {
+            const cplExchangeRates = _parseCplExchangeRateResponse(cplExchangeRatesResponse);
+            // Reduce to only the requested cplApiFiatCurrencies.
+            return cplApiFiatCurrencies.reduce((result, currency) => ({
+                ...result,
+                [currency]: cplExchangeRates[currency],
+            }), {});
+        }));
+    }
+
+    const apiResults = await Promise.all(apiPromises);
+    return apiResults.reduce((exchangeRates, apiResult) => ({
+        ...exchangeRates,
+        ...apiResult,
+    }));
 }
 
 /**

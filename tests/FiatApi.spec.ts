@@ -12,6 +12,10 @@ import {
     getHistoricExchangeRates,
 } from '../src/fiat-api/FiatApi';
 
+// If tests are failing locally, increase the timeout
+const timeout = /* use default timeout of 5000 */ 0;
+// const timeout = 300000;
+
 describe('FiatApi', () => {
     it('can fetch current USD rate for BTC', async () => {
         const rate = await getExchangeRates(
@@ -19,7 +23,7 @@ describe('FiatApi', () => {
             [FiatApiSupportedFiatCurrency.USD],
         );
         expect(rate[FiatApiSupportedCryptoCurrency.BTC][FiatApiSupportedFiatCurrency.USD]).toBeGreaterThan(0);
-    });
+    }, timeout);
 
     it('can fetch current bridged CRC rate for BTC', async () => {
         const rate = await getExchangeRates(
@@ -27,7 +31,7 @@ describe('FiatApi', () => {
             [FiatApiBridgedFiatCurrency.CRC],
         );
         expect(rate[FiatApiSupportedCryptoCurrency.BTC][FiatApiBridgedFiatCurrency.CRC]).toBeGreaterThan(0);
-    });
+    }, timeout);
 
     it('can fetch current bridged GMD and XOF rates for BTC', async () => {
         const rates = await getExchangeRates(
@@ -36,7 +40,7 @@ describe('FiatApi', () => {
         );
         expect(rates[FiatApiSupportedCryptoCurrency.BTC][FiatApiBridgedFiatCurrency.GMD]).toBeGreaterThan(0);
         expect(rates[FiatApiSupportedCryptoCurrency.BTC][FiatApiBridgedFiatCurrency.XOF]).toBeGreaterThan(0);
-    });
+    }, timeout);
 
     it('can fetch historic USD rates for BTC', async () => {
         const timestamps = [
@@ -61,7 +65,7 @@ describe('FiatApi', () => {
         expect(rates.get(timestamps[1])).toBe(16543.017237311888);
         expect(rates.get(timestamps[5])).toBe(26793.954797943756);
         expect(rates.get(timestamps[6])).toBe(26810.776705117445);
-    });
+    }, timeout);
 
     it('can fetch historic CRC (bridged) rates for BTC', async () => {
         const timestamps = [
@@ -86,5 +90,5 @@ describe('FiatApi', () => {
         expect(rates.get(timestamps[1])).toBe(9894047.749291496);
         expect(rates.get(timestamps[5])).toBe(14290555.791483302);
         expect(rates.get(timestamps[6])).toBe(14244742.864549162);
-    }/* , 300000 */); // If this test is failing, try with a higher timeout
+    }, timeout);
 });
