@@ -83,7 +83,10 @@ export enum FiatApiBridgedFiatCurrency {
     XOF = 'xof', // West African CFA franc
 }
 
-export type FiatApiHistorySupportedBridgedFiatCurrency = FiatApiBridgedFiatCurrency.CRC;
+const FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES = [FiatApiBridgedFiatCurrency.CRC as const];
+export type FiatApiHistorySupportedBridgedFiatCurrency = (typeof FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES)[
+    number];
+
 const HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES = {
     [FiatApiBridgedFiatCurrency.CRC]: 'America/Costa_Rica',
 } as const;
@@ -115,7 +118,7 @@ export async function getExchangeRates(
     // Check for bridged currencies and fetch their USD exchange rates
     const bridgedExchangeRatesPromises: Array<Promise<[FiatApiBridgedFiatCurrency, number | undefined]>> = [];
     for (const vsCurrency of vsCurrencies) {
-        if (!_isBridgedFiatCurrency(vsCurrency)) continue;
+        if (!isBridgedFiatCurrency(vsCurrency)) continue;
         bridgedExchangeRatesPromises.push(_getBridgedFiatCurrencyExchangeRate(vsCurrency)
             .then((exchangeRate) => [vsCurrency, exchangeRate]));
         // Bridged exchange rates are to USD, therefore we need to get the USD exchange rate.
@@ -168,7 +171,7 @@ export async function getHistoricExchangeRatesByRange(
 ): Promise<Array<[number, number]>> {
     let bridgedCurrency: FiatApiHistorySupportedBridgedFiatCurrency | undefined;
     let bridgedExchangeRatePromise: Promise<Record<string, number | undefined>> | undefined;
-    if (_isBridgedFiatCurrency(vsCurrency)) {
+    if (isBridgedFiatCurrency(vsCurrency)) {
         bridgedCurrency = vsCurrency;
         bridgedExchangeRatePromise = _getHistoricBridgedFiatCurrencyExchangeRatesByRange(bridgedCurrency, from, to);
         // Bridged exchange rates are to USD, therefore we need to get the USD exchange rate, too.
@@ -359,8 +362,14 @@ async function _fetch<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
     return result;
 }
 
-function _isBridgedFiatCurrency(currency: unknown): currency is FiatApiBridgedFiatCurrency {
+export function isBridgedFiatCurrency(currency: unknown): currency is FiatApiBridgedFiatCurrency {
     return Object.values(FiatApiBridgedFiatCurrency).includes(currency as any);
+}
+
+export function isHistorySupportedFiatCurrency(currency: unknown)
+: currency is FiatApiSupportedFiatCurrency | FiatApiHistorySupportedBridgedFiatCurrency {
+    return Object.values(FiatApiSupportedFiatCurrency).includes(currency as any)
+        || FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES.includes(currency as any);
 }
 
 /**
@@ -398,8 +407,8 @@ async function _getHistoricBridgedFiatCurrencyExchangeRatesByRange(
     from: number, // in milliseconds, inclusive
     to: number = from, // in milliseconds, inclusive
 ): Promise<Record<string, number | undefined>> {
-    if (bridgedFiatCurrency !== FiatApiBridgedFiatCurrency.CRC) {
-        // Currently only suported for CRC. Check for users that don't use typescript.
+    if (!FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES.includes(bridgedFiatCurrency)) {
+        // Currently only supported for CRC. Check for users that don't use typescript.
         throw new Error(`Unsupported bridged currency for historic rates: ${bridgedFiatCurrency}`);
     }
     const timezone = HISTORY_SUPPORTED_BRIDGED_CURRENCY_TIMEZONES[bridgedFiatCurrency];
