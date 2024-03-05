@@ -18,7 +18,7 @@ export class CurrencyInfo {
     //     const sectionHeadline = document.querySelector('#List_of_circulating_currencies_by_state_or_territory')
     //         .closest('h2');
     //     const table = ((el) => {
-    //         while (el.tagName !== 'TABLE') el = el.nextElementSibling;
+    //         while (el.tagName !== 'TABLE' || !el.classList.contains('wikitable')) el = el.nextElementSibling;
     //         return el;
     //     })(sectionHeadline);
     //
@@ -28,13 +28,11 @@ export class CurrencyInfo {
     //         // count columns from the end because not all rows have the same number of columns as on some rows, the
     //         // first column is omitted if the cell in the first column of a previous row spans multiple rows.
     //         const code = row.children[row.childElementCount - 3].textContent.trim();
-    //         if (code.includes('[G]') // an inofficial currency code not registered in ISO 4217
-    //             || code.includes('none')
-    //         ) continue;
+    //         if (code.includes('none')) continue;
     //         const symbols = row.children[row.childElementCount - 4].textContent.trim()
-    //             .replace(/\[.+]/g, '') // remove comments
+    //             .replace(/\s*\(.+\)\s*/g, '') // remove comments
     //             .split(/ or |, /);
-    //         if (symbols.length === 1 && symbols[0].includes('none')) continue;
+    //         if (symbols.length === 1 && !symbols[0]) continue;
     //
     //         var entry = currencySymbols[code] || [];
     //         symbols.forEach((symbol) => {
@@ -142,7 +140,7 @@ export class CurrencyInfo {
         IRR: ['RI', '﷼'],
         JOD: ['JD', 'د.ا'],
         KES: 'Sh',
-        KGS: '\u20c0', // new unicode char to be released Sep 2021
+        KGS: '⃀',
         KWD: ['KD', 'د.ك'],
         LBP: ['LL', 'ل.ل'],
         LSL: 'M', // mismatch to Wikipedia's L because M is used for plural
@@ -163,12 +161,14 @@ export class CurrencyInfo {
         RSD: 'дин.',
         SAR: ['SR', '﷼'],
         SDG: ['£SD', 'ج.س.'],
+        SLE: 'Le',
         SOS: 'Sh.',
         TJS: 'SM', // mismatch to Wikipedia as actual wiki article shows it as SM
         TMT: 'm', // mismatch to Wikipedia as actual wiki article shows it as m
         TND: ['DT', 'د.ت'],
         UZS: 'сум', // mismatch to Wikipedia as actual wiki article shows it as сум
-        VES: 'Bs.',
+        VED: 'Bs.D',
+        VES: 'Bs.S',
         WST: 'T',
         XPF: '₣',
         YER: ['RI', '﷼'],
