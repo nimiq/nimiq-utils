@@ -15,7 +15,8 @@ export enum FiatApiSupportedCryptoCurrency {
 //
 // const referenceCurrencySymbols = { ...parsed from Wikipedia as described in CurrencyInfo.ts };
 // const FiatApiSupportedFiatCurrency = { ...as defined below };
-// const supportedVsCurrencies = [ ...as returned by https://api.coingecko.com/api/v3/simple/supported_vs_currencies ]
+// const supportedVsCurrencies = (await fetch('https://api.coingecko.com/api/v3/simple/supported_vs_currencies')
+//     .then((response) => response.json()))
 //     .map((currency) => currency.toUpperCase());
 // for (const currency of supportedVsCurrencies) {
 //     if (currency in referenceCurrencySymbols && !(currency in FiatApiSupportedFiatCurrency)) {
@@ -46,6 +47,7 @@ export enum FiatApiSupportedFiatCurrency {
     DKK = 'dkk', // Danish Krone
     EUR = 'eur', // Euro
     GBP = 'gbp', // British Pound
+    GEL = 'gel', // Georgian Lari
     HKD = 'hkd', // Hong Kong Dollar
     HUF = 'huf', // Hungarian Forint
     IDR = 'idr', // Indonesian Rupiah
@@ -82,10 +84,154 @@ export enum FiatApiSupportedFiatCurrency {
 // exchange rates by combining coin/USD and fiat/USD rates. Not all of these support also fetching historic exchange
 // rates. Those that do, are listed in FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES and can be checked for via
 // isHistorySupportedFiatCurrency(currency).
+// This list has been generated via the following script:
+//
+// const FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES = [ ... as defined below ];
+// const FiatApiSupportedFiatCurrency = { ... as defined above };
+// const cplData = await fetch('https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/'
+//     + 'documents/exchangerates/rates').then((response) => response.json());
+// const cplCurrencies = Object.keys(cplData.fields.rates.mapValue.fields)
+//     .map((currency) => currency.toUpperCase())
+//     .filter((currency) => !(currency in FiatApiSupportedFiatCurrency)
+//         && !FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES.includes(currency))
+//     .sort();
+// const formatCurrencies = (currencies) => currencies
+//     .map((currency) => `    ${currency.toUpperCase()} = '${currency.toLowerCase()}',\n`)
+//     .join('');
+// console.log('{\n'
+//     + '    // History supported bridged fiat currencies:\n'
+//     + formatCurrencies(FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES)
+//     + '\n    // CPL API currencies:\n'
+//     + formatCurrencies(cplCurrencies)
+//     + '}');
 export enum FiatApiBridgedFiatCurrency {
-    CRC = 'crc', // Costa Rican Colón
-    GMD = 'gmd', // Gambian Dalasi
+    // History supported bridged fiat currencies:
+    CRC = 'crc', // Costa Rican colón
+
+    // CPL API currencies:
+    AFN = 'afn', // Afghan afghani
+    ALL = 'all', // Albanian lek
+    AMD = 'amd', // Armenian dram
+    ANG = 'ang', // Netherlands Antillean guilder
+    AOA = 'aoa', // Angolan kwanza
+    AWG = 'awg', // Aruban florin
+    AZN = 'azn', // Azerbaijani manat
+    BAM = 'bam', // Bosnia and Herzegovina convertible mark
+    BBD = 'bbd', // Barbadian dollar
+    BGN = 'bgn', // Bulgarian lev
+    BIF = 'bif', // Burundian franc
+    BND = 'bnd', // Brunei dollar
+    BOB = 'bob', // Bolivian boliviano
+    BSD = 'bsd', // Bahamian dollar
+    // BTC = 'btc', // Bitcoin; not a fiat currency
+    BTN = 'btn', // Bhutanese ngultrum
+    BWP = 'bwp', // Botswana pula
+    BYN = 'byn', // Belarusian ruble
+    BZD = 'bzd', // Belize dollar
+    CDF = 'cdf', // Congolese franc
+    // CLF = 'clf', // Chilean Unidad de Fomento; a trade unit; not a fiat currency
+    // CNH = 'cnh', // A Chinese trade unit; not a fiat currency
+    COP = 'cop', // Colombian peso
+    // CUC = 'cuc', // old Cuban convertible peso; replaced by CUP
+    CUP = 'cup', // Cuban peso
+    CVE = 'cve', // Cape Verdean escudo
+    DJF = 'djf', // Djiboutian franc
+    DOP = 'dop', // Dominican peso
+    DZD = 'dzd', // Algerian dinar
+    EGP = 'egp', // Egyptian pound
+    ERN = 'ern', // Eritrean nakfa
+    ETB = 'etb', // Ethiopian birr
+    FJD = 'fjd', // Fijian dollar
+    FKP = 'fkp', // Falkland Islands pound
+    // GGP = 'ggp', // Guernsey pound; at parity with sterling; not a separate ISO 4217 currency
+    GHS = 'ghs', // Ghanaian cedi
+    GIP = 'gip', // Gibraltar pound
+    GMD = 'gmd', // Gambian dalasi
+    GNF = 'gnf', // Guinean franc
+    GTQ = 'gtq', // Guatemalan quetzal
+    GYD = 'gyd', // Guyanese dollar
+    HNL = 'hnl', // Honduran lempira
+    // HRK = 'hrk', // old Croatian Kuna; non-circulating currency
+    HTG = 'htg', // Haitian gourde
+    // IMP = 'imp', // Manx pound; at parity with sterling; not a separate ISO 4217 currency
+    IQD = 'iqd', // Iraqi dinar
+    IRR = 'irr', // Iranian rial
+    ISK = 'isk', // Icelandic króna
+    // JEP = 'jep', // Jersey pound; at parity with sterling; not a separate ISO 4217 currency
+    JMD = 'jmd', // Jamaican dollar
+    JOD = 'jod', // Jordanian dinar
+    KES = 'kes', // Kenyan shilling
+    KGS = 'kgs', // Kyrgyz som
+    KHR = 'khr', // Cambodian riel
+    KMF = 'kmf', // Comorian franc
+    KPW = 'kpw', // North Korean won
+    KYD = 'kyd', // Cayman Islands dollar
+    KZT = 'kzt', // Kazakhstani tenge
+    LAK = 'lak', // Lao kip
+    LBP = 'lbp', // Lebanese pound
+    LRD = 'lrd', // Liberian dollar
+    LSL = 'lsl', // Lesotho loti
+    LYD = 'lyd', // Libyan dinar
+    MAD = 'mad', // Moroccan dirham
+    MDL = 'mdl', // Moldovan leu
+    MGA = 'mga', // Malagasy ariary
+    MKD = 'mkd', // Macedonian denar
+    MNT = 'mnt', // Mongolian tögrög
+    MOP = 'mop', // Macanese pataca
+    MRU = 'mru', // Mauritanian ouguiya
+    MUR = 'mur', // Mauritian rupee
+    MVR = 'mvr', // Maldivian rufiyaa
+    MWK = 'mwk', // Malawian kwacha
+    MZN = 'mzn', // Mozambican metical
+    NAD = 'nad', // Namibian dollar
+    NIO = 'nio', // Nicaraguan córdoba
+    NPR = 'npr', // Nepalese rupee
+    OMR = 'omr', // Omani rial
+    PAB = 'pab', // Panamanian balboa
+    PEN = 'pen', // Peruvian sol
+    PGK = 'pgk', // Papua New Guinean kina
+    PYG = 'pyg', // Paraguayan guaraní
+    QAR = 'qar', // Qatari riyal
+    RON = 'ron', // Romanian leu
+    RSD = 'rsd', // Serbian dinar
+    RWF = 'rwf', // Rwandan franc
+    SBD = 'sbd', // Solomon Islands dollar
+    SCR = 'scr', // Seychellois rupee
+    SDG = 'sdg', // Sudanese pound
+    SHP = 'shp', // Saint Helena pound
+    // SLL = 'sll', // old Sierra Leonean leone; replaced by SLE
+    SOS = 'sos', // Somali shilling
+    SRD = 'srd', // Surinamese dollar
+    SSP = 'ssp', // South Sudanese pound
+    // STD = 'std', // old São Tomé and Príncipe dobra; replaced by STN
+    STN = 'stn', // São Tomé and Príncipe dobra
+    // SVC = 'svc', // old El Salvadorian colón; replaced by USD
+    SYP = 'syp', // Syrian pound
+    SZL = 'szl', // Swazi lilangeni
+    TJS = 'tjs', // Tajikistani somoni
+    TMT = 'tmt', // Turkmenistani manat
+    TND = 'tnd', // Tunisian dinar
+    TOP = 'top', // Tongan paʻanga
+    TTD = 'ttd', // Trinidad and Tobago dollar
+    TZS = 'tzs', // Tanzanian shilling
+    UGX = 'ugx', // Ugandan shilling
+    UYU = 'uyu', // Uruguayan peso
+    UZS = 'uzs', // Uzbekistani sum
+    VES = 'ves', // Venezuelan sovereign bolívar
+    VUV = 'vuv', // Vanuatu vatu
+    WST = 'wst', // Samoan tālā
+    XAF = 'xaf', // Central African CFA franc
+    // XAG = 'xag', // Silver; not a fiat currency
+    // XAU = 'xau', // Gold; not a fiat currency
+    XCD = 'xcd', // Eastern Caribbean dollar
+    // XDR = 'xdr', // special drawing right issued by the International Monetary Fund; not a fiat currency
     XOF = 'xof', // West African CFA franc
+    // XPD = 'xpd', // Palladium; not a fiat currency
+    XPF = 'xpf', // CFP franc
+    // XPT = 'xpt', // Platinum; not a fiat currency
+    YER = 'yer', // Yemeni rial
+    ZMW = 'zmw', // Zambian kwacha
+    ZWL = 'zwl', // Zimbabwean dollar
 }
 
 // Check that no currency supported directly by Coingecko is handled as bridged currency.
@@ -110,13 +256,11 @@ type HistorySupportedBridgedCurrencyTimezone = (typeof HISTORY_SUPPORTED_BRIDGED
 
 // Bridged fiat currencies using CryptoPayment.link API as bridge. Notably, these do not support historic rates.
 // In reality, more currencies are supported, check for what's included in the response returned by the api.
-const CPL_API_BRIDGED_FIAT_CURRENCIES: Array<Exclude<
-    FiatApiBridgedFiatCurrency,
-    FiatApiHistorySupportedBridgedFiatCurrency
->> = [
-    FiatApiBridgedFiatCurrency.GMD,
-    FiatApiBridgedFiatCurrency.XOF,
-];
+type CplApiBridgedFiatCurrency = Exclude<FiatApiBridgedFiatCurrency, FiatApiHistorySupportedBridgedFiatCurrency>;
+const CPL_API_BRIDGED_FIAT_CURRENCIES: Array<CplApiBridgedFiatCurrency> = Object.values(FiatApiBridgedFiatCurrency)
+    .filter((currency): currency is CplApiBridgedFiatCurrency => (
+        !FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES.includes(currency as any)
+    ));
 
 const API_URL = 'https://api.coingecko.com/api/v3';
 const COINGECKO_COIN_IDS = {
