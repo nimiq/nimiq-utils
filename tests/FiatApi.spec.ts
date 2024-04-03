@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-/* global describe, it, expect */
+/* global describe, it, xit, expect */
 
 import {
     FiatApiBridgedFiatCurrency,
@@ -22,12 +22,14 @@ const knownHistoricRates = new Map([
 
     [new Date('2024-04-01T00:00:00.000Z').getTime(), { USD: 71182.42807620876, CRC: 35804761.32233301 }],
     [new Date('2024-04-02T00:00:00.000Z').getTime(), { USD: 69634.9924715534, CRC: 35026401.21319136 }],
-    [new Date('2024-04-03T00:00:00.000Z').getTime(), { USD: 65551.7179705302, CRC: 32890313.392469928 }],
+    [new Date('2024-04-03T00:00:00.000Z').getTime(), { USD: 65561.26872480597, CRC: 32894710.969984144 }],
 ]);
 
-// If tests are failing locally, increase the timeout
-const timeout = /* use default timeout of 5000 */ 0;
-// const timeout = 300000;
+// In CI, reduce CoinGecko tests to only run as little requests as allowed without running into the rate limit (~5/min),
+// to avoid long running CI actions.
+const isCI = !!process.env.CI;
+const itLocallyOnly = isCI ? xit : it;
+const timeout = isCI ? /* use default timeout of 5000 */ 0 : 300_000;
 
 describe('FiatApi', () => {
     it('can fetch current USD rate for BTC', async () => {
@@ -38,7 +40,7 @@ describe('FiatApi', () => {
         expect(rate[FiatApiSupportedCryptoCurrency.BTC][FiatApiSupportedFiatCurrency.USD]).toBeGreaterThan(0);
     }, timeout);
 
-    it('can fetch current bridged CRC rate for BTC', async () => {
+    itLocallyOnly('can fetch current bridged CRC rate for BTC', async () => {
         const rate = await getExchangeRates(
             [FiatApiSupportedCryptoCurrency.BTC],
             [FiatApiBridgedFiatCurrency.CRC],
@@ -46,7 +48,7 @@ describe('FiatApi', () => {
         expect(rate[FiatApiSupportedCryptoCurrency.BTC][FiatApiBridgedFiatCurrency.CRC]).toBeGreaterThan(0);
     }, timeout);
 
-    it('can fetch current bridged GMD and XOF rates for BTC', async () => {
+    itLocallyOnly('can fetch current bridged GMD and XOF rates for BTC', async () => {
         const rates = await getExchangeRates(
             [FiatApiSupportedCryptoCurrency.BTC],
             [FiatApiBridgedFiatCurrency.GMD, FiatApiBridgedFiatCurrency.XOF],
@@ -60,17 +62,19 @@ describe('FiatApi', () => {
             FiatApiSupportedCryptoCurrency.BTC,
             FiatApiSupportedFiatCurrency.USD,
             [...knownHistoricRates.keys()],
+            /* disableMinutelyData */ true,
         );
         const knownRates = new Map([...knownHistoricRates.entries()]
             .map(([timestamp, { USD: rate }]) => [timestamp, rate]));
         expect(rates).toEqual(knownRates);
     }, timeout);
 
-    it('can fetch historic CRC (bridged) rates for BTC', async () => {
+    itLocallyOnly('can fetch historic CRC (bridged) rates for BTC', async () => {
         const rates = await getHistoricExchangeRates(
             FiatApiSupportedCryptoCurrency.BTC,
             FiatApiBridgedFiatCurrency.CRC,
             [...knownHistoricRates.keys()],
+            /* disableMinutelyData */ true,
         );
         const knownRates = new Map([...knownHistoricRates.entries()]
             .map(([timestamp, { CRC: rate }]) => [timestamp, rate]));
