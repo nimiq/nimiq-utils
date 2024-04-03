@@ -312,8 +312,12 @@ export async function getExchangeRates<C extends FiatApiSupportedCryptoCurrency,
     }
 
     const coinIds = cryptoCurrencies.map((currency) => COINGECKO_COIN_IDS[currency]);
-    const coingeckoExchangeRatesPromise = _fetch<Record<string, Record<string, number>>>(`${API_URL}/simple/price`
-        + `?ids=${coinIds.join(',')}&vs_currencies=${coingeckoVsCurrencies.join(',')}`);
+    const coingeckoExchangeRatesPromise = _fetch<Record<string, Record<string, number>>>(
+        `${API_URL}/simple/price`
+        + `?ids=${coinIds.join(',')}&vs_currencies=${coingeckoVsCurrencies.join(',')}`,
+        // Run sequentially to avoid (re)trying many parallel requests waiting on CoinGecko's low rate limit.
+        /* sequentially */ true,
+    );
     const [
         coingeckoExchangeRates,
         bridgedExchangeRates,
@@ -371,6 +375,8 @@ export async function getHistoricExchangeRatesByRange(
     ] = await Promise.all([
         _fetch<{ prices: Array<[number, number]> }>(
             `${API_URL}/coins/${coinId}/market_chart/range?vs_currency=${vsCurrency}&from=${from}&to=${to}`,
+            // Run sequentially to avoid (re)trying many parallel requests waiting on CoinGecko's low rate limit.
+            /* sequentially */ true,
         ),
         bridgedExchangeRatePromise,
     ]);
@@ -510,36 +516,57 @@ function _findTimestampChunk(
     };
 }
 
-async function _fetch<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-    let result: T | null = null;
-    do {
-        let retry = true;
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            const response = await fetch(input, init); // Throws when user is offline, in which case we retry.
-            if (response.status === 429) throw new Error('Rate limit hit. Retrying...');
-            if (!response.ok) {
-                // On other error codes, do not retry, e.g. on status 401 (Unauthorized) for api calls that require
-                // an API key like CoinGecko requests of historic data older than 365 days.
-                retry = false;
-                throw new Error(`${response.status} - ${response.statusText}`);
+let _fetchLock = Promise.resolve(); // note: shared across _fetch calls, i.e. not specific to CoinGecko or bridge
+async function _fetch<T>(input: RequestInfo, init?: RequestInit, sequentially?: boolean): Promise<T>;
+async function _fetch<T>(input: RequestInfo, sequentially?: boolean): Promise<T>;
+async function _fetch<T>(
+    input: RequestInfo,
+    initOrSequentially?: RequestInit | boolean,
+    sequentially: boolean = false,
+): Promise<T> {
+    const init = typeof initOrSequentially !== 'boolean' ? initOrSequentially : undefined;
+    sequentially = typeof initOrSequentially === 'boolean' ? initOrSequentially : sequentially;
+
+    let unlock: (() => void) | undefined;
+    if (sequentially) {
+        const previousLock = _fetchLock;
+        _fetchLock = new Promise<void>((resolve) => { unlock = resolve; });
+        await previousLock;
+    }
+
+    try {
+        let result: T | null = null;
+        do {
+            let retry = true;
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                const response = await fetch(input, init); // Throws when user is offline, in which case we retry.
+                if (response.status === 429) throw new Error('Rate limit hit. Retrying...');
+                if (!response.ok) {
+                    // On other error codes, do not retry, e.g. on status 401 (Unauthorized) for api calls that require
+                    // an API key like CoinGecko requests of historic data older than 365 days.
+                    retry = false;
+                    throw new Error(`${response.status} - ${response.statusText}`);
+                }
+                // eslint-disable-next-line no-await-in-loop
+                result = await response.json();
+            } catch (e) {
+                if (!retry) throw e;
+                // User might be offline or we ran into coingecko's rate limiting. Coingecko allows 100 requests
+                // per minute and tells us in the response headers when our next minute starts, but unfortunately
+                // due to cors we can not access this information. Therefore, we blindly retry after waiting some
+                // time. Note that coingecko resets the quota solely based on their system time, i.e. independent
+                // of when we resend our request. Therefore, we do not waste time/part of our quota by waiting a
+                // bit longer. Note however, that we do not prioritize between our fetches, therefore they will
+                // be resolved in random order.
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise((resolve) => { setTimeout(resolve, 15000); });
             }
-            // eslint-disable-next-line no-await-in-loop
-            result = await response.json();
-        } catch (e) {
-            if (!retry) throw e;
-            // User might be offline or we ran into coingecko's rate limiting. Coingecko allows 100 requests
-            // per minute and tells us in the response headers when our next minute starts, but unfortunately
-            // due to cors we can not access this information. Therefore, we blindly retry after waiting some
-            // time. Note that coingecko resets the quota solely based on their system time, i.e. independent
-            // of when we resend our request. Therefore, we do not waste time/part of our quota by waiting a
-            // bit longer. Note however, that we do not prioritize between our fetches, therefore they will
-            // be resolved in random order.
-            // eslint-disable-next-line no-await-in-loop
-            await new Promise((resolve) => { setTimeout(resolve, 15000); });
-        }
-    } while (!result);
-    return result;
+        } while (!result);
+        return result;
+    } finally {
+        unlock?.();
+    }
 }
 
 export function isBridgedFiatCurrency(currency: unknown): currency is FiatApiBridgedFiatCurrency {
