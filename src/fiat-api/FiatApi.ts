@@ -516,17 +516,18 @@ async function _fetch<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
         let retry = true;
         try {
             // eslint-disable-next-line no-await-in-loop
-            const response = await fetch(input, init); // throws when user is offline
+            const response = await fetch(input, init); // Throws when user is offline, in which case we retry.
+            if (response.status === 429) throw new Error('Rate limit hit. Retrying...');
             if (!response.ok) {
-                if (response.status === 400) {
-                    retry = false;
-                    throw new Error('400 - Bad request');
-                }
-                throw new Error(`Failed to fetch: ${response.status}. Retrying...`);
+                // On other error codes, do not retry, e.g. on status 401 (Unauthorized) for api calls that require
+                // an API key like CoinGecko requests of historic data older than 365 days.
+                retry = false;
+                throw new Error(`${response.status} - ${response.statusText}`);
             }
             // eslint-disable-next-line no-await-in-loop
             result = await response.json();
         } catch (e) {
+            if (!retry) throw e;
             // User might be offline or we ran into coingecko's rate limiting. Coingecko allows 100 requests
             // per minute and tells us in the response headers when our next minute starts, but unfortunately
             // due to cors we can not access this information. Therefore, we blindly retry after waiting some
@@ -534,12 +535,8 @@ async function _fetch<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
             // of when we resend our request. Therefore, we do not waste time/part of our quota by waiting a
             // bit longer. Note however, that we do not prioritize between our fetches, therefore they will
             // be resolved in random order.
-            if (retry) {
-                // eslint-disable-next-line no-await-in-loop
-                await new Promise((resolve) => { setTimeout(resolve, 15000); });
-            } else {
-                throw e;
-            }
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((resolve) => { setTimeout(resolve, 15000); });
         }
     } while (!result);
     return result;
