@@ -12,6 +12,19 @@ import {
     getHistoricExchangeRates,
 } from '../src/fiat-api/FiatApi';
 
+// Timestamps chosen in a way, that two Coingecko request chunks get created (a single chunk spans 90 days max).
+// Note: Coingecko's public api only allows fetching historic rates for the last 365 days. Therefore, this test vector
+// needs to be updated on a yearly basis.
+const knownHistoricRates = new Map([
+    [new Date('2024-01-01T00:00:00.000Z').getTime(), { USD: 42261.72545509639, CRC: 22104995.499288168 }],
+    [new Date('2024-01-01T01:00:00.000Z').getTime(), { USD: 42490.22251263108, CRC: 22224510.885231685 }],
+    [new Date('2024-01-01T02:00:00.000Z').getTime(), { USD: 42652.12131449001, CRC: 22309192.053544 }],
+
+    [new Date('2024-04-01T00:00:00.000Z').getTime(), { USD: 71182.42807620876, CRC: 35804761.32233301 }],
+    [new Date('2024-04-02T00:00:00.000Z').getTime(), { USD: 69634.9924715534, CRC: 35026401.21319136 }],
+    [new Date('2024-04-03T00:00:00.000Z').getTime(), { USD: 65551.7179705302, CRC: 32890313.392469928 }],
+]);
+
 // If tests are failing locally, increase the timeout
 const timeout = /* use default timeout of 5000 */ 0;
 // const timeout = 300000;
@@ -43,52 +56,24 @@ describe('FiatApi', () => {
     }, timeout);
 
     it('can fetch historic USD rates for BTC', async () => {
-        const timestamps = [
-            new Date('2023-01-01T00:00:00.000Z').getTime(),
-            new Date('2023-01-01T01:00:00.000Z').getTime(),
-            new Date('2023-01-01T02:00:00.000Z').getTime(),
-            new Date('2023-01-01T03:00:00.000Z').getTime(),
-            new Date('2023-01-01T04:00:00.000Z').getTime(),
-            new Date('2023-10-13T05:00:00.000Z').getTime(),
-            new Date('2023-10-13T06:00:00.000Z').getTime(),
-            new Date('2023-10-13T07:00:00.000Z').getTime(),
-            new Date('2023-10-13T08:00:00.000Z').getTime(),
-            new Date('2023-10-13T09:00:00.000Z').getTime(),
-        ];
         const rates = await getHistoricExchangeRates(
             FiatApiSupportedCryptoCurrency.BTC,
             FiatApiSupportedFiatCurrency.USD,
-            timestamps,
+            [...knownHistoricRates.keys()],
         );
-        expect(rates.size).toBe(10);
-        expect(rates.get(timestamps[0])).toBe(16541.90475052885);
-        expect(rates.get(timestamps[1])).toBe(16543.017237311888);
-        expect(rates.get(timestamps[5])).toBe(26793.954797943756);
-        expect(rates.get(timestamps[6])).toBe(26810.776705117445);
+        const knownRates = new Map([...knownHistoricRates.entries()]
+            .map(([timestamp, { USD: rate }]) => [timestamp, rate]));
+        expect(rates).toEqual(knownRates);
     }, timeout);
 
     it('can fetch historic CRC (bridged) rates for BTC', async () => {
-        const timestamps = [
-            new Date('2023-01-01T00:00:00.000Z').getTime(),
-            new Date('2023-01-01T01:00:00.000Z').getTime(),
-            new Date('2023-01-01T02:00:00.000Z').getTime(),
-            new Date('2023-01-01T03:00:00.000Z').getTime(),
-            new Date('2023-01-01T04:00:00.000Z').getTime(),
-            new Date('2023-10-13T05:00:00.000Z').getTime(),
-            new Date('2023-10-13T06:00:00.000Z').getTime(),
-            new Date('2023-10-13T07:00:00.000Z').getTime(),
-            new Date('2023-10-13T08:00:00.000Z').getTime(),
-            new Date('2023-10-13T09:00:00.000Z').getTime(),
-        ];
         const rates = await getHistoricExchangeRates(
             FiatApiSupportedCryptoCurrency.BTC,
             FiatApiBridgedFiatCurrency.CRC,
-            timestamps,
+            [...knownHistoricRates.keys()],
         );
-        expect(rates.size).toBe(10);
-        expect(rates.get(timestamps[0])).toBe(9893382.393196296);
-        expect(rates.get(timestamps[1])).toBe(9894047.749291496);
-        expect(rates.get(timestamps[5])).toBe(14290555.791483302);
-        expect(rates.get(timestamps[6])).toBe(14244742.864549162);
+        const knownRates = new Map([...knownHistoricRates.entries()]
+            .map(([timestamp, { CRC: rate }]) => [timestamp, rate]));
+        expect(rates).toEqual(knownRates);
     }, timeout);
 });
