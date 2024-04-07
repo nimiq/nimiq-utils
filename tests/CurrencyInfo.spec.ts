@@ -1,7 +1,7 @@
 /* global describe, it, expect */
 
 import { CurrencyInfo } from '../src/currency-info/CurrencyInfo';
-import { FiatApiSupportedFiatCurrency } from '../src/fiat-api/FiatApi';
+import { FiatCurrency } from '../src/fiat-api/FiatApi';
 
 describe('CurrencyInfo', () => {
     it('can be manually created', () => {
@@ -62,7 +62,7 @@ describe('CurrencyInfo', () => {
 
     it('has custom currency symbols', () => {
         for (const code of new Set([
-            ...Object.keys(FiatApiSupportedFiatCurrency),
+            ...Object.keys(FiatCurrency),
             // @ts-ignore: EXTRA_SYMBOLS is private
             ...Object.keys(CurrencyInfo.EXTRA_SYMBOLS),
         ].sort())) {
