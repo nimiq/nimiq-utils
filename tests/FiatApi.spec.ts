@@ -5,7 +5,7 @@
 /* global describe, it, xit, expect */
 
 import {
-    BridgedFiatCurrency,
+    BridgeableFiatCurrency,
     CryptoCurrency,
     FiatCurrency,
     getExchangeRates,
@@ -38,14 +38,17 @@ describe('FiatApi', () => {
     }, timeout);
 
     itLocallyOnly('can fetch current bridged CRC rate for BTC', async () => {
-        const rate = await getExchangeRates([CryptoCurrency.BTC], [BridgedFiatCurrency.CRC]);
-        expect(rate[CryptoCurrency.BTC][BridgedFiatCurrency.CRC]).toBeGreaterThan(0);
+        const rate = await getExchangeRates([CryptoCurrency.BTC], [BridgeableFiatCurrency.CRC]);
+        expect(rate[CryptoCurrency.BTC][BridgeableFiatCurrency.CRC]).toBeGreaterThan(0);
     }, timeout);
 
     itLocallyOnly('can fetch current bridged GMD and XOF rates for BTC', async () => {
-        const rates = await getExchangeRates([CryptoCurrency.BTC], [BridgedFiatCurrency.GMD, BridgedFiatCurrency.XOF]);
-        expect(rates[CryptoCurrency.BTC][BridgedFiatCurrency.GMD]).toBeGreaterThan(0);
-        expect(rates[CryptoCurrency.BTC][BridgedFiatCurrency.XOF]).toBeGreaterThan(0);
+        const rates = await getExchangeRates(
+            [CryptoCurrency.BTC],
+            [BridgeableFiatCurrency.GMD, BridgeableFiatCurrency.XOF],
+        );
+        expect(rates[CryptoCurrency.BTC][BridgeableFiatCurrency.GMD]).toBeGreaterThan(0);
+        expect(rates[CryptoCurrency.BTC][BridgeableFiatCurrency.XOF]).toBeGreaterThan(0);
     }, timeout);
 
     it('can fetch historic USD rates for BTC', async () => {
@@ -63,7 +66,7 @@ describe('FiatApi', () => {
     itLocallyOnly('can fetch historic CRC (bridged) rates for BTC', async () => {
         const rates = await getHistoricExchangeRates(
             CryptoCurrency.BTC,
-            BridgedFiatCurrency.CRC,
+            BridgeableFiatCurrency.CRC,
             [...knownHistoricRates.keys()],
             /* disableMinutelyData */ true,
         );

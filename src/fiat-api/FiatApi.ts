@@ -80,68 +80,83 @@ export enum FiatCurrency {
     ZAR = 'zar', // South African Rand
 }
 
-// Additionally supported fiat currencies, which are not directly supported by Coingecko, but for which we calculate
-// exchange rates by combining coin/USD and fiat/USD rates. Not all of these support also fetching historic exchange
-// rates. Those that do, are listed in HISTORY_BRIDGED_FIAT_CURRENCIES and can be checked for via
+// Additionally supported fiat currencies, for which we calculate exchange rates by combining coin/USD and fiat/USD
+// rates, if they're not directly supported by CoinGecko. Not all of these support also fetching historic exchange
+// rates. Those that do, are listed in HISTORY_BRIDGEABLE_FIAT_CURRENCIES and can be checked for via
 // isHistorySupportedFiatCurrency(currency).
 // This list has been generated via the following script:
 //
-// const HISTORY_BRIDGED_FIAT_CURRENCIES = [ ... as defined below ];
-// const FiatCurrency = { ... as defined above };
+// const HISTORY_BRIDGEABLE_FIAT_CURRENCIES = [ ... as defined below ];
 // const cplData = await fetch('https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/'
 //     + 'documents/exchangerates/rates').then((response) => response.json());
 // const cplCurrencies = Object.keys(cplData.fields.rates.mapValue.fields)
 //     .map((currency) => currency.toUpperCase())
-//     .filter((currency) => !(currency in FiatCurrency) && !HISTORY_BRIDGED_FIAT_CURRENCIES.includes(currency))
+//     .filter((currency) => !HISTORY_BRIDGEABLE_FIAT_CURRENCIES.includes(currency))
 //     .sort();
 // const formatCurrencies = (currencies) => currencies
 //     .map((currency) => `    ${currency.toUpperCase()} = '${currency.toLowerCase()}',\n`)
 //     .join('');
 // console.log('{\n'
-//     + '    // History supported bridged fiat currencies:\n'
-//     + formatCurrencies(HISTORY_BRIDGED_FIAT_CURRENCIES)
+//     + '    // History supported bridgeable fiat currencies:\n'
+//     + formatCurrencies(HISTORY_BRIDGEABLE_FIAT_CURRENCIES)
 //     + '\n    // CPL API currencies:\n'
 //     + formatCurrencies(cplCurrencies)
 //     + '}');
-export enum BridgedFiatCurrency {
-    // History supported bridged fiat currencies:
+export enum BridgeableFiatCurrency {
+    // History supported bridgeable fiat currencies:
     CRC = 'crc', // Costa Rican colón
 
     // CPL API currencies:
+    AED = 'aed', // Arab Emirates Dirham
     AFN = 'afn', // Afghan afghani
     ALL = 'all', // Albanian lek
     AMD = 'amd', // Armenian dram
     ANG = 'ang', // Netherlands Antillean guilder
     AOA = 'aoa', // Angolan kwanza
+    ARS = 'ars', // Argentine Peso
+    AUD = 'aud', // Australian Dollar
     AWG = 'awg', // Aruban florin
     AZN = 'azn', // Azerbaijani manat
     BAM = 'bam', // Bosnia and Herzegovina convertible mark
     BBD = 'bbd', // Barbadian dollar
+    BDT = 'bdt', // Bangladeshi Taka
     BGN = 'bgn', // Bulgarian lev
+    BHD = 'bhd', // Bahraini Dinar
     BIF = 'bif', // Burundian franc
+    BMD = 'bmd', // Bermudan Dollar
     BND = 'bnd', // Brunei dollar
     BOB = 'bob', // Bolivian boliviano
+    BRL = 'brl', // Brazilian Real
     BSD = 'bsd', // Bahamian dollar
     // BTC = 'btc', // Bitcoin; not a fiat currency
     BTN = 'btn', // Bhutanese ngultrum
     BWP = 'bwp', // Botswana pula
     BYN = 'byn', // Belarusian ruble
     BZD = 'bzd', // Belize dollar
+    CAD = 'cad', // Canadian Dollar
     CDF = 'cdf', // Congolese franc
+    CHF = 'chf', // Swiss Franc
     // CLF = 'clf', // Chilean Unidad de Fomento; a trade unit; not a fiat currency
+    CLP = 'clp', // Chilean Peso
     // CNH = 'cnh', // A Chinese trade unit; not a fiat currency
+    CNY = 'cny', // Chinese Yuan
     COP = 'cop', // Colombian peso
     // CUC = 'cuc', // old Cuban convertible peso; replaced by CUP
     CUP = 'cup', // Cuban peso
     CVE = 'cve', // Cape Verdean escudo
+    CZK = 'czk', // Czech Koruna
     DJF = 'djf', // Djiboutian franc
+    DKK = 'dkk', // Danish Krone
     DOP = 'dop', // Dominican peso
     DZD = 'dzd', // Algerian dinar
     EGP = 'egp', // Egyptian pound
     ERN = 'ern', // Eritrean nakfa
+    EUR = 'eur', // Euro
     ETB = 'etb', // Ethiopian birr
     FJD = 'fjd', // Fijian dollar
     FKP = 'fkp', // Falkland Islands pound
+    GBP = 'gbp', // British Pound
+    GEL = 'gel', // Georgian Lari
     // GGP = 'ggp', // Guernsey pound; at parity with sterling; not a separate ISO 4217 currency
     GHS = 'ghs', // Ghanaian cedi
     GIP = 'gip', // Gibraltar pound
@@ -149,25 +164,34 @@ export enum BridgedFiatCurrency {
     GNF = 'gnf', // Guinean franc
     GTQ = 'gtq', // Guatemalan quetzal
     GYD = 'gyd', // Guyanese dollar
+    HKD = 'hkd', // Hong Kong Dollar
     HNL = 'hnl', // Honduran lempira
     // HRK = 'hrk', // old Croatian Kuna; non-circulating currency
     HTG = 'htg', // Haitian gourde
+    HUF = 'huf', // Hungarian Forint
+    IDR = 'idr', // Indonesian Rupiah
+    ILS = 'ils', // Israeli New Shekel
     // IMP = 'imp', // Manx pound; at parity with sterling; not a separate ISO 4217 currency
+    INR = 'inr', // Indian Rupee
     IQD = 'iqd', // Iraqi dinar
     IRR = 'irr', // Iranian rial
     ISK = 'isk', // Icelandic króna
     // JEP = 'jep', // Jersey pound; at parity with sterling; not a separate ISO 4217 currency
     JMD = 'jmd', // Jamaican dollar
     JOD = 'jod', // Jordanian dinar
+    JPY = 'jpy', // Japanese Yen
     KES = 'kes', // Kenyan shilling
     KGS = 'kgs', // Kyrgyz som
     KHR = 'khr', // Cambodian riel
     KMF = 'kmf', // Comorian franc
     KPW = 'kpw', // North Korean won
+    KRW = 'krw', // South Korean Won
+    KWD = 'kwd', // Kuwaiti Dinar
     KYD = 'kyd', // Cayman Islands dollar
     KZT = 'kzt', // Kazakhstani tenge
     LAK = 'lak', // Lao kip
     LBP = 'lbp', // Lebanese pound
+    LKR = 'lkr', // Sri Lankan Rupee
     LRD = 'lrd', // Liberian dollar
     LSL = 'lsl', // Lesotho loti
     LYD = 'lyd', // Libyan dinar
@@ -175,28 +199,41 @@ export enum BridgedFiatCurrency {
     MDL = 'mdl', // Moldovan leu
     MGA = 'mga', // Malagasy ariary
     MKD = 'mkd', // Macedonian denar
+    MMK = 'mmk', // Burmese Kyat
     MNT = 'mnt', // Mongolian tögrög
     MOP = 'mop', // Macanese pataca
     MRU = 'mru', // Mauritanian ouguiya
     MUR = 'mur', // Mauritian rupee
     MVR = 'mvr', // Maldivian rufiyaa
     MWK = 'mwk', // Malawian kwacha
+    MXN = 'mxn', // Mexican Peso
+    MYR = 'myr', // Malaysian Ringgit
     MZN = 'mzn', // Mozambican metical
     NAD = 'nad', // Namibian dollar
+    NGN = 'ngn', // Nigerian Naira
     NIO = 'nio', // Nicaraguan córdoba
+    NOK = 'nok', // Norwegian Krone
     NPR = 'npr', // Nepalese rupee
+    NZD = 'nzd', // New Zealand Dollar
     OMR = 'omr', // Omani rial
     PAB = 'pab', // Panamanian balboa
     PEN = 'pen', // Peruvian sol
     PGK = 'pgk', // Papua New Guinean kina
+    PHP = 'php', // Philippine Peso
+    PKR = 'pkr', // Pakistani Rupee
+    PLN = 'pln', // Poland Złoty
     PYG = 'pyg', // Paraguayan guaraní
     QAR = 'qar', // Qatari riyal
     RON = 'ron', // Romanian leu
     RSD = 'rsd', // Serbian dinar
+    RUB = 'rub', // Russian Ruble
     RWF = 'rwf', // Rwandan franc
+    SAR = 'sar', // Saudi Riyal
     SBD = 'sbd', // Solomon Islands dollar
     SCR = 'scr', // Seychellois rupee
     SDG = 'sdg', // Sudanese pound
+    SEK = 'sek', // Swedish Krona
+    SGD = 'sgd', // Singapore Dollar
     SHP = 'shp', // Saint Helena pound
     // SLL = 'sll', // old Sierra Leonean leone; replaced by SLE
     SOS = 'sos', // Somali shilling
@@ -207,16 +244,22 @@ export enum BridgedFiatCurrency {
     // SVC = 'svc', // old El Salvadorian colón; replaced by USD
     SYP = 'syp', // Syrian pound
     SZL = 'szl', // Swazi lilangeni
+    THB = 'thb', // Thai Baht
     TJS = 'tjs', // Tajikistani somoni
     TMT = 'tmt', // Turkmenistani manat
     TND = 'tnd', // Tunisian dinar
     TOP = 'top', // Tongan paʻanga
+    TRY = 'try', // Turkish Lira
     TTD = 'ttd', // Trinidad and Tobago dollar
+    TWD = 'twd', // New Taiwan Dollar
     TZS = 'tzs', // Tanzanian shilling
+    UAH = 'uah', // Ukrainian Hryvnia
     UGX = 'ugx', // Ugandan shilling
+    USD = 'usd', // United States Dollar
     UYU = 'uyu', // Uruguayan peso
     UZS = 'uzs', // Uzbekistani sum
     VES = 'ves', // Venezuelan sovereign bolívar
+    VND = 'vnd', // Vietnamese Đồng
     VUV = 'vuv', // Vanuatu vatu
     WST = 'wst', // Samoan tālā
     XAF = 'xaf', // Central African CFA franc
@@ -229,34 +272,39 @@ export enum BridgedFiatCurrency {
     XPF = 'xpf', // CFP franc
     // XPT = 'xpt', // Platinum; not a fiat currency
     YER = 'yer', // Yemeni rial
+    ZAR = 'zar', // South African Rand
     ZMW = 'zmw', // Zambian kwacha
     ZWL = 'zwl', // Zimbabwean dollar
 }
 
+// Previously, BridgeableFiatCurrency was designed in a way that it did not overlap with FiatCurrency, i.e. entries that
+// would overlap were omitted from BridgeableFiatCurrency. With the upcoming introduction of an additional provider with
+// a different set of supported currencies, we change its definition to include all bridgeable currencies, including the
+// ones overlapping with currencies supported by either of the providers. Shall the API be reduced again to only support
+// one provider in the future, a check similar to the one below can be enabled again:
 // Check that no currency supported directly by Coingecko is handled as bridged currency.
 // If there is no overlap, the Extract should yield type never, which is a valid index for the empty object. However, if
 // there is an overlap, the result of Extract will be non-empty, which is an invalid index for {}.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type __expectNoCoingeckoWithBridgedOverlap = {}[Extract<
-    keyof typeof BridgedFiatCurrency,
-    keyof typeof FiatCurrency
->];
+// type __expectNoCoingeckoWithBridgedOverlap = {}[Extract<
+//     keyof typeof BridgeableFiatCurrency,
+//     keyof typeof FiatCurrency
+// >];
 
-const HISTORY_BRIDGED_FIAT_CURRENCIES = [BridgedFiatCurrency.CRC as const];
-export type HistoryBridgedFiatCurrency = (typeof HISTORY_BRIDGED_FIAT_CURRENCIES)[number];
+const HISTORY_BRIDGEABLE_FIAT_CURRENCIES = [BridgeableFiatCurrency.CRC as const];
+export type HistoryBridgeableFiatCurrency = (typeof HISTORY_BRIDGEABLE_FIAT_CURRENCIES)[number];
 
-const HISTORY_BRIDGED_CURRENCY_TIMEZONES = {
-    [BridgedFiatCurrency.CRC]: 'America/Costa_Rica',
+const HISTORY_BRIDGEABLE_CURRENCY_TIMEZONES = {
+    [BridgeableFiatCurrency.CRC]: 'America/Costa_Rica',
 } as const;
-// Also checks no HistoryBridgedFiatCurrency is missing in HISTORY_BRIDGED_CURRENCY_TIMEZONES
-type HistoryBridgedCurrencyTimezone = (typeof HISTORY_BRIDGED_CURRENCY_TIMEZONES)[HistoryBridgedFiatCurrency];
+// Also checks no HistoryBridgeableFiatCurrency is missing in HISTORY_BRIDGEABLE_CURRENCY_TIMEZONES
+type HistoryBridgeableCurrencyTimezone = (typeof HISTORY_BRIDGEABLE_CURRENCY_TIMEZONES)[HistoryBridgeableFiatCurrency];
 
-// Bridged fiat currencies using CryptoPayment.link API as bridge. Notably, these do not support historic rates.
-// In reality, more currencies are supported, check for what's included in the response returned by the api.
-type CplApiBridgedFiatCurrency = Exclude<BridgedFiatCurrency, HistoryBridgedFiatCurrency>;
-const CPL_API_BRIDGED_FIAT_CURRENCIES: Array<CplApiBridgedFiatCurrency> = Object.values(BridgedFiatCurrency)
-    .filter((currency): currency is CplApiBridgedFiatCurrency => (
-        !HISTORY_BRIDGED_FIAT_CURRENCIES.includes(currency as any)
+// Bridgeable fiat currencies using CryptoPayment.link API as bridge. Notably, these do not support historic rates.
+type CplApiBridgeableFiatCurrency = Exclude<BridgeableFiatCurrency, HistoryBridgeableFiatCurrency>;
+const CPL_API_BRIDGEABLE_FIAT_CURRENCIES: Array<CplApiBridgeableFiatCurrency> = Object.values(BridgeableFiatCurrency)
+    .filter((currency): currency is CplApiBridgeableFiatCurrency => (
+        !HISTORY_BRIDGEABLE_FIAT_CURRENCIES.includes(currency as any)
     ));
 
 let API_URL = 'https://api.coingecko.com/api/v3';
@@ -278,7 +326,7 @@ export function setCoingeckoApiUrl(url: string) {
     API_URL = url;
 }
 
-type VsCurrency = FiatCurrency | BridgedFiatCurrency | CryptoCurrency;
+type VsCurrency = FiatCurrency | BridgeableFiatCurrency | CryptoCurrency;
 export async function getExchangeRates<C extends CryptoCurrency, V extends VsCurrency>(
     cryptoCurrencies: C[],
     vsCurrencies: V[],
@@ -289,7 +337,7 @@ export async function getExchangeRates<C extends CryptoCurrency, V extends VsCur
     vsCurrencies = vsCurrencies.map((currency) => currency.toLowerCase() as V);
     // vsCurrencies handled by coingecko. Potentially extended by USD.
     const coingeckoVsCurrencies: Array<FiatCurrency | CryptoCurrency> = [];
-    const bridgedVsCurrencies: Array<BridgedFiatCurrency> = [];
+    const bridgedVsCurrencies: Array<Exclude<BridgeableFiatCurrency, FiatCurrency>> = [];
     for (const currency of vsCurrencies) {
         if (!isBridgedFiatCurrency(currency)) {
             coingeckoVsCurrencies.push(currency);
@@ -299,9 +347,12 @@ export async function getExchangeRates<C extends CryptoCurrency, V extends VsCur
     }
 
     // Check for bridged currencies and fetch their USD exchange rates
-    let bridgedExchangeRatesPromise: Promise<Partial<Record<BridgedFiatCurrency, number|undefined>>> | undefined;
+    let bridgedExchangeRatesPromise: Promise<Partial<Record<
+        Exclude<BridgeableFiatCurrency, FiatCurrency>,
+        number | undefined
+    >>> | undefined;
     if (bridgedVsCurrencies.length) {
-        bridgedExchangeRatesPromise = _getBridgedFiatCurrencyExchangeRates(bridgedVsCurrencies);
+        bridgedExchangeRatesPromise = _getBridgeableFiatCurrencyExchangeRates(bridgedVsCurrencies);
         // Bridged exchange rates are to USD, therefore we need to get the USD exchange rate.
         if (!coingeckoVsCurrencies.includes(FiatCurrency.USD)) {
             coingeckoVsCurrencies.push(FiatCurrency.USD);
@@ -348,15 +399,15 @@ export async function getExchangeRates<C extends CryptoCurrency, V extends VsCur
  */
 export async function getHistoricExchangeRatesByRange(
     cryptoCurrency: CryptoCurrency,
-    vsCurrency: FiatCurrency | HistoryBridgedFiatCurrency | CryptoCurrency,
+    vsCurrency: FiatCurrency | HistoryBridgeableFiatCurrency | CryptoCurrency,
     from: number, // in milliseconds
     to: number, // in milliseconds
 ): Promise<Array<[number, number]>> {
-    let bridgedCurrency: HistoryBridgedFiatCurrency | undefined;
+    let bridgedCurrency: Exclude<HistoryBridgeableFiatCurrency, FiatCurrency> | undefined;
     let bridgedExchangeRatePromise: Promise<{[date: string]: number | undefined}> | undefined;
     if (isBridgedFiatCurrency(vsCurrency)) {
         bridgedCurrency = vsCurrency;
-        bridgedExchangeRatePromise = _getHistoricBridgedFiatCurrencyExchangeRatesByRange(bridgedCurrency, from, to);
+        bridgedExchangeRatePromise = _getHistoricBridgeableFiatCurrencyExchangeRatesByRange(bridgedCurrency, from, to);
         // Bridged exchange rates are to USD, therefore we need to get the USD exchange rate, too.
         vsCurrency = FiatCurrency.USD;
     }
@@ -380,7 +431,7 @@ export async function getHistoricExchangeRatesByRange(
     if (bridgedCurrency && bridgedHistoricRates) {
         // Convert exchange rates to bridged currency and omit entries for which no bridged exchange rate is available.
         return coingeckoHistoricRates.map(([timestamp, coinUsdPrice]) => {
-            const date = _getDateString(timestamp, HISTORY_BRIDGED_CURRENCY_TIMEZONES[bridgedCurrency!]);
+            const date = _getDateString(timestamp, HISTORY_BRIDGEABLE_CURRENCY_TIMEZONES[bridgedCurrency!]);
             const bridgedHistoricRate = bridgedHistoricRates[date];
             return bridgedHistoricRate ? [timestamp, coinUsdPrice * bridgedHistoricRate] : null;
         }).filter((entry): entry is [number, number] => entry !== null);
@@ -394,7 +445,7 @@ export async function getHistoricExchangeRatesByRange(
  */
 export async function getHistoricExchangeRates(
     cryptoCurrency: CryptoCurrency,
-    vsCurrency: FiatCurrency | HistoryBridgedFiatCurrency | CryptoCurrency,
+    vsCurrency: FiatCurrency | HistoryBridgeableFiatCurrency | CryptoCurrency,
     timestamps: number[],
     disableMinutlyData = false,
 ): Promise<Map<number, number|undefined>> {
@@ -564,34 +615,37 @@ async function _fetch<T>(
     }
 }
 
-export function isBridgedFiatCurrency(currency: unknown): currency is BridgedFiatCurrency {
-    return Object.values(BridgedFiatCurrency).includes(currency as any);
+export function isBridgeableFiatCurrency(currency: unknown): currency is BridgeableFiatCurrency {
+    return Object.values(BridgeableFiatCurrency).includes(currency as any);
+}
+
+export function isBridgedFiatCurrency(currency: unknown): currency is Exclude<BridgeableFiatCurrency, FiatCurrency> {
+    return isBridgeableFiatCurrency(currency) && !Object.values(FiatCurrency).includes(currency as any);
 }
 
 export function isHistorySupportedFiatCurrency(currency: unknown)
-: currency is FiatCurrency | HistoryBridgedFiatCurrency {
+: currency is FiatCurrency | HistoryBridgeableFiatCurrency {
     return Object.values(FiatCurrency).includes(currency as any)
-        || HISTORY_BRIDGED_FIAT_CURRENCIES.includes(currency as any);
+        || HISTORY_BRIDGEABLE_FIAT_CURRENCIES.includes(currency as any);
 }
 
 /**
  * Get today's exchange rates to USD. Rates can be undefined if the user's clock is in the future.
  */
-async function _getBridgedFiatCurrencyExchangeRates<B extends BridgedFiatCurrency>(bridgedFiatCurrencies: B[])
+async function _getBridgeableFiatCurrencyExchangeRates<B extends BridgeableFiatCurrency>(bridgeableFiatCurrencies: B[])
 : Promise<Record<B, number | undefined>> {
     const apiPromises: Array<Promise<Partial<Record<B, number | undefined>>>> = [];
 
-    if (bridgedFiatCurrencies.includes(BridgedFiatCurrency.CRC as B)) {
-        apiPromises.push(_getHistoricBridgedFiatCurrencyExchangeRatesByRange(
-            BridgedFiatCurrency.CRC,
-            Date.now(),
-        ).then((crcExchangeRates): Partial<Record<BridgedFiatCurrency, number | undefined>> => ({
-            // There is only a single entry in crcExchangeRates, if any, which is for the current date.
-            [BridgedFiatCurrency.CRC]: Object.values(crcExchangeRates)[0],
-        })));
+    if (bridgeableFiatCurrencies.includes(BridgeableFiatCurrency.CRC as B)) {
+        apiPromises.push(_getHistoricBridgeableFiatCurrencyExchangeRatesByRange(BridgeableFiatCurrency.CRC, Date.now())
+            .then((crcExchangeRates): Partial<Record<BridgeableFiatCurrency, number | undefined>> => ({
+                // There is only a single entry in crcExchangeRates, if any, which is for the current date.
+                [BridgeableFiatCurrency.CRC]: Object.values(crcExchangeRates)[0],
+            })));
     }
 
-    const cplApiFiatCurrencies = CPL_API_BRIDGED_FIAT_CURRENCIES.filter((c) => bridgedFiatCurrencies.includes(c as B));
+    const cplApiFiatCurrencies = CPL_API_BRIDGEABLE_FIAT_CURRENCIES
+        .filter((c) => bridgeableFiatCurrencies.includes(c as B));
     if (cplApiFiatCurrencies.length) {
         apiPromises.push(_fetch<FirebaseRawResponse>(
             'https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/documents/'
@@ -616,16 +670,16 @@ async function _getBridgedFiatCurrencyExchangeRates<B extends BridgedFiatCurrenc
 /**
  * Get historic exchange rates to USD.
  */
-async function _getHistoricBridgedFiatCurrencyExchangeRatesByRange(
-    bridgedFiatCurrency: HistoryBridgedFiatCurrency,
+async function _getHistoricBridgeableFiatCurrencyExchangeRatesByRange(
+    bridgeableFiatCurrency: HistoryBridgeableFiatCurrency,
     from: number, // in milliseconds, inclusive
     to: number = from, // in milliseconds, inclusive
 ): Promise<{[date: string]: number | undefined}> {
-    if (!HISTORY_BRIDGED_FIAT_CURRENCIES.includes(bridgedFiatCurrency)) {
+    if (!HISTORY_BRIDGEABLE_FIAT_CURRENCIES.includes(bridgeableFiatCurrency)) {
         // Currently only supported for CRC. Check for users that don't use typescript.
-        throw new Error(`Unsupported bridged currency for historic rates: ${bridgedFiatCurrency}`);
+        throw new Error(`Unsupported bridgeable currency for historic rates: ${bridgeableFiatCurrency}`);
     }
-    const timezone = HISTORY_BRIDGED_CURRENCY_TIMEZONES[bridgedFiatCurrency];
+    const timezone = HISTORY_BRIDGEABLE_CURRENCY_TIMEZONES[bridgeableFiatCurrency];
     const fromDate = _getDateString(from, timezone);
     const toDate = to === from ? fromDate : _getDateString(to, timezone);
     // Note: entries for future dates are omitted and thus basically undefined which is reflected in the return type.
@@ -635,9 +689,9 @@ async function _getHistoricBridgedFiatCurrencyExchangeRatesByRange(
 /**
  * Format a timestamp as a YYYY-MM-DD date string in a desired timezone.
  */
-function _getDateString(timestamp: number | Date, timezone: HistoryBridgedCurrencyTimezone): string {
+function _getDateString(timestamp: number | Date, timezone: HistoryBridgeableCurrencyTimezone): string {
     // Define as record such that ts warns us if an entry is missing
-    const timezoneUtcOffsets: Record<HistoryBridgedCurrencyTimezone, number> = {
+    const timezoneUtcOffsets: Record<HistoryBridgeableCurrencyTimezone, number> = {
         'America/Costa_Rica': -6, // fixed offset all year, as Costa Rica has no daylight saving time.
     };
     const timezoneUtcOffset = timezoneUtcOffsets[timezone];
