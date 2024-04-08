@@ -386,6 +386,16 @@ export function setCoinGeckoApiUrl(url = 'https://api.coingecko.com/api/v3') {
     API_URL_COINGECKO = url;
 }
 
+const coinGeckoExtraHeaders = new Map<string, string>();
+
+export function setCoinGeckoApiExtraHeader(name: string, value: string | false) {
+    if (value !== false) {
+        coinGeckoExtraHeaders.set(name, value);
+    } else {
+        coinGeckoExtraHeaders.delete(name);
+    }
+}
+
 export async function getExchangeRates<
     C extends CryptoCurrency,
     V extends ProviderFiatCurrency<P> | BridgeableFiatCurrency | CryptoCurrency,
@@ -744,7 +754,13 @@ async function _fetch<T>(
             let waitTime = 20000; // default wait time when user is offline
             try {
                 // eslint-disable-next-line no-await-in-loop
-                const response = await fetch(input, init); // Throws when user is offline, in which case we retry.
+                const response = await fetch(input, { // Throws when user is offline, in which case we retry.
+                    ...init,
+                    headers: [
+                        ...(init instanceof Headers || Array.isArray(init) ? init : Object.entries(init || {})),
+                        ...coinGeckoExtraHeaders,
+                    ],
+                });
                 if (response.status === 429) {
                     // CoinGecko returns responses with status 429 (Too Many Requests) when the rate limit is hit.
                     // CoinGecko allows a dynamic amount of requests per minute, typically around 5 requests per minute,

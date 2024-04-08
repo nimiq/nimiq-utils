@@ -16,4 +16,7 @@ jobs:
     - name: Install modules
       run: yarn
     - name: Run
+      env:
+        COINGECKO_PROXY_AUTHORIZATION_HEADER: ${{ secrets.COINGECKO_PROXY_AUTHORIZATION_HEADER }}
+        CI_AUTHORIZATION_TOKEN: ${{ secrets.CI_AUTHORIZATION_TOKEN }}
       run: yarn pr

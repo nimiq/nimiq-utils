@@ -12,6 +12,8 @@ import {
     ProviderFiatCurrency,
     getExchangeRates,
     getHistoricExchangeRates,
+    setCoinGeckoApiUrl,
+    setCoinGeckoApiExtraHeader,
 } from '../src/fiat-api/FiatApi';
 
 const referenceHistoricRatesCryptoCompare = new Map([
@@ -74,12 +76,29 @@ async function testHistoricExchangeRates(
     expect(rates).toEqual(referenceRates);
 }
 
-function describeProviderTests(provider: Provider) {
-    // In CI, reduce CoinGecko tests to only run as little requests as allowed without running into the rate limit
-    // (~5/min), to avoid long running CI actions.
+type CoinGeckoProxyInfo = { url: string, authHeaderName: string, authToken: string };
+function describeProviderTests(provider: Provider): void;
+function describeProviderTests(provider: Provider.CoinGecko, coinGeckoProxyInfo?: CoinGeckoProxyInfo): void;
+function describeProviderTests(provider: Provider, coinGeckoProxyInfo?: CoinGeckoProxyInfo) {
+    if (coinGeckoProxyInfo) {
+        const { url, authHeaderName, authToken } = coinGeckoProxyInfo;
+        beforeAll(() => {
+            setCoinGeckoApiUrl(url);
+            setCoinGeckoApiExtraHeader(authHeaderName, authToken);
+        });
+        afterAll(() => {
+            setCoinGeckoApiUrl(); // reset
+            setCoinGeckoApiExtraHeader(authHeaderName, false); // remove
+        });
+    }
+
+    // In CI, reduce CoinGecko tests on the public, non-proxied API to only run as little requests as allowed without
+    // running into the rate limit (~5/min), to avoid long running CI actions. Locally, allow such tests and increase
+    // the timeout accordingly.
     const isCI = !!process.env.CI;
-    const itUnlessCoinGeckoCI = provider !== Provider.CoinGecko || !isCI ? it : xit;
-    const timeout = provider !== Provider.CoinGecko || isCI ? /* use default timeout of 5000 */ undefined : 300_000;
+    const isPublicCoinGecko = provider === Provider.CoinGecko && !coinGeckoProxyInfo;
+    const itUnlessPublicCoinGeckoCI = !isPublicCoinGecko || !isCI ? it : xit;
+    const timeout = !isPublicCoinGecko || isCI ? /* use default timeout of 5000 */ undefined : 300_000;
 
     // Tests for current rates
     it(
@@ -87,12 +106,12 @@ function describeProviderTests(provider: Provider) {
         async () => testExchangeRates([CryptoCurrency.BTC], [FiatCurrency.USD], provider),
         timeout,
     );
-    itUnlessCoinGeckoCI(
+    itUnlessPublicCoinGeckoCI(
         'can fetch current BCCR-bridged CRC rate for BTC',
         async () => testExchangeRates([CryptoCurrency.BTC], [FiatCurrency.CRC], provider),
         timeout,
     );
-    itUnlessCoinGeckoCI(
+    itUnlessPublicCoinGeckoCI(
         'can fetch current CPL-bridged GMD and XOF rates for BTC',
         async () => testExchangeRates([CryptoCurrency.BTC], [FiatCurrency.GMD, FiatCurrency.XOF], provider),
         timeout,
@@ -104,7 +123,7 @@ function describeProviderTests(provider: Provider) {
         async () => testHistoricExchangeRates(FiatCurrency.USD, provider),
         timeout,
     );
-    itUnlessCoinGeckoCI(
+    itUnlessPublicCoinGeckoCI(
         'can fetch historic BCCR-bridged CRC rates for BTC',
         async () => testHistoricExchangeRates(FiatCurrency.CRC, provider),
         timeout,
@@ -114,4 +133,18 @@ function describeProviderTests(provider: Provider) {
 describe('FiatApi', () => {
     describe('CryptoCompare Provider', () => describeProviderTests(Provider.CryptoCompare));
     describe('CoinGecko Provider', () => describeProviderTests(Provider.CoinGecko));
+
+    const {
+        COINGECKO_PROXY_AUTHORIZATION_HEADER: coinGeckoProxyAuthHeaderName,
+        CI_AUTHORIZATION_TOKEN: coinGeckoProxyAuthToken,
+    } = process.env || {};
+    if (coinGeckoProxyAuthHeaderName && coinGeckoProxyAuthToken) {
+        describe('CoinGecko Provider via Proxy', () => describeProviderTests(Provider.CoinGecko, {
+            url: 'https://nq-coingecko-proxy.deno.dev/api/v3',
+            authHeaderName: coinGeckoProxyAuthHeaderName,
+            authToken: coinGeckoProxyAuthToken,
+        }));
+    } else {
+        console.warn('Tests for FiatApi CoinGecko Provider via Proxy were skipped.');
+    }
 });
