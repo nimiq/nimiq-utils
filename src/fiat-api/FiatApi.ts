@@ -262,7 +262,7 @@ const CPL_API_BRIDGED_FIAT_CURRENCIES: Array<CplApiBridgedFiatCurrency> = Object
         !FIAT_API_HISTORY_SUPPORTED_BRIDGED_FIAT_CURRENCIES.includes(currency as any)
     ));
 
-const API_URL = 'https://api.coingecko.com/api/v3';
+let API_URL = 'https://api.coingecko.com/api/v3';
 const COINGECKO_COIN_IDS = {
     [FiatApiSupportedCryptoCurrency.NIM]: 'nimiq-2',
     [FiatApiSupportedCryptoCurrency.BTC]: 'bitcoin',
@@ -273,6 +273,13 @@ const COINGECKO_COIN_IDS = {
 const ONE_MINUTE = 60 * 1000;
 const ONE_HOUR = 60 * ONE_MINUTE;
 const ONE_DAY = 24 * ONE_HOUR;
+
+/**
+ * @param url The URL to the Coingecko v3 API. Defaults to https://api.coingecko.com/api/v3.
+ */
+export function setCoingeckoApiUrl(url: string) {
+    API_URL = url;
+}
 
 type VsCurrency = FiatApiSupportedFiatCurrency | FiatApiBridgedFiatCurrency | FiatApiSupportedCryptoCurrency;
 export async function getExchangeRates<C extends FiatApiSupportedCryptoCurrency, V extends VsCurrency>(
