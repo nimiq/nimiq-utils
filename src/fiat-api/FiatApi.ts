@@ -27,7 +27,7 @@ export enum FiatApiSupportedFiatCurrency {
     VND = 'vnd',
 }
 
-const API_URL = 'https://api.coingecko.com/api/v3';
+let API_URL = 'https://api.coingecko.com/api/v3';
 const COINGECKO_COIN_IDS = {
     [FiatApiSupportedCryptoCurrency.NIM]: 'nimiq-2',
     [FiatApiSupportedCryptoCurrency.BTC]: 'bitcoin',
@@ -37,6 +37,13 @@ const COINGECKO_COIN_IDS = {
 const ONE_MINUTE = 60 * 1000;
 const ONE_HOUR = 60 * ONE_MINUTE;
 const ONE_DAY = 24 * ONE_HOUR;
+
+/**
+ * @param url The URL to the Coingecko v3 API. Defaults to https://api.coingecko.com/api/v3.
+ */
+export function setCoingeckoApiUrl(url: string) {
+    API_URL = url;
+}
 
 export async function getExchangeRates(
     cryptoCurrencies: Array<FiatApiSupportedCryptoCurrency>,
