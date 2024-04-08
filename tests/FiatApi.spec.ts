@@ -7,15 +7,16 @@
 import {
     BridgeableFiatCurrency,
     CryptoCurrency,
-    FiatCurrency,
+    FiatCurrencyCoinGecko,
     getExchangeRates,
     getHistoricExchangeRates,
+    Provider,
 } from '../src/fiat-api/FiatApi';
 
 // Timestamps chosen in a way, that two Coingecko request chunks get created (a single chunk spans 90 days max).
 // Note: Coingecko's public api only allows fetching historic rates for the last 365 days. Therefore, this test vector
 // needs to be updated on a yearly basis.
-const knownHistoricRates = new Map([
+const knownHistoricRatesCoinGecko = new Map([
     [new Date('2024-01-01T00:00:00.000Z').getTime(), { USD: 42261.72545509639, CRC: 22104995.499288168 }],
     [new Date('2024-01-01T01:00:00.000Z').getTime(), { USD: 42490.22251263108, CRC: 22224510.885231685 }],
     [new Date('2024-01-01T02:00:00.000Z').getTime(), { USD: 42652.12131449001, CRC: 22309192.053544 }],
@@ -29,49 +30,62 @@ const knownHistoricRates = new Map([
 // to avoid long running CI actions.
 const isCI = !!process.env.CI;
 const itLocallyOnly = isCI ? xit : it;
-const timeout = isCI ? /* use default timeout of 5000 */ 0 : 300_000;
+const coingeckoTimeout = isCI ? /* use default timeout of 5000 */ 0 : 300_000;
 
 describe('FiatApi', () => {
-    it('can fetch current USD rate for BTC', async () => {
-        const rate = await getExchangeRates([CryptoCurrency.BTC], [FiatCurrency.USD]);
-        expect(rate[CryptoCurrency.BTC][FiatCurrency.USD]).toBeGreaterThan(0);
-    }, timeout);
+    describe('CoinGecko Provider', () => {
+        it('can fetch current USD rate for BTC', async () => {
+            const rate = await getExchangeRates(
+                [CryptoCurrency.BTC],
+                [FiatCurrencyCoinGecko.USD],
+                Provider.CoinGecko,
+            );
+            expect(rate[CryptoCurrency.BTC][FiatCurrencyCoinGecko.USD]).toBeGreaterThan(0);
+        }, coingeckoTimeout);
 
-    itLocallyOnly('can fetch current bridged CRC rate for BTC', async () => {
-        const rate = await getExchangeRates([CryptoCurrency.BTC], [BridgeableFiatCurrency.CRC]);
-        expect(rate[CryptoCurrency.BTC][BridgeableFiatCurrency.CRC]).toBeGreaterThan(0);
-    }, timeout);
+        itLocallyOnly('can fetch current BCCR-bridged CRC rate for BTC', async () => {
+            const rate = await getExchangeRates(
+                [CryptoCurrency.BTC],
+                [BridgeableFiatCurrency.CRC],
+                Provider.CoinGecko,
+            );
+            expect(rate[CryptoCurrency.BTC][BridgeableFiatCurrency.CRC]).toBeGreaterThan(0);
+        }, coingeckoTimeout);
 
-    itLocallyOnly('can fetch current bridged GMD and XOF rates for BTC', async () => {
-        const rates = await getExchangeRates(
-            [CryptoCurrency.BTC],
-            [BridgeableFiatCurrency.GMD, BridgeableFiatCurrency.XOF],
-        );
-        expect(rates[CryptoCurrency.BTC][BridgeableFiatCurrency.GMD]).toBeGreaterThan(0);
-        expect(rates[CryptoCurrency.BTC][BridgeableFiatCurrency.XOF]).toBeGreaterThan(0);
-    }, timeout);
+        itLocallyOnly('can fetch current CPL-bridged GMD and XOF rates for BTC', async () => {
+            const rates = await getExchangeRates(
+                [CryptoCurrency.BTC],
+                [BridgeableFiatCurrency.GMD, BridgeableFiatCurrency.XOF],
+                Provider.CoinGecko,
+            );
+            expect(rates[CryptoCurrency.BTC][BridgeableFiatCurrency.GMD]).toBeGreaterThan(0);
+            expect(rates[CryptoCurrency.BTC][BridgeableFiatCurrency.XOF]).toBeGreaterThan(0);
+        }, coingeckoTimeout);
 
-    it('can fetch historic USD rates for BTC', async () => {
-        const rates = await getHistoricExchangeRates(
-            CryptoCurrency.BTC,
-            FiatCurrency.USD,
-            [...knownHistoricRates.keys()],
-            /* disableMinutelyData */ true,
-        );
-        const knownRates = new Map([...knownHistoricRates.entries()]
-            .map(([timestamp, { USD: rate }]) => [timestamp, rate]));
-        expect(rates).toEqual(knownRates);
-    }, timeout);
+        it('can fetch historic USD rates for BTC', async () => {
+            const rates = await getHistoricExchangeRates(
+                CryptoCurrency.BTC,
+                FiatCurrencyCoinGecko.USD,
+                [...knownHistoricRatesCoinGecko.keys()],
+                Provider.CoinGecko,
+                /* disableMinutelyData */ true,
+            );
+            const knownRates = new Map([...knownHistoricRatesCoinGecko.entries()]
+                .map(([timestamp, { USD: rate }]) => [timestamp, rate]));
+            expect(rates).toEqual(knownRates);
+        }, coingeckoTimeout);
 
-    itLocallyOnly('can fetch historic CRC (bridged) rates for BTC', async () => {
-        const rates = await getHistoricExchangeRates(
-            CryptoCurrency.BTC,
-            BridgeableFiatCurrency.CRC,
-            [...knownHistoricRates.keys()],
-            /* disableMinutelyData */ true,
-        );
-        const knownRates = new Map([...knownHistoricRates.entries()]
-            .map(([timestamp, { CRC: rate }]) => [timestamp, rate]));
-        expect(rates).toEqual(knownRates);
-    }, timeout);
+        itLocallyOnly('can fetch historic BCCR-bridged CRC rates for BTC', async () => {
+            const rates = await getHistoricExchangeRates(
+                CryptoCurrency.BTC,
+                BridgeableFiatCurrency.CRC,
+                [...knownHistoricRatesCoinGecko.keys()],
+                Provider.CoinGecko,
+                /* disableMinutelyData */ true,
+            );
+            const knownRates = new Map([...knownHistoricRatesCoinGecko.entries()]
+                .map(([timestamp, { CRC: rate }]) => [timestamp, rate]));
+            expect(rates).toEqual(knownRates);
+        }, coingeckoTimeout);
+    });
 });
