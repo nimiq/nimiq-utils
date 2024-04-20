@@ -101,7 +101,7 @@ function describeProviderTests(provider: Provider, coinGeckoProxyInfo?: CoinGeck
     const timeout = !isPublicCoinGecko || isCI ? /* use default timeout of 5000 */ undefined : 300_000;
 
     // Tests for current rates
-    it(
+    itUnlessPublicCoinGeckoCI(
         'can fetch current USD rate for BTC',
         async () => testExchangeRates([CryptoCurrency.BTC], [FiatCurrency.USD], provider),
         timeout,
@@ -114,6 +114,11 @@ function describeProviderTests(provider: Provider, coinGeckoProxyInfo?: CoinGeck
     itUnlessPublicCoinGeckoCI(
         'can fetch current CPL-bridged GMD and XOF rates for BTC',
         async () => testExchangeRates([CryptoCurrency.BTC], [FiatCurrency.GMD, FiatCurrency.XOF], provider),
+        timeout,
+    );
+    it(
+        'can fetch all current exchange rates at once',
+        async () => testExchangeRates(Object.values(CryptoCurrency), Object.values(FiatCurrency), provider),
         timeout,
     );
 
@@ -145,6 +150,6 @@ describe('FiatApi', () => {
             authToken: coinGeckoProxyAuthToken,
         }));
     } else {
-        console.warn('Tests for FiatApi CoinGecko Provider via Proxy were skipped.');
+        console.warn('Tests for FiatApi CoinGecko Provider via Proxy were skipped.'); // eslint-disable-line no-console
     }
 });

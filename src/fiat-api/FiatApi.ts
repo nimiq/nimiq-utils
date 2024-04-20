@@ -438,17 +438,35 @@ export async function getExchangeRates<
     let providerExchangeRatesPromise: Promise<Record<C, Record<V, number | undefined>>>;
     switch (provider) {
         case Provider.CryptoCompare:
-            providerExchangeRatesPromise = _fetch<Record<string, Record<string, number>>>(
-                `${API_URL_CRYPTOCOMPARE}/pricemulti`
-                + `?fsyms=${cryptoCurrencies.join(',')}&tsyms=${providerVsCurrencies.join(',')}`,
-            ).then((exchangeRates) => cryptoCurrencies.reduce((result, cryptoCurrency) => ({
-                ...result,
-                [cryptoCurrency]: providerVsCurrencies.reduce((coinPrices, vsCurrency) => ({
-                    ...coinPrices,
-                    // Tickers in CryptoCompare's result are uppercase. Map them back to our enums.
-                    [vsCurrency]: exchangeRates[cryptoCurrency.toUpperCase()][vsCurrency.toUpperCase()],
-                }), {} as Record<V, number | undefined>),
-            }), {} as Record<C, Record<V, number | undefined>>));
+            providerExchangeRatesPromise = (async () => {
+                // The max allowed length of the /pricemulti api's tsyms parameter is 100 chars, which equates to 25
+                // comma separated ticker symbols. If requesting more providerVsCurrencies, we need multiple requests.
+                const maxBatchSize = 25;
+                const batchPromises: Array<Promise<Record<string, Record<string, number>>>> = [];
+                for (let batchStart = 0; batchStart < providerVsCurrencies.length; batchStart += maxBatchSize) {
+                    const batchVsCurrencies = providerVsCurrencies.slice(
+                        batchStart,
+                        Math.min(providerVsCurrencies.length, batchStart + maxBatchSize),
+                    );
+                    batchPromises.push(_fetch<Record<string, Record<string, number>>>(
+                        `${API_URL_CRYPTOCOMPARE}/pricemulti`
+                        + `?fsyms=${cryptoCurrencies.join(',')}&tsyms=${batchVsCurrencies.join(',')}`,
+                    ));
+                }
+                const result = {} as Record<C, Record<V, number | undefined>>;
+                for (const batch of await Promise.all(batchPromises)) {
+                    // Tickers in CryptoCompare's result are uppercase. Map them back to our enums and merge everything.
+                    for (const [cryptoCurrencyTicker, coinPrices] of Object.entries(batch)) {
+                        const cryptoCurrency = cryptoCurrencyTicker.toLowerCase() as C;
+                        for (const [vsCurrencyTicker, exchangeRate] of Object.entries(coinPrices)) {
+                            const vsCurrency = vsCurrencyTicker.toLowerCase() as V;
+                            result[cryptoCurrency] ||= {} as Record<V, number | undefined>;
+                            result[cryptoCurrency][vsCurrency] = exchangeRate;
+                        }
+                    }
+                }
+                return result;
+            })();
             break;
         case Provider.CoinGecko: {
             // Note that providerVsCurrencies do not need to be converted to coin ids, even for crypto currencies.
