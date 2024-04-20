@@ -509,7 +509,8 @@ export async function getExchangeRates<
  * Request historic exchange rates by range. Input and output timestamps are in milliseconds.
  *
  * Additional noted for CryptoCompare:
- * We currently return data at hourly resolution. However, minutely or daily data would also be possible.
+ * We currently return data at hourly resolution. However, minutely or daily data would also be possible, support for
+ * which should then be added via an options object in the function signature, if needed.
  *
  * Additional notes for CoinGecko:
  * The free, public API limits historic exchange rates to the past 365 days. Requesting older data results in 401 -
@@ -616,7 +617,7 @@ export async function getHistoricExchangeRates<P extends Provider = Provider.Cry
     vsCurrency: ProviderFiatCurrency<P> | HistoryBridgeableFiatCurrency | CryptoCurrency,
     timestamps: number[],
     provider: P = Provider.CryptoCompare as P,
-    disableMinutelyData: P extends Provider.CoinGecko ? boolean : never = false as typeof disableMinutelyData,
+    options: P extends Provider.CoinGecko ? { disableMinutelyData?: boolean } : never = {} as typeof options,
 ): Promise<Map<number, number|undefined>> {
     const result = new Map<number, number|undefined>();
     if (!timestamps.length) return result;
@@ -642,6 +643,7 @@ export async function getHistoricExchangeRates<P extends Provider = Provider.Cry
             let timestampIndex = timestamps.length - 1;
 
             // Create one day chunk
+            const disableMinutelyData = 'disableMinutelyData' in options ? !!options.disableMinutelyData : false;
             if (!disableMinutelyData && now - timestamps[timestamps.length - 1] < ONE_DAY - 15 * ONE_MINUTE) {
                 // Has a timestamp within last day (minus safety margin in case our clock is slightly off).
                 // As one day is calculated from now and not from the timestamp, we have to account for the difference

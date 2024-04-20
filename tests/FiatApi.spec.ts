@@ -69,7 +69,7 @@ async function testHistoricExchangeRates(
         vsCurrency,
         [...referenceProviderRates.keys()],
         provider,
-        ...(provider === Provider.CoinGecko ? /* disableMinutelyData */ [true] as const : [] as const),
+        ...(provider === Provider.CoinGecko ? [{ disableMinutelyData: true }] as const : [] as const),
     ]);
     const referenceRates = new Map([...referenceProviderRates.entries()]
         .map(([timestamp, { [vsCurrency]: rate }]) => [timestamp, rate]));
