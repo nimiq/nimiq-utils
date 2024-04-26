@@ -7,6 +7,11 @@ export enum Provider {
     CoinGecko = 'CoinGecko',
 }
 
+export enum RateType {
+    CURRENT = 'current',
+    HISTORIC = 'historic',
+}
+
 // Note that CryptoCompare and CoinGecko support many more but these are the ones that are currently of interest to us.
 export enum CryptoCurrency {
     NIM = 'nim',
@@ -184,8 +189,8 @@ export enum FiatCurrency {
     ZMW = 'zmw', // Zambian Kwacha
 }
 
-export type ProviderFiatCurrency<P extends Provider> = P extends Provider.CryptoCompare
-    ? CryptoCompareFiatCurrency
+export type ProviderFiatCurrency<P extends Provider, T extends RateType> = P extends Provider.CryptoCompare
+    ? CryptoCompareFiatCurrency<T>
     : CoinGeckoFiatCurrency;
 
 // Fiat currencies supported by CryptoCompare.
@@ -195,7 +200,8 @@ export type ProviderFiatCurrency<P extends Provider> = P extends Provider.Crypto
 //
 // const referenceCurrencySymbols = { ...parsed from Wikipedia as described in CurrencyInfo.ts };
 // const CryptoCurrency = { ...as defined above };
-// const CRYPTOCOMPARE_FIAT_CURRENCIES = [ ...as defined below (ticker strings only) ];
+// const CRYPTOCOMPARE_CURRENT_RATES_FIAT_CURRENCIES = [ ...as defined below (ticker strings only) ];
+// const CRYPTOCOMPARE_HISTORIC_RATES_FIAT_CURRENCIES = [ ...as defined below (ticker strings only) ];
 //
 // async function _fetch(url, init) {
 //     const result = await fetch(url, init).then((response) => response.json());
@@ -205,6 +211,20 @@ export type ProviderFiatCurrency<P extends Provider> = P extends Provider.Crypto
 //         return _fetch(url, init);
 //     }
 //     return result;
+// }
+//
+// async function _isSupportedCurrency(currency, forHistoricRates) {
+//     const fiatApiCryptoCurrencies = Object.keys(CryptoCurrency).join(',');
+//     // For historic rates use CCCAGG exchange / data set, the default used by CryptoCompare for historic rates.
+//     const exchangeParameter = forHistoricRates ? '&e=CCCAGG' : ''
+//     const { Message: errorMessage } = await _fetch('https://min-api.cryptocompare.com/data/pricemulti'
+//         + `?fsyms=${fiatApiCryptoCurrencies}&tsyms=${currency}${exchangeParameter}&relaxedValidation=false`);
+//     if (errorMessage?.includes('market does not exist')) {
+//         return false;
+//     } else if (errorMessage) {
+//         throw new Error(`Currency ${currency} check failed because of unexpected error: ${errorMessage}`);
+//     }
+//     return true;
 // }
 //
 // let knownFiatCurrencyEntries = [];
@@ -224,40 +244,49 @@ export type ProviderFiatCurrency<P extends Provider> = P extends Provider.Crypto
 // const collator = new Intl.Collator('en');
 // knownFiatCurrencyEntries.sort(({ SYMBOL: s1}, { SYMBOL: s2 }) => collator.compare(s1, s2));
 //
-// const supportedFiatCurrencyEntries = [];
-// const fiatApiCryptoCurrencies = Object.keys(CryptoCurrency).join(',');
+// const supportedCurrentRatesFiatCurrencyEntries = [];
+// const supportedHistoricRatesFiatCurrencyEntries = [];
 // for (const entry of knownFiatCurrencyEntries) {
 //     const { SYMBOL: currency, NAME: name } = entry;
 //     if (!(currency in referenceCurrencySymbols)) {
 //         console.log(`Currency ${currency} (${name}) is skipped because it's not circulating.`);
 //         continue;
 //     }
-//     const { Message: errorMessage } = await _fetch('https://min-api.cryptocompare.com/data/pricemulti'
-//         + `?fsyms=${fiatApiCryptoCurrencies}&tsyms=${currency}&relaxedValidation=false`);
-//     if (errorMessage?.includes('market does not exist')) {
-//         console.log(`Currency ${currency} (${name}) is skipped because it's unsupported for our crypto currencies.`);
-//         continue;
-//     } else if (errorMessage) {
-//         throw new Error(`Currency ${currency} (${name}) check failed because of unexpected error: ${errorMessage}`);
+//     if (await _isSupportedCurrency(currency, /* forHistoricRates */ false)) {
+//         supportedCurrentRatesFiatCurrencyEntries.push(entry);
 //     }
-//     supportedFiatCurrencyEntries.push(entry);
+//     if (await _isSupportedCurrency(currency, /* forHistoricRates */ true)) {
+//         supportedHistoricRatesFiatCurrencyEntries.push(entry);
+//     }
 // }
 //
-// console.log('Supported currencies:');
-// console.log(supportedFiatCurrencyEntries.map(({ SYMBOL: currency }) => `'${currency}'`).join(', '));
-// for (const currency of CRYPTOCOMPARE_FIAT_CURRENCIES) {
-//     if (supportedFiatCurrencyEntries.some(({ SYMBOL }) => SYMBOL === currency)) continue;
+// console.log('Supported currencies for current rates:');
+// console.log(supportedCurrentRatesFiatCurrencyEntries.map(({ SYMBOL: currency }) => `'${currency}'`).join(', '));
+// for (const currency of CRYPTOCOMPARE_CURRENT_RATES_FIAT_CURRENCIES) {
+//     if (supportedCurrentRatesFiatCurrencyEntries.some(({ SYMBOL }) => SYMBOL === currency)) continue;
 //     console.warn(`Previously supported ${currency} is not supported or circulating anymore.`);
 // }
-const CRYPTOCOMPARE_FIAT_CURRENCIES = ([
+// console.log('Supported currencies for historic rates:');
+// console.log(supportedHistoricRatesFiatCurrencyEntries.map(({ SYMBOL: currency }) => `'${currency}'`).join(', '));
+// for (const currency of CRYPTOCOMPARE_HISTORIC_RATES_FIAT_CURRENCIES) {
+//     if (supportedHistoricRatesFiatCurrencyEntries.some(({ SYMBOL }) => SYMBOL === currency)) continue;
+//     console.warn(`Previously supported ${currency} is not supported or circulating anymore.`);
+// }
+const CRYPTOCOMPARE_CURRENT_RATES_FIAT_CURRENCIES = ([
     'AED', 'AOA', 'ARS', 'AUD', 'BGN', 'BND', 'BOB', 'BRL', 'BYN', 'CAD', 'CHF', 'CLP', 'CNY', 'COP', 'CZK', 'DKK',
     'ERN', 'EUR', 'GBP', 'GEL', 'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'JPY', 'KRW', 'KZT', 'MNT', 'MXN', 'MYR', 'NGN',
     'NOK', 'NZD', 'PEN', 'PHP', 'PLN', 'RON', 'RUB', 'SEK', 'SGD', 'STN', 'THB', 'TRY', 'UAH', 'UGX', 'USD', 'VUV',
     'ZAR', 'ZMW',
 ] as const).map((ticker) => FiatCurrency[ticker]);
-export type CryptoCompareFiatCurrency = (typeof CRYPTOCOMPARE_FIAT_CURRENCIES)[number];
+const CRYPTOCOMPARE_HISTORIC_RATES_FIAT_CURRENCIES = ([
+    'AED', 'ARS', 'AUD', 'BRL', 'CAD', 'CHF', 'COP', 'CZK', 'EUR', 'GBP', 'GEL', 'IDR', 'ILS', 'INR', 'JPY', 'KRW',
+    'KZT', 'MXN', 'MYR', 'NGN', 'NZD', 'PLN', 'RON', 'RUB', 'SGD', 'THB', 'TRY', 'UAH', 'USD', 'ZAR',
+] as const).map((ticker) => FiatCurrency[ticker]);
+export type CryptoCompareFiatCurrency<T extends RateType> = T extends RateType.CURRENT
+    ? (typeof CRYPTOCOMPARE_CURRENT_RATES_FIAT_CURRENCIES)[number]
+    : (typeof CRYPTOCOMPARE_HISTORIC_RATES_FIAT_CURRENCIES)[number];
 
-// Fiat currencies supported by CoinGecko.
+// Fiat currencies supported by CoinGecko, all of which support historic rates.
 // Note that CoinGecko supports more vs_currencies (see https://api.coingecko.com/api/v3/simple/supported_vs_currencies)
 // but also includes crypto currencies and ounces of gold amongst others that are not fiat currencies. This list here
 // has been generated by reducing the vs_currencies to those that are listed as a circulating currency on
@@ -398,7 +427,7 @@ export function setCoinGeckoApiExtraHeader(name: string, value: string | false) 
 
 export async function getExchangeRates<
     C extends CryptoCurrency,
-    V extends ProviderFiatCurrency<P> | BridgeableFiatCurrency | CryptoCurrency,
+    V extends ProviderFiatCurrency<P, RateType.CURRENT> | BridgeableFiatCurrency | CryptoCurrency,
     P extends Provider = Provider.CryptoCompare,
 >(
     cryptoCurrencies: C[],
@@ -410,12 +439,12 @@ export async function getExchangeRates<
     cryptoCurrencies = cryptoCurrencies.map((currency) => currency.toLowerCase() as C);
     vsCurrencies = vsCurrencies.map((currency) => currency.toLowerCase() as V);
     // vsCurrencies handled by the provider. Potentially extended by USD.
-    const providerVsCurrencies: Array<ProviderFiatCurrency<P> | CryptoCurrency> = [];
-    const bridgedVsCurrencies: Array<Exclude<BridgeableFiatCurrency, ProviderFiatCurrency<P>>> = [];
+    const providerVsCurrencies: Array<ProviderFiatCurrency<P, RateType.CURRENT> | CryptoCurrency> = [];
+    const bridgedVsCurrencies: Array<Exclude<BridgeableFiatCurrency, ProviderFiatCurrency<P, RateType.CURRENT>>> = [];
     for (const currency of vsCurrencies) {
-        if (isProviderSupportedFiatCurrency(currency, provider)) {
+        if (isProviderSupportedFiatCurrency(currency, provider, RateType.CURRENT)) {
             providerVsCurrencies.push(currency);
-        } else if (isBridgedFiatCurrency(currency, provider)) {
+        } else if (isBridgedFiatCurrency(currency, provider, RateType.CURRENT)) {
             bridgedVsCurrencies.push(currency);
         } else {
             throw new Error(`Currency ${currency} not supported for provider ${provider}.`);
@@ -424,7 +453,7 @@ export async function getExchangeRates<
 
     // Check for bridged currencies and fetch their USD exchange rates
     let bridgedExchangeRatesPromise: Promise<Partial<Record<
-        Exclude<BridgeableFiatCurrency, ProviderFiatCurrency<P>>,
+        Exclude<BridgeableFiatCurrency, ProviderFiatCurrency<P, RateType.CURRENT>>,
         number | undefined
     >>> | undefined;
     if (bridgedVsCurrencies.length) {
@@ -521,15 +550,15 @@ export async function getExchangeRates<
  */
 export async function getHistoricExchangeRatesByRange<P extends Provider = Provider.CryptoCompare>(
     cryptoCurrency: CryptoCurrency,
-    vsCurrency: ProviderFiatCurrency<P> | HistoryBridgeableFiatCurrency | CryptoCurrency,
+    vsCurrency: ProviderFiatCurrency<P, RateType.HISTORIC> | HistoryBridgeableFiatCurrency | CryptoCurrency,
     from: number, // in milliseconds
     to: number, // in milliseconds
     provider: P = Provider.CryptoCompare as P,
 ): Promise<Array<[/* time in ms */ number, /* price */ number]>> {
-    let bridgedCurrency: Exclude<HistoryBridgeableFiatCurrency, ProviderFiatCurrency<P>> | undefined;
+    let bridgedCurrency: Exclude<HistoryBridgeableFiatCurrency, ProviderFiatCurrency<P, RateType.HISTORIC>> | undefined;
     let bridgedHistoricRatesPromise: Promise<{[date: string]: number | undefined}> | undefined;
-    if (isBridgedFiatCurrency(vsCurrency, provider) && isHistorySupportedFiatCurrency(vsCurrency, provider)
-        && !isProviderSupportedFiatCurrency(vsCurrency, provider)) {
+    if (isBridgedFiatCurrency(vsCurrency, provider, RateType.HISTORIC)
+        && !isProviderSupportedFiatCurrency(vsCurrency, provider, RateType.HISTORIC)) {
         bridgedCurrency = vsCurrency;
         bridgedHistoricRatesPromise = _getHistoricBridgeableFiatCurrencyExchangeRatesByRange(bridgedCurrency, from, to);
         // Bridged exchange rates are to USD, therefore we need to get the USD exchange rate, too.
@@ -614,7 +643,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
  */
 export async function getHistoricExchangeRates<P extends Provider = Provider.CryptoCompare>(
     cryptoCurrency: CryptoCurrency,
-    vsCurrency: ProviderFiatCurrency<P> | HistoryBridgeableFiatCurrency | CryptoCurrency,
+    vsCurrency: ProviderFiatCurrency<P, RateType.HISTORIC> | HistoryBridgeableFiatCurrency | CryptoCurrency,
     timestamps: number[],
     provider: P = Provider.CryptoCompare as P,
     options: P extends Provider.CoinGecko ? { disableMinutelyData?: boolean } : never = {} as typeof options,
@@ -829,10 +858,16 @@ async function _fetch<T>(
     }
 }
 
-export function isProviderSupportedFiatCurrency<P extends Provider>(currency: unknown, provider: P)
-: currency is ProviderFiatCurrency<P> {
+export function isProviderSupportedFiatCurrency<P extends Provider, T extends RateType>(
+    currency: unknown,
+    provider: P,
+    rateType: T,
+): currency is ProviderFiatCurrency<P, T> {
     const providerFiatCurrencies = {
-        [Provider.CryptoCompare]: CRYPTOCOMPARE_FIAT_CURRENCIES,
+        [Provider.CryptoCompare]: {
+            [RateType.CURRENT]: CRYPTOCOMPARE_CURRENT_RATES_FIAT_CURRENCIES,
+            [RateType.HISTORIC]: CRYPTOCOMPARE_HISTORIC_RATES_FIAT_CURRENCIES,
+        }[rateType],
         [Provider.CoinGecko]: COINGECKO_FIAT_CURRENCIES,
     }[provider];
     return providerFiatCurrencies.includes(currency as any);
@@ -842,14 +877,17 @@ export function isBridgeableFiatCurrency(currency: unknown): currency is Bridgea
     return BRIDGEABLE_FIAT_CURRENCIES.includes(currency as any);
 }
 
-export function isBridgedFiatCurrency<P extends Provider>(currency: unknown, provider: P)
-: currency is Exclude<BridgeableFiatCurrency, ProviderFiatCurrency<P>> {
-    return isBridgeableFiatCurrency(currency) && !isProviderSupportedFiatCurrency(currency, provider);
+export function isBridgedFiatCurrency<P extends Provider, T extends RateType>(
+    currency: unknown,
+    provider: P,
+    rateType: T,
+): currency is Exclude<BridgeableFiatCurrency, ProviderFiatCurrency<P, T>> {
+    return isBridgeableFiatCurrency(currency) && !isProviderSupportedFiatCurrency(currency, provider, rateType);
 }
 
 export function isHistorySupportedFiatCurrency<P extends Provider>(currency: unknown, provider: P)
-: currency is ProviderFiatCurrency<P> | HistoryBridgeableFiatCurrency {
-    return isProviderSupportedFiatCurrency(currency, provider)
+: currency is ProviderFiatCurrency<P, RateType.HISTORIC> | HistoryBridgeableFiatCurrency {
+    return isProviderSupportedFiatCurrency(currency, provider, RateType.HISTORIC)
         || HISTORY_BRIDGEABLE_FIAT_CURRENCIES.includes(currency as any);
 }
 

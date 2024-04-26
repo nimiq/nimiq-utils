@@ -8,6 +8,7 @@ import {
     BridgeableFiatCurrency,
     CryptoCurrency,
     FiatCurrency,
+    RateType,
     Provider,
     ProviderFiatCurrency,
     getExchangeRates,
@@ -41,7 +42,7 @@ const referenceHistoricRatesCoinGecko = new Map([
 
 async function testExchangeRates<
     C extends CryptoCurrency,
-    V extends ProviderFiatCurrency<P> | BridgeableFiatCurrency | CryptoCurrency,
+    V extends ProviderFiatCurrency<P, RateType.CURRENT> | BridgeableFiatCurrency | CryptoCurrency,
     P extends Provider,
 >(
     cryptoCurrencies: C[],
