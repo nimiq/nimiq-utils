@@ -818,7 +818,7 @@ async function _fetch<T>(
                     // that CoinGecko resets the quota solely based on their system time, i.e. independent of when we
                     // resend our request. Therefore, we do not waste time/part of our quota by waiting a bit longer.
                     waitTime = 15000;
-                    throw new Error('Rate limit hit. Retrying...');
+                    throw new Error('CoinGecko rate limit hit. Retrying...');
                 }
                 if (!response.ok) {
                     // On other error codes, do not retry, e.g. on status 401 (Unauthorized) for api calls that require
@@ -827,8 +827,8 @@ async function _fetch<T>(
                     throw new Error(`${response.status} - ${response.statusText}`);
                 }
                 // eslint-disable-next-line no-await-in-loop
-                result = await response.json();
-                if (result?.Response === 'Error' && result?.Message?.includes('rate limit')) {
+                const parsedResponse = await response.json();
+                if (parsedResponse?.Response === 'Error' && parsedResponse?.Message?.includes('rate limit')) {
                     // CryptoCompare returns responses with status 200 but an error result when the rate limit is hit.
                     // CryptoCompare allows for 20 requests per second, and up to 300 requests per minute, see stats on
                     // /stats/rate/limit. I.e. we could burst 20 requests every 4 seconds to reach 300 requests per min.
@@ -837,15 +837,17 @@ async function _fetch<T>(
                     // requests. We could optimize this, as the response includes more detailed info about which rate
                     // limit was hit, but it's probably not really necessary.
                     waitTime = 3000;
-                    throw new Error(`Rate limit hit: ${result.Message || result.Response}. Retrying...`);
+                    throw new Error(`CryptoCompare rate limit hit: ${parsedResponse.Message}. Retrying...`);
                 }
-                if (result?.Response === 'Error') {
+                if (parsedResponse?.Response === 'Error') {
                     // On other CryptoCompare errors, do not retry, e.g. for api calls that require an API key.
                     retry = false;
-                    throw new Error(`CryptoCompare error: ${result.Message || result.Response}`);
+                    throw new Error(`CryptoCompare error: ${parsedResponse.Message || parsedResponse.Response}`);
                 }
+                result = parsedResponse;
             } catch (e) {
                 if (!retry) throw e;
+                console.info(e instanceof Error ? e.message : e); // eslint-disable-line no-console
                 // User might be offline, or we ran into the provider's rate limiting.
                 // Note that we do not prioritize between our fetches, therefore they will be resolved in random order.
                 // eslint-disable-next-line no-await-in-loop
