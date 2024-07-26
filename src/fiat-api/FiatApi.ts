@@ -404,7 +404,8 @@ const COIN_IDS_COINGECKO = {
     [CryptoCurrency.USDC]: 'usd-coin',
 } as const;
 
-const ONE_MINUTE = 60 * 1000;
+const ONE_SECOND = 1000;
+const ONE_MINUTE = 60 * ONE_SECOND;
 const ONE_HOUR = 60 * ONE_MINUTE;
 const ONE_DAY = 24 * ONE_HOUR;
 
@@ -480,6 +481,10 @@ export async function getExchangeRates<
                     batchPromises.push(_fetch<Record<string, Record<string, number>>>(
                         `${API_URL_CRYPTOCOMPARE}/pricemulti`
                         + `?fsyms=${cryptoCurrencies.join(',')}&tsyms=${batchVsCurrencies.join(',')}`,
+                        // Other than in getHistoricExchangeRatesByRange don't process this sequentially to prioritize
+                        // these requests, at the expense to potentially sending unnecessary requests while being rate
+                        // limited.
+                        /* sequentially */ false,
                     ));
                 }
                 const result = {} as Record<C, Record<V, number | undefined>>;
@@ -592,6 +597,9 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                     }>(
                         `${API_URL_CRYPTOCOMPARE}/v2/histohour`
                         + `?fsym=${cryptoCurrency}&tsym=${vsCurrency}&toTs=${batchToTs}&limit=2000`,
+                        // Process requests sequentially, as only for sequential requests wait times on rate limits are
+                        // handled correctly.
+                        /* sequentially */ true,
                     );
                     const filteredAndTransformedBatch: Array<[number, number]> = [];
                     for (const { time, open } of batch) {
@@ -828,15 +836,63 @@ async function _fetch<T>(
                 }
                 // eslint-disable-next-line no-await-in-loop
                 const parsedResponse = await response.json();
-                if (parsedResponse?.Response === 'Error' && parsedResponse?.Message?.includes('rate limit')) {
-                    // CryptoCompare returns responses with status 200 but an error result when the rate limit is hit.
-                    // CryptoCompare allows for 20 requests per second, and up to 300 requests per minute, see stats on
-                    // /stats/rate/limit. I.e. we could burst 20 requests every 4 seconds to reach 300 requests per min.
-                    // We use a slightly shorter waitTime than that, to reduce the chances of wasting any of the limit,
-                    // for requests that we initiate in sequential chunks instead of in parallel bursts, like history
-                    // requests. We could optimize this, as the response includes more detailed info about which rate
-                    // limit was hit, but it's probably not really necessary.
-                    waitTime = 3000;
+                if (parsedResponse?.Response === 'Error' && parsedResponse.Type === 99) {
+                    // CryptoCompare returns responses with status 200 but an error result of Type 99 when the rate
+                    // limit is hit. The error message can differ. Messages observed so far are "You are over your rate
+                    // limit please upgrade your account!" and "Please use an API key for your calls. To get an API key,
+                    // go to https://www.cryptocompare.com/cryptopian/api-keys register, create a key and add it to your
+                    // requests as either ? or &api_key=<generated key>.", where the latter seems to be returned when
+                    // excessively spamming the API with excessively many parallel, or unnecessary / rejected requests,
+                    // and/or continuing to send requests after limits have been exceeded by much.
+                    // CryptoCompare grants different rate limits for different time periods, for example 20 requests
+                    // per second, and up to 300 requests per minute, see stats on /stats/rate/limit. If the allowance
+                    // for at least one time period is exceeded, the request is rejected. Experimentation showed that
+                    // time periods are not rolling periods counting requests within the exact time period ending at the
+                    // current moment, but are fixed periods that start / end at fixed times based on the server time,
+                    // e.g. days reset at midnight UTC, hours at the full hour etc.
+                    // The response with the rate limit message includes information about limits and our current usage
+                    // per time period. The response with the api key message contains a cool down period in seconds
+                    // instead, which needs to be waited for.
+                    const timePeriods = ['month', 'day', 'hour', 'minute', 'second'] as const; // sorted long to short
+                    // CryptoCompare allows 20 requests per second and 300 per minute, i.e. we can burst 20 requests
+                    // every 4 seconds, to make full use of the minutely limit, until the hourly limit is reached.
+                    const fallbackWaitTime = 4000;
+                    if (typeof parsedResponse.Cooldown === 'number') {
+                        waitTime = parsedResponse.Cooldown * 1000;
+                    } else if (timePeriods.every(
+                        (timePeriod) => typeof parsedResponse.RateLimit?.calls_made?.[timePeriod] === 'number'
+                            && typeof parsedResponse.RateLimit?.max_calls?.[timePeriod] === 'number',
+                    )) {
+                        const { calls_made: callsMade, max_calls: maxCalls } = parsedResponse.RateLimit;
+                        const longestRateLimitedTimePeriod = timePeriods
+                            .find((timePeriod) => callsMade[timePeriod] > maxCalls[timePeriod]);
+                        switch (longestRateLimitedTimePeriod) {
+                            case 'month':
+                            case 'day':
+                            case 'hour':
+                                // For 'month' and 'day' also just wait for the next hour, instead of waiting for the
+                                // next day or month, in the hopes that the user's IP changes, which would reset the
+                                // user's rate limits. This can cause some unnecessary requests counting towards the
+                                // rate limit, but it's not many, and they will be reset for the time period in question
+                                // and all smaller time periods, once the next day / month starts.
+                                waitTime = _getRemainingTimeInPeriod(ONE_HOUR, 10000);
+                                break;
+                            case 'minute':
+                                waitTime = _getRemainingTimeInPeriod(ONE_MINUTE, 5000);
+                                break;
+                            case 'second':
+                                waitTime = _getRemainingTimeInPeriod(ONE_SECOND, 200);
+                                break;
+                            default:
+                                // eslint-disable-next-line no-console
+                                console.error('Unexpected CryptoCompare rate limit response');
+                                waitTime = fallbackWaitTime;
+                        }
+                    } else {
+                        // eslint-disable-next-line no-console
+                        console.error('Unexpected CryptoCompare rate limit response');
+                        waitTime = fallbackWaitTime;
+                    }
                     throw new Error(`CryptoCompare rate limit hit: ${parsedResponse.Message}. Retrying...`);
                 }
                 if (parsedResponse?.Response === 'Error') {
@@ -975,6 +1031,17 @@ function _getDateString(timestamp: number | Date, timezone: HistoryBridgeableCur
     const shiftedDate = new Date(timestamp);
     shiftedDate.setHours(shiftedDate.getHours() + timezoneUtcOffset); // supports under-/overflow into prev/next day
     return shiftedDate.toISOString().split('T')[0];
+}
+
+/**
+ * Get remaining time in current time period of length timePeriod, with the first time period starting at the UNIX
+ * epoch. Optionally, a buffer can be added to accommodate for differences between the server time and local time.
+ */
+function _getRemainingTimeInPeriod(timePeriod: number, buffer = 0) {
+    // Note that the UNIX time doesn't count leap seconds, thus we don't need to mind them here.
+    const elapsedTime = Date.now() % timePeriod;
+    const remainingTime = timePeriod - elapsedTime;
+    return remainingTime + buffer;
 }
 
 type FirebaseRawPrimitive = {

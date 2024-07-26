@@ -99,7 +99,7 @@ function describeProviderTests(provider: Provider, coinGeckoProxyInfo?: CoinGeck
     const isCI = !!process.env.CI;
     const isPublicCoinGecko = provider === Provider.CoinGecko && !coinGeckoProxyInfo;
     const itUnlessPublicCoinGeckoCI = !isPublicCoinGecko || !isCI ? it : xit;
-    const timeout = !isPublicCoinGecko || isCI ? /* use default timeout of 5000 */ undefined : 300_000;
+    const timeout = !isPublicCoinGecko || isCI ? 20_000 : 300_000;
 
     // Tests for current rates
     itUnlessPublicCoinGeckoCI(
