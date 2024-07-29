@@ -5,6 +5,7 @@ import * as Cookie from './cookie/Cookie'; export { Cookie };
 export * from './currency-info/CurrencyInfo';
 export * from './fiat-api/FiatApi';
 export * from './formattable-number/FormattableNumber';
+export * from './rate-limit-scheduler/RateLimitScheduler';
 export * from './request-link-encoding/RequestLinkEncoding';
 export { default as Tweenable } from './tweenable/Tweenable';
 export * from './utf8-tools/Utf8Tools';

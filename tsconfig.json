@@ -12,7 +12,7 @@
     "declaration": true,
     "declarationDir": "./dist/src/",
     "lib": [
-      "es2017",
+      "es2018",
       "esnext.bigint",
       "es6",
       "dom",
