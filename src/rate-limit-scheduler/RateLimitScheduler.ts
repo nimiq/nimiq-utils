@@ -22,31 +22,34 @@ const PERIOD_DURATION = {
 
 export class RateLimitScheduler {
     private _rateLimits: RateLimits;
-    // We track usages for all time periods, regardless of what's limited by current _rateLimits, as the _rateLimits can
-    // be updated.
+    // Track usages for all periods, regardless of what's limited by current _rateLimits, as _rateLimits can be updated.
     private readonly _usages: Required<RateLimits>;
     private readonly _periodResetTimes: Record<RateLimitPeriod, number>;
-    private readonly _taskQueue: Array<() => Promise<void>> = [];
+    private readonly _periodResetDelay: number;
     private _pausedUntil = -1;
     private _timer: ReturnType<typeof setTimeout> | undefined;
+    private readonly _taskQueue: Array<() => Promise<void>> = [];
 
     /**
      * Create a scheduler for given rate limits. Limits can be specified for various time periods and for the maximum
      * allowed parallel tasks, and can be arbitrarily combined. Limits of 0 and unspecified limits are interpreted as
      * infinite / unrestricted. If the allowance for at least one limit is exceeded, a task is considered rate-limited
-     * and postponed until the rate limit is not exceeded anymore. The time periods are not rolling periods counting
-     * requests within the exact time period ending at the current moment, but are fixed periods that start / end at
-     * fixed times based on the system time, with the first periods starting at the UNIX epoch, i.e. the days reset at
-     * midnight UTC, hours at the full hour etc.
+     * and postponed until the rate limit is not exceeded anymore.
+     * The time periods are not rolling periods counting requests within the exact time period ending at the current
+     * moment, but are fixed periods that start / end at fixed times based on the system time, with the first periods
+     * starting at the UNIX epoch, i.e. the days reset at midnight UTC, hours at the full hour etc.
+     * To account for time differences in web requests to a server between the server's clock and the system's clock, a
+     * delay can be added to increase chances that when we reset periods, they already reset on the server, too.
      */
-    constructor(rateLimits: RateLimits) {
+    constructor(rateLimits: RateLimits, periodResetDelay = 0) {
         this._rateLimits = { ...rateLimits }; // create a copy
+        this._periodResetDelay = periodResetDelay;
         this._usages = { parallel: 0 } as typeof this._usages;
         this._periodResetTimes = {} as typeof this._periodResetTimes;
         const now = Date.now();
         for (const period of PERIODS) {
             this._usages[period] = 0;
-            this._periodResetTimes[period] = calculatePeriodResetTime(period, now);
+            this._periodResetTimes[period] = calculatePeriodResetTime(period, now, periodResetDelay);
         }
     }
 
@@ -211,17 +214,17 @@ export class RateLimitScheduler {
         for (const period of PERIODS) {
             if (now < this._periodResetTimes[period]) continue;
             this._usages[period] = 0;
-            this._periodResetTimes[period] = calculatePeriodResetTime(period, now);
+            this._periodResetTimes[period] = calculatePeriodResetTime(period, now, this._periodResetDelay);
         }
     }
 }
 
-function calculatePeriodResetTime(period: RateLimitPeriod, now = Date.now()): number {
+function calculatePeriodResetTime(period: RateLimitPeriod, now = Date.now(), delay = 0): number {
     if (period === 'month') {
         // Calculate start of next month
         const date = new Date(now);
-        return Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1); // supports overflowing into the next year
+        return Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1) + delay; // supports overflow into the next year
     }
     const periodDuration = PERIOD_DURATION[period];
-    return (Math.floor(now / periodDuration) + 1) * periodDuration;
+    return (Math.floor(now / periodDuration) + 1) * periodDuration + delay;
 }
