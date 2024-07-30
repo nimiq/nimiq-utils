@@ -28,7 +28,7 @@ export class RateLimitScheduler {
     private readonly _periodResetTimes: Record<RateLimitPeriod, number>;
     private readonly _taskQueue: Array<() => Promise<void>> = [];
     private _pausedUntil = -1;
-    private _timer = -1;
+    private _timer: ReturnType<typeof setTimeout> | undefined;
 
     /**
      * Create a scheduler for given rate limits. Limits can be specified for various time periods and for the maximum
@@ -160,9 +160,11 @@ export class RateLimitScheduler {
 
     // This method is by design not async, to avoid parallel execution and race conditions. Recursive execution is ok.
     private _startTasks() {
-        // Stop existing timer, to avoid accumulation of timers that are obsolete, duplicate or overruled. If a timer
-        // needs to be active, it will be set again below.
-        clearTimeout(this._timer);
+        if (this._timer) {
+            // Stop existing timer, to avoid accumulation of timers that are obsolete, duplicate or overruled. If a
+            // timer needs to be active, it will be set again below.
+            clearTimeout(this._timer);
+        }
 
         const now = Date.now();
         this._updatePeriods(now);
@@ -175,7 +177,7 @@ export class RateLimitScheduler {
             }
             if (now < this._pausedUntil) {
                 // Pause tasks regardless of other usage based rate limits, which is why this has priority over those.
-                this._timer = window.setTimeout(() => this._startTasks(), this._pausedUntil - now);
+                this._timer = setTimeout(() => this._startTasks(), this._pausedUntil - now);
                 return;
             }
             const longestRateLimitedTimePeriod = PERIODS
@@ -183,7 +185,7 @@ export class RateLimitScheduler {
                 .find((period) => this._usages[period] >= (this._rateLimits[period] || Number.POSITIVE_INFINITY));
             if (longestRateLimitedTimePeriod) {
                 // Pause tasks until the period that hit the rate limit renews.
-                this._timer = window.setTimeout(
+                this._timer = setTimeout(
                     () => this._startTasks(),
                     this._periodResetTimes[longestRateLimitedTimePeriod] - now,
                 );

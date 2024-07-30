@@ -1,10 +1,22 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment node
  */
 
-/* global describe, it */
+/* global jest, beforeEach, afterEach, describe, it */
 
 import { RateLimitScheduler, RateLimits } from '../src/main';
+
+// Clear any remaining timeouts after each test.
+let timeoutSpy: jest.SpyInstance;
+beforeEach(() => {
+    timeoutSpy = jest.spyOn(globalThis, 'setTimeout');
+});
+afterEach(() => {
+    for (const { value: timeout } of timeoutSpy.mock.results) {
+        clearInterval(timeout);
+    }
+    timeoutSpy.mockRestore();
+});
 
 const ONE_SECOND = 1000;
 const ONE_MINUTE = 60 * ONE_SECOND;
