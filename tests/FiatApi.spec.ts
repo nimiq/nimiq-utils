@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-/* global describe, it, xit, expect */
+/* global jest, beforeEach, afterEach, describe, it, xit, expect */
 
 import {
     BridgeableFiatCurrency,
@@ -39,6 +39,18 @@ const referenceHistoricRatesCoinGecko = new Map([
     [new Date('2024-04-02T00:00:00.000Z').getTime(), { usd: 69634.9924715534, crc: 35026401.21319136 }],
     [new Date('2024-04-03T00:00:00.000Z').getTime(), { usd: 65561.26872480597, crc: 32894710.969984144 }],
 ]);
+
+// Clear any remaining RateLimitScheduler timeouts after each test.
+let timeoutSpy: jest.SpyInstance;
+beforeEach(() => {
+    timeoutSpy = jest.spyOn(globalThis, 'setTimeout');
+});
+afterEach(() => {
+    for (const { value: timeout } of timeoutSpy.mock.results) {
+        clearInterval(timeout);
+    }
+    timeoutSpy.mockRestore();
+});
 
 async function testExchangeRates<
     C extends CryptoCurrency,
@@ -99,7 +111,7 @@ function describeProviderTests(provider: Provider, coinGeckoProxyInfo?: CoinGeck
     const isCI = !!process.env.CI;
     const isPublicCoinGecko = provider === Provider.CoinGecko && !coinGeckoProxyInfo;
     const itUnlessPublicCoinGeckoCI = !isPublicCoinGecko || !isCI ? it : xit;
-    const timeout = !isPublicCoinGecko || isCI ? 20_000 : 300_000;
+    const timeout = !isPublicCoinGecko || isCI ? /* use default timeout of 5000 */ undefined : 300_000;
 
     // Tests for current rates
     itUnlessPublicCoinGeckoCI(

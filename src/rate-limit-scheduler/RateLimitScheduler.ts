@@ -63,6 +63,11 @@ export class RateLimitScheduler {
         this._startTasks();
     }
 
+    public getRateLimits(): RateLimits {
+        // Return a copy
+        return { ...this._rateLimits };
+    }
+
     /**
      * Apply known usages, if such have for example been persisted or are reported by an API. Setting the count of
      * currently running parallel tasks is not allowed. Be aware that this might still result in the scheduler's usages

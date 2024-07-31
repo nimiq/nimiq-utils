@@ -1,3 +1,5 @@
+import { RateLimitScheduler } from '../rate-limit-scheduler/RateLimitScheduler';
+
 // This API supports using CryptoCompare or CoinGecko as data providers. For both, the free API is used, in an unauthen-
 // ticated fashion, i.e. without api keys. Rate limits are determined based on the user's IP. The current recommendation
 // is to use CryptoCompare as provider because its rate limits are significantly more generous, and CoinGecko does not
@@ -416,13 +418,13 @@ export function setCoinGeckoApiUrl(url = 'https://api.coingecko.com/api/v3') {
     API_URL_COINGECKO = url;
 }
 
-const coinGeckoExtraHeaders = new Map<string, string>();
+const _coinGeckoExtraHeaders = new Map<string, string>();
 
 export function setCoinGeckoApiExtraHeader(name: string, value: string | false) {
     if (value !== false) {
-        coinGeckoExtraHeaders.set(name, value);
+        _coinGeckoExtraHeaders.set(name, value);
     } else {
-        coinGeckoExtraHeaders.delete(name);
+        _coinGeckoExtraHeaders.delete(name);
     }
 }
 
@@ -481,10 +483,7 @@ export async function getExchangeRates<
                     batchPromises.push(_fetch<Record<string, Record<string, number>>>(
                         `${API_URL_CRYPTOCOMPARE}/pricemulti`
                         + `?fsyms=${cryptoCurrencies.join(',')}&tsyms=${batchVsCurrencies.join(',')}`,
-                        // Other than in getHistoricExchangeRatesByRange don't process this sequentially to prioritize
-                        // these requests, at the expense to potentially sending unnecessary requests while being rate
-                        // limited.
-                        /* sequentially */ false,
+                        Provider.CryptoCompare,
                     ));
                 }
                 const result = {} as Record<C, Record<V, number | undefined>>;
@@ -508,8 +507,7 @@ export async function getExchangeRates<
             providerExchangeRatesPromise = _fetch<Record<string, Record<string, number>>>(
                 `${API_URL_COINGECKO}/simple/price`
                 + `?ids=${coinIds.join(',')}&vs_currencies=${providerVsCurrencies.join(',')}`,
-                // Run sequentially to avoid (re)trying many parallel requests waiting on CoinGecko's low rate limit.
-                /* sequentially */ true,
+                Provider.CoinGecko,
             ).then((prices) => cryptoCurrencies.reduce((result, cryptoCurrency) => ({
                 ...result,
                 // Map CoinGecko coin ids back to CryptoCurrency enum.
@@ -597,9 +595,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                     }>(
                         `${API_URL_CRYPTOCOMPARE}/v2/histohour`
                         + `?fsym=${cryptoCurrency}&tsym=${vsCurrency}&toTs=${batchToTs}&limit=2000`,
-                        // Process requests sequentially, as only for sequential requests wait times on rate limits are
-                        // handled correctly.
-                        /* sequentially */ true,
+                        Provider.CryptoCompare,
                     );
                     const filteredAndTransformedBatch: Array<[number, number]> = [];
                     for (const { time, open } of batch) {
@@ -618,8 +614,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
             providerHistoricRatesPromise = _fetch<{ prices: Array<[number, number]> }>(
                 `${API_URL_COINGECKO}/coins/${coinId}/market_chart/range`
                 + `?vs_currency=${vsCurrency}&from=${from}&to=${to}`,
-                // Run sequentially to avoid (re)trying many parallel requests waiting on CoinGecko's low rate limit.
-                /* sequentially */ true,
+                Provider.CoinGecko,
             ).then(({ prices }) => prices);
             break;
         }
@@ -786,134 +781,132 @@ function _findCoinGeckoTimestampChunk(
     };
 }
 
-let _fetchLock = Promise.resolve(); // note: shared across _fetch calls, i.e. not specific to an api or bridge
-async function _fetch<T>(input: RequestInfo, init?: RequestInit, sequentially?: boolean): Promise<T>;
-async function _fetch<T>(input: RequestInfo, sequentially?: boolean): Promise<T>;
+const _rateLimitSchedulers = {
+    // CryptoCompare grants different rate limits for different time periods, see stats on /stats/rate/limit. If the
+    // allowance for at least one time period is exceeded, the request is rejected. Experimentation showed that time
+    // periods are not rolling periods counting requests within the exact time period ending at the current moment, but
+    // are fixed periods that start / end at fixed times based on the server time, e.g. days reset at midnight UTC,
+    // hours at the full hour etc.
+    // Different to CoinGecko, CryptoCompare counts rejected requests towards the API usage quota for rate limits.
+    [Provider.CryptoCompare]: new RateLimitScheduler({
+        second: 20,
+        minute: 300,
+        hour: 3000,
+        // For month and day also just wait for the next hour, instead of waiting for the next day or month, in the
+        // hopes that the user's IP changes, which would reset the user's rate limits. This can cause some unnecessary
+        // requests counting towards the rate limit, but it's not many, and they will be reset for the time period in
+        // question and all shorter time periods, once the next day / month starts.
+        // day: 7500,
+        // month: 50000,
+    }, 100),
+    // CoinGecko allows a dynamic amount of requests per minute, typically around 5 requests per minute. However, as
+    // this is not a fixed value, we don't specify it as a fixed rate limit. Instead, to avoid sending off unnecessary
+    // requests while being rate limited, we send out requests sequentially, and pause the scheduler when a rate limit
+    // was hit.
+    // Different to CryptoCompare, CoinGecko doesn't count rejected requests towards the API usage quota for rate limits
+    // which, while not ideal, is why sending unnecessary requests for CoinGecko is not terribly bad.
+    [Provider.CoinGecko]: new RateLimitScheduler({ parallel: 1 }, 100),
+    unlimited: new RateLimitScheduler({}),
+};
+async function _fetch<T>(info: RequestInfo, init?: RequestInit): Promise<T>;
+async function _fetch<T>(info: RequestInfo, rateLimit?: Provider): Promise<T>;
+async function _fetch<T>(info: RequestInfo, init?: RequestInit, rateLimit?: Provider): Promise<T>;
 async function _fetch<T>(
-    input: RequestInfo,
-    initOrSequentially?: RequestInit | boolean,
-    sequentially: boolean = false,
+    info: RequestInfo,
+    initOrRateLimit?: RequestInit | Provider,
+    rateLimit?: Provider,
 ): Promise<T> {
-    const init = typeof initOrSequentially !== 'boolean' ? initOrSequentially : undefined;
-    sequentially = typeof initOrSequentially === 'boolean' ? initOrSequentially : sequentially;
-
-    let unlock: (() => void) | undefined;
-    if (sequentially) {
-        const previousLock = _fetchLock;
-        _fetchLock = new Promise<void>((resolve) => { unlock = resolve; });
-        await previousLock;
+    let init: RequestInit | undefined;
+    if (typeof initOrRateLimit === 'object') {
+        init = initOrRateLimit;
+    } else {
+        rateLimit = initOrRateLimit;
     }
+    const rateLimitScheduler = rateLimit ? _rateLimitSchedulers[rateLimit] : _rateLimitSchedulers.unlimited;
 
-    try {
-        let result: any = null;
-        do {
-            let retry = true;
-            let waitTime = 20000; // default wait time when user is offline
-            try {
-                // eslint-disable-next-line no-await-in-loop
-                const response = await fetch(input, { // Throws when user is offline, in which case we retry.
-                    ...init,
-                    headers: [
-                        ...(init instanceof Headers || Array.isArray(init) ? init : Object.entries(init || {})),
-                        ...coinGeckoExtraHeaders,
-                    ],
-                });
-                if (response.status === 429) {
-                    // CoinGecko returns responses with status 429 (Too Many Requests) when the rate limit is hit.
-                    // CoinGecko allows a dynamic amount of requests per minute, typically around 5 requests per minute,
-                    // and tells us in the response headers when our next minute starts, but unfortunately due to cors
-                    // we can not access this information. Therefore, we blindly retry after waiting some time. Note
-                    // that CoinGecko resets the quota solely based on their system time, i.e. independent of when we
-                    // resend our request. Therefore, we do not waste time/part of our quota by waiting a bit longer.
-                    waitTime = 15000;
-                    throw new Error('CoinGecko rate limit hit. Retrying...');
-                }
-                if (!response.ok) {
-                    // On other error codes, do not retry, e.g. on status 401 (Unauthorized) for api calls that require
-                    // an API key like CoinGecko requests of historic data older than 365 days.
-                    retry = false;
-                    throw new Error(`${response.status} - ${response.statusText}`);
-                }
-                // eslint-disable-next-line no-await-in-loop
-                const parsedResponse = await response.json();
-                if (parsedResponse?.Response === 'Error' && parsedResponse.Type === 99) {
-                    // CryptoCompare returns responses with status 200 but an error result of Type 99 when the rate
-                    // limit is hit. The error message can differ. Messages observed so far are "You are over your rate
-                    // limit please upgrade your account!" and "Please use an API key for your calls. To get an API key,
-                    // go to https://www.cryptocompare.com/cryptopian/api-keys register, create a key and add it to your
-                    // requests as either ? or &api_key=<generated key>.", where the latter seems to be returned when
-                    // excessively spamming the API with excessively many parallel, or unnecessary / rejected requests,
-                    // and/or continuing to send requests after limits have been exceeded by much.
-                    // CryptoCompare grants different rate limits for different time periods, for example 20 requests
-                    // per second, and up to 300 requests per minute, see stats on /stats/rate/limit. If the allowance
-                    // for at least one time period is exceeded, the request is rejected. Experimentation showed that
-                    // time periods are not rolling periods counting requests within the exact time period ending at the
-                    // current moment, but are fixed periods that start / end at fixed times based on the server time,
-                    // e.g. days reset at midnight UTC, hours at the full hour etc.
-                    // The response with the rate limit message includes information about limits and our current usage
-                    // per time period. The response with the api key message contains a cool down period in seconds
-                    // instead, which needs to be waited for.
-                    const timePeriods = ['month', 'day', 'hour', 'minute', 'second'] as const; // sorted long to short
-                    // CryptoCompare allows 20 requests per second and 300 per minute, i.e. we can burst 20 requests
-                    // every 4 seconds, to make full use of the minutely limit, until the hourly limit is reached.
-                    const fallbackWaitTime = 4000;
-                    if (typeof parsedResponse.Cooldown === 'number') {
-                        waitTime = parsedResponse.Cooldown * 1000;
-                    } else if (timePeriods.every(
-                        (timePeriod) => typeof parsedResponse.RateLimit?.calls_made?.[timePeriod] === 'number'
-                            && typeof parsedResponse.RateLimit?.max_calls?.[timePeriod] === 'number',
-                    )) {
-                        const { calls_made: callsMade, max_calls: maxCalls } = parsedResponse.RateLimit;
-                        const longestRateLimitedTimePeriod = timePeriods
-                            .find((timePeriod) => callsMade[timePeriod] > maxCalls[timePeriod]);
-                        switch (longestRateLimitedTimePeriod) {
-                            case 'month':
-                            case 'day':
-                            case 'hour':
-                                // For 'month' and 'day' also just wait for the next hour, instead of waiting for the
-                                // next day or month, in the hopes that the user's IP changes, which would reset the
-                                // user's rate limits. This can cause some unnecessary requests counting towards the
-                                // rate limit, but it's not many, and they will be reset for the time period in question
-                                // and all smaller time periods, once the next day / month starts.
-                                waitTime = _getRemainingTimeInPeriod(ONE_HOUR, 10000);
-                                break;
-                            case 'minute':
-                                waitTime = _getRemainingTimeInPeriod(ONE_MINUTE, 5000);
-                                break;
-                            case 'second':
-                                waitTime = _getRemainingTimeInPeriod(ONE_SECOND, 200);
-                                break;
-                            default:
-                                // eslint-disable-next-line no-console
-                                console.error('Unexpected CryptoCompare rate limit response');
-                                waitTime = fallbackWaitTime;
-                        }
-                    } else {
-                        // eslint-disable-next-line no-console
-                        console.error('Unexpected CryptoCompare rate limit response');
-                        waitTime = fallbackWaitTime;
-                    }
-                    throw new Error(`CryptoCompare rate limit hit: ${parsedResponse.Message}. Retrying...`);
-                }
-                if (parsedResponse?.Response === 'Error') {
-                    // On other CryptoCompare errors, do not retry, e.g. for api calls that require an API key.
-                    retry = false;
-                    throw new Error(`CryptoCompare error: ${parsedResponse.Message || parsedResponse.Response}`);
-                }
-                result = parsedResponse;
-            } catch (e) {
-                if (!retry) throw e;
-                console.info(e instanceof Error ? e.message : e); // eslint-disable-line no-console
-                // User might be offline, or we ran into the provider's rate limiting.
-                // Note that we do not prioritize between our fetches, therefore they will be resolved in random order.
-                // eslint-disable-next-line no-await-in-loop
-                await new Promise((resolve) => { setTimeout(resolve, waitTime); });
+    let result: any = null;
+    do {
+        let response: Response;
+        try {
+            // Throws when user is offline
+            const fetchTask = () => fetch(info, {
+                ...init,
+                headers: [
+                    ...(init instanceof Headers || Array.isArray(init) ? init : Object.entries(init || {})),
+                    ..._coinGeckoExtraHeaders,
+                ],
+            });
+            response = await rateLimitScheduler.schedule(fetchTask); // eslint-disable-line no-await-in-loop
+        } catch (e) {
+            console.info('FiatApi failed to fetch. Retrying...', e); // eslint-disable-line no-console
+            rateLimitScheduler.pause(20000);
+            continue;
+        }
+        if (response.status === 429) {
+            // CoinGecko returns responses with status 429 (Too Many Requests) when the rate limit is hit. The response
+            // headers tell us when our next minute starts, but unfortunately due to cors we can not access this info.
+            // Therefore, we blindly retry after waiting some time. Note that CoinGecko resets the quota solely based on
+            // their system time, i.e. independent of when we resend our request. Therefore, we do not waste time/part
+            // of our quota by waiting a bit longer.
+            console.info('FiatApi hit CoinGecko rate limit. Retrying...'); // eslint-disable-line no-console
+            rateLimitScheduler.pause(15000);
+            continue;
+        }
+        if (!response.ok) {
+            // On other error codes, do not retry, e.g. on status 401 (Unauthorized) for api calls that require an API
+            // key like CoinGecko requests of historic data older than 365 days.
+            throw new Error(`FiatApi failed to fetch: ${response.status} - ${response.statusText}`);
+        }
+        // eslint-disable-next-line no-await-in-loop
+        const parsedResponse = await response.json(); // Throws if response unexpectedly is not json.
+        if (parsedResponse?.Response === 'Error' && parsedResponse.Type === 99) {
+            // CryptoCompare returns responses with status 200 but an error result of Type 99 when the rate limit is
+            // hit. The error message can differ. Messages that have been observed so far are "You are over your rate
+            // limit please upgrade your account!" and "Please use an API key for your calls. To get an API key, go to
+            // https://www.cryptocompare.com/cryptopian/api-keys register, create a key and add it to your requests as
+            // either ? or &api_key=<generated key>.", where the latter seems to be returned when excessively spamming
+            // the API with excessively many parallel, or unnecessary / rejected requests, and/or continuing to send
+            // requests after limits have been exceeded by much. The response with the rate limit message includes
+            // information about limits and our current usage per time period. The response with the api key message
+            // contains a cool down period in seconds instead, which needs to be waited for.
+            // Note that rate limits can be hit, even though we're using a RateLimitScheduler, for example because it
+            // doesn't know about previous usages until we get this info on hitting a rate limit, or because we're
+            // ignoring monthly and daily limits, or the system clock might differ from the server clock, and thus
+            // usages reset at different times, or due to the async nature of requests, or due to the API also being
+            // used in other tabs or apps.
+            // eslint-disable-next-line no-console
+            console.info(`FiatApi hit CryptoCompare rate limit: ${parsedResponse.Message}. Retrying...`);
+            if (typeof parsedResponse.Cooldown === 'number') {
+                rateLimitScheduler.pause(parsedResponse.Cooldown * 1000);
+            } else if (['month', 'day', 'hour', 'minute', 'second'].every(
+                (timePeriod) => typeof parsedResponse.RateLimit?.calls_made?.[timePeriod] === 'number'
+                    && typeof parsedResponse.RateLimit?.max_calls?.[timePeriod] === 'number',
+            )) {
+                const { calls_made: usages, max_calls: limits } = parsedResponse.RateLimit;
+                rateLimitScheduler.setUsages(usages);
+                // Ignore daily and monthly limits, see above.
+                delete limits.day;
+                delete limits.month;
+                rateLimitScheduler.setRateLimits(limits);
+            } else {
+                // eslint-disable-next-line no-console
+                console.error('FiatApi got unexpected CryptoCompare rate limit response', parsedResponse);
+                // To reduce the chance of sending off unnecessary rejected requests while we're rate limited, add an
+                // extra pause on top of the configured rate limits. The time is chosen in a way to try to make use of
+                // the allowed requests per minute (until the hourly limit is reached) based on the limit per second.
+                const limits = rateLimitScheduler.getRateLimits();
+                const waitTime = limits.minute && limits.second ? ONE_MINUTE / (limits.minute / limits.second) : 4000;
+                rateLimitScheduler.pause(waitTime);
             }
-        } while (!result);
-        return result;
-    } finally {
-        unlock?.();
-    }
+            continue;
+        }
+        if (parsedResponse?.Response === 'Error') {
+            // On other CryptoCompare errors, do not retry, e.g. for api calls that require an API key.
+            throw new Error(`FiatApi got CryptoCompare error: ${parsedResponse.Message || parsedResponse.Response}`);
+        }
+        result = parsedResponse;
+    } while (!result);
+    return result;
 }
 
 export function isProviderSupportedFiatCurrency<P extends Provider, T extends RateType>(
@@ -1031,17 +1024,6 @@ function _getDateString(timestamp: number | Date, timezone: HistoryBridgeableCur
     const shiftedDate = new Date(timestamp);
     shiftedDate.setHours(shiftedDate.getHours() + timezoneUtcOffset); // supports under-/overflow into prev/next day
     return shiftedDate.toISOString().split('T')[0];
-}
-
-/**
- * Get remaining time in current time period of length timePeriod, with the first time period starting at the UNIX
- * epoch. Optionally, a buffer can be added to accommodate for differences between the server time and local time.
- */
-function _getRemainingTimeInPeriod(timePeriod: number, buffer = 0) {
-    // Note that the UNIX time doesn't count leap seconds, thus we don't need to mind them here.
-    const elapsedTime = Date.now() % timePeriod;
-    const remainingTime = timePeriod - elapsedTime;
-    return remainingTime + buffer;
 }
 
 type FirebaseRawPrimitive = {
