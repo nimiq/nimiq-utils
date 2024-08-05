@@ -829,10 +829,13 @@ async function _fetch<T>(
         let response: Response;
         try {
             // Throws when user is offline
+            const initHeaders = init?.headers instanceof Headers || Array.isArray(init?.headers)
+                ? init!.headers
+                : Object.entries(init?.headers || {});
             const fetchTask = () => fetch(info, {
                 ...init,
                 headers: [
-                    ...(init instanceof Headers || Array.isArray(init) ? init : Object.entries(init || {})),
+                    ...initHeaders,
                     ..._coinGeckoExtraHeaders,
                 ],
             });
