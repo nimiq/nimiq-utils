@@ -794,8 +794,9 @@ const _rateLimitSchedulers = {
         hour: 3000,
         // For month and day also just wait for the next hour, instead of waiting for the next day or month, in the
         // hopes that the user's IP changes, which would reset the user's rate limits. This can cause some unnecessary
-        // requests counting towards the rate limit, but it's not many, and they will be reset for the time period in
-        // question and all shorter time periods, once the next day / month starts.
+        // requests counting towards the rate limit, but it's not many as we limit parallel requests to 1 once the daily
+        // or monthly limit is hit, and they will be reset for the time period in question and all shorter time periods,
+        // once the next day / month starts.
         // day: 7500,
         // month: 50000,
     }, 100),
@@ -887,7 +888,12 @@ async function _fetch<T>(
             )) {
                 const { calls_made: usages, max_calls: limits } = parsedResponse.RateLimit;
                 rateLimitScheduler.setUsages(usages);
-                // Ignore daily and monthly limits, see above.
+                // Ignore daily and monthly limits in hopes of the usage being reset earlier than on day or month reset,
+                // for example by IP change, but limit parallel requests when the daily or monthly limit is hit to avoid
+                // unnecessary parallel requests, see above. The parallel limit is reset on the next successful request.
+                if (usages.day > limits.day || usages.month > limits.month) {
+                    limits.parallel = 1;
+                }
                 delete limits.day;
                 delete limits.month;
                 rateLimitScheduler.setRateLimits(limits);
@@ -906,6 +912,13 @@ async function _fetch<T>(
         if (parsedResponse?.Response === 'Error') {
             // On other CryptoCompare errors, do not retry, e.g. for api calls that require an API key.
             throw new Error(`FiatApi got CryptoCompare error: ${parsedResponse.Message || parsedResponse.Response}`);
+        }
+        if (rateLimit === Provider.CryptoCompare && rateLimitScheduler.getRateLimits().parallel) {
+            // If we limited the parallel CryptoCompare requests after hitting the daily or monthly limit, reset that
+            // limit of parallel requests after the next successful request.
+            const limits = rateLimitScheduler.getRateLimits();
+            delete limits.parallel;
+            rateLimitScheduler.setRateLimits(limits);
         }
         result = parsedResponse;
     } while (!result);
