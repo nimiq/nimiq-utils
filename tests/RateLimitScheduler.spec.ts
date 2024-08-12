@@ -232,4 +232,12 @@ describe('RateLimitScheduler', () => {
         await wait(periodResetSafetyBuffer); // Wait until end of safety buffer after period reset
         expect(setup.taskExecutions).toBe(2); // Once the safety buffer is over, tasks can run
     });
+
+    it('should check rate limits against safety buffers to leave enough time to actually run tasks', () => {
+        const expectedError = 'Period reset safety buffer too long for second rate limit.';
+        expect(() => new RateLimitScheduler({ second: 20 }, ONE_SECOND)).toThrow(expectedError);
+        expect(() => new RateLimitScheduler({ second: 20 }, ONE_SECOND / 2 - 100)).not.toThrow();
+        const scheduler = new RateLimitScheduler({}, ONE_SECOND);
+        expect(() => scheduler.setRateLimits({ second: 20 })).toThrow(expectedError);
+    });
 });

@@ -49,7 +49,7 @@ export class RateLimitScheduler {
      * server, which then rejects those requests.
      */
     constructor(rateLimits: RateLimits, periodResetSafetyBuffer = 0) {
-        this._rateLimits = { ...rateLimits }; // create a copy
+        this._rateLimits = rateLimits; // Set temporarily; will be overwritten by setRateLimits below
         this._periodResetSafetyBuffer = periodResetSafetyBuffer;
         this._usages = { parallel: 0 } as typeof this._usages;
         this._periodResetTimes = {} as typeof this._periodResetTimes;
@@ -58,6 +58,7 @@ export class RateLimitScheduler {
             this._usages[period] = 0;
             this._periodResetTimes[period] = this._calculatePeriodResetTime(period, now);
         }
+        this.setRateLimits(rateLimits); // check rate limits against safety buffer
     }
 
     /**
@@ -65,6 +66,17 @@ export class RateLimitScheduler {
      * the queue but not past tasks that were already run.
      */
     public setRateLimits(rateLimits: RateLimits) {
+        // Check rate limits against period reset safety buffer. After deducting the safety buffer from the shortest
+        // limited time period, there still needs to be time for the scheduler to actually run tasks.
+        for (let i = PERIODS.length - 1; i >= 0; --i) { // Iterate from shorter periods to longer periods.
+            const period = PERIODS[i];
+            if (!rateLimits[period]) continue;
+            const periodDuration = period !== 'month' ? PERIOD_DURATION[period] : 28 * ONE_DAY; // conservative duration
+            if (periodDuration - 2 * this._periodResetSafetyBuffer < /* minimum time to give the scheduler */ 200) {
+                throw new Error(`Period reset safety buffer too long for ${period} rate limit.`);
+            }
+            break; // Only need to test the shortest limited period
+        }
         this._rateLimits = { ...rateLimits }; // create a copy
         // Evaluate new rate limits, which potentially allow starting additional tasks.
         this._startTasks();
