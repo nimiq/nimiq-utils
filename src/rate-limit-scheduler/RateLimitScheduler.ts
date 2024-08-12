@@ -25,7 +25,7 @@ export class RateLimitScheduler {
     // Track usages for all periods, regardless of what's limited by current _rateLimits, as _rateLimits can be updated.
     private readonly _usages: Required<RateLimits>;
     private readonly _periodResetTimes: Record<RateLimitPeriod, number>;
-    private readonly _periodResetDelay: number;
+    private readonly _periodResetSafetyBuffer: number;
     private _pausedUntil = -1;
     private _timer: ReturnType<typeof setTimeout> | undefined;
     private readonly _taskQueue: Array<() => Promise<void>> = [];
@@ -38,18 +38,25 @@ export class RateLimitScheduler {
      * The time periods are not rolling periods counting requests within the exact time period ending at the current
      * moment, but are fixed periods that start / end at fixed times based on the system time, with the first periods
      * starting at the UNIX epoch, i.e. the days reset at midnight UTC, hours at the full hour etc.
-     * To account for time differences in web requests to a server between the server's clock and the system's clock, a
-     * delay can be added to increase chances that when we reset periods, they already reset on the server, too.
+     * To account for the async nature of tasks (as the time when a tasks is processed, for example a web request by a
+     * server, might fall already into a different time period than when it was started by the scheduler), or for clock
+     * differences between the server's clock and the system's clock, a safety buffer around the original period reset
+     * times can be configured during which no tasks should be run to reduce chances that a period has already or has
+     * not yet reset on the server, while we would have expected it to not yet or already do. This can be used to avoid,
+     * on a best effort basis, for example that tasks we issue at the end of a second are processed by a server already
+     * in the next second, such that the rate limit in the new second will be hit earlier than expected, or as another
+     * example that we already issue new tasks thinking that a rate limited period has reset while it has not yet on the
+     * server, which then rejects those requests.
      */
-    constructor(rateLimits: RateLimits, periodResetDelay = 0) {
+    constructor(rateLimits: RateLimits, periodResetSafetyBuffer = 0) {
         this._rateLimits = { ...rateLimits }; // create a copy
-        this._periodResetDelay = periodResetDelay;
+        this._periodResetSafetyBuffer = periodResetSafetyBuffer;
         this._usages = { parallel: 0 } as typeof this._usages;
         this._periodResetTimes = {} as typeof this._periodResetTimes;
         const now = Date.now();
         for (const period of PERIODS) {
             this._usages[period] = 0;
-            this._periodResetTimes[period] = calculatePeriodResetTime(period, now, periodResetDelay);
+            this._periodResetTimes[period] = this._calculatePeriodResetTime(period, now);
         }
     }
 
@@ -188,14 +195,24 @@ export class RateLimitScheduler {
                 this._timer = setTimeout(() => this._startTasks(), this._pausedUntil - now);
                 return;
             }
-            const longestRateLimitedTimePeriod = PERIODS
+            const longestRestrictedTimePeriod = PERIODS.find((period) => {
+                const rateLimit = this._rateLimits[period];
+                if (!rateLimit) return false; // Period not restricted
                 // Test for >= because running an additional task would hit the rate limit, even if it wasn't hit yet.
-                .find((period) => this._usages[period] >= (this._rateLimits[period] || Number.POSITIVE_INFINITY));
-            if (longestRateLimitedTimePeriod) {
-                // Pause tasks until the period that hit the rate limit renews.
+                const isRateLimitExceeded = this._usages[period] >= rateLimit;
+                // If we're within the safety buffer before or after the original period reset time, pause tasks until
+                // after the buffer. As we delay the period reset times by the buffer, see _calculatePeriodResetTime,
+                // the start of the safety buffer before the original period reset time is the delayed reset time minus
+                // twice the buffer and the end of the safety buffer after the original period reset time is the delayed
+                // period reset time, which is the time we pause until.
+                const isInSafetyBuffer = now >= this._periodResetTimes[period] - 2 * this._periodResetSafetyBuffer;
+                return isRateLimitExceeded || isInSafetyBuffer;
+            });
+            if (longestRestrictedTimePeriod) {
+                // Pause tasks until the period resets that hit the rate limit or was restricted by the safety buffer.
                 this._timer = setTimeout(
                     () => this._startTasks(),
-                    this._periodResetTimes[longestRateLimitedTimePeriod] - now,
+                    this._periodResetTimes[longestRestrictedTimePeriod] - now,
                 );
                 return;
             }
@@ -219,17 +236,28 @@ export class RateLimitScheduler {
         for (const period of PERIODS) {
             if (now < this._periodResetTimes[period]) continue;
             this._usages[period] = 0;
-            this._periodResetTimes[period] = calculatePeriodResetTime(period, now, this._periodResetDelay);
+            this._periodResetTimes[period] = this._calculatePeriodResetTime(period, now);
         }
     }
-}
 
-function calculatePeriodResetTime(period: RateLimitPeriod, now = Date.now(), delay = 0): number {
-    if (period === 'month') {
-        // Calculate start of next month
-        const date = new Date(now);
-        return Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1) + delay; // supports overflow into the next year
+    private _calculatePeriodResetTime(period: RateLimitPeriod, now = Date.now()): number {
+        // The original reset time is the reset time without applying the reset safety buffer. The returned reset time
+        // is delayed by the safety buffer because we want the next period to be usable only after the safety buffer
+        // after the original reset time passed. The safety buffer before the original reset time is taken care of in
+        // _startTasks.
+        let originalResetTime: number;
+        // Because we delay the reset time, we have to shift the now time by he delay when calculating the original
+        // reset time, to correctly identify the period now should fall into when applying the delay, either still the
+        // delayed previous period, or already the next period after the delay.
+        now -= this._periodResetSafetyBuffer;
+        if (period === 'month') {
+            // Calculate start of next month
+            const date = new Date(now);
+            originalResetTime = Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1); // can overflow to next year
+        } else {
+            const periodDuration = PERIOD_DURATION[period];
+            originalResetTime = (Math.floor(now / periodDuration) + 1) * periodDuration;
+        }
+        return originalResetTime + this._periodResetSafetyBuffer;
     }
-    const periodDuration = PERIOD_DURATION[period];
-    return (Math.floor(now / periodDuration) + 1) * periodDuration + delay;
 }

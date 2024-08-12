@@ -21,6 +21,10 @@ afterEach(() => {
 const ONE_SECOND = 1000;
 const ONE_MINUTE = 60 * ONE_SECOND;
 
+type SchedulerSetupOptions<AutoResolveTasks extends boolean> = {
+    autoResolveTasks?: AutoResolveTasks,
+    periodResetSafetyBuffer?: number,
+};
 type SchedulerSetup<IncludeTaskResolvers extends boolean> = {
     scheduler: RateLimitScheduler,
     task: () => void,
@@ -28,12 +32,15 @@ type SchedulerSetup<IncludeTaskResolvers extends boolean> = {
 } & (IncludeTaskResolvers extends true ? {
     taskResolvers: Array<() => void>,
 } : Record<never, never>);
-async function setupScheduler(limits: RateLimits, taskCount: number, autoResolveTasks?: true)
+async function setupScheduler(limits: RateLimits, taskCount: number, options?: SchedulerSetupOptions<true>)
     : Promise<SchedulerSetup<false>>;
-async function setupScheduler(limits: RateLimits, taskCount: number, autoResolveTasks: false)
+async function setupScheduler(limits: RateLimits, taskCount: number, options?: SchedulerSetupOptions<false>)
     : Promise<SchedulerSetup<true>>;
-async function setupScheduler(limits: RateLimits, taskCount: number, autoResolveTasks = true)
-    : Promise<SchedulerSetup<boolean>> {
+async function setupScheduler(
+    limits: RateLimits,
+    taskCount: number,
+    { autoResolveTasks = true, periodResetSafetyBuffer }: SchedulerSetupOptions<boolean> = {},
+): Promise<SchedulerSetup<boolean>> {
     if (limits.second || limits.minute || limits.hour || limits.day || limits.month) {
         // For time based rate limits, wait for a new second or minute to start to run tests with consistent conditions,
         // for example ensuring that there are still a minimum amount of seconds remaining in the current minute, to be
@@ -44,7 +51,7 @@ async function setupScheduler(limits: RateLimits, taskCount: number, autoResolve
         await waitForNewSecondOrMinute(minimumRemainingSecondsInMinute);
     }
 
-    const scheduler = new RateLimitScheduler(limits);
+    const scheduler = new RateLimitScheduler(limits, periodResetSafetyBuffer);
     const task = () => new Promise<number>((resolve) => {
         const counter = ++schedulerSetup.taskExecutions;
         if (autoResolveTasks) {
@@ -116,7 +123,7 @@ describe('RateLimitScheduler', () => {
     it('can rate limit parallel tasks', async () => {
         const limits = { parallel: 5 };
         const taskCount = 47;
-        const setup = await setupScheduler(limits, taskCount, /* autoResolveTasks */ false);
+        const setup = await setupScheduler(limits, taskCount, { autoResolveTasks: false });
         let taskCountResolved = 0;
         while (taskCountResolved < taskCount) {
             // Resolve running tasks in batches of varying size.
@@ -205,5 +212,24 @@ describe('RateLimitScheduler', () => {
         expect(setup.taskExecutions).toBe(limits.second); // The shorter pause should not have overwritten longer pause.
         await wait(100); // Wait until the longer pause ends.
         expect(setup.taskExecutions).toBe(2 * limits.second); // After the pause actually ends, new tasks run.
+    });
+
+    it('supports period reset time safety buffers', async () => {
+        const limits = { second: 20 };
+        const periodResetSafetyBuffer = 100;
+        const setup = await setupScheduler(limits, 0, { periodResetSafetyBuffer });
+        const { scheduler } = setup;
+        scheduler.schedule(setup.task);
+        await wait(periodResetSafetyBuffer / 2);
+        expect(setup.taskExecutions).toBe(0); // Within the safety buffer after period reset time, no tasks should run
+        await wait(periodResetSafetyBuffer / 2); // Wait until end of safety buffer after period reset
+        expect(setup.taskExecutions).toBe(1); // Once the safety buffer is over, tasks can run
+        await wait(ONE_SECOND - 2 * periodResetSafetyBuffer); // Wait until start of safety buffer before period reset
+        scheduler.schedule(setup.task);
+        expect(setup.taskExecutions).toBe(1); // Within the safety buffer before period reset time, no tasks should run
+        await wait(periodResetSafetyBuffer); // Wait until original period reset time, within safety buffer
+        expect(setup.taskExecutions).toBe(1); // Within the safety buffer after period reset time, no tasks should run
+        await wait(periodResetSafetyBuffer); // Wait until end of safety buffer after period reset
+        expect(setup.taskExecutions).toBe(2); // Once the safety buffer is over, tasks can run
     });
 });

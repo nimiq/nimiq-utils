@@ -799,14 +799,14 @@ const _rateLimitSchedulers = {
         // once the next day / month starts.
         // day: 7500,
         // month: 50000,
-    }, 100),
+    }, 150),
     // CoinGecko allows a dynamic amount of requests per minute, typically around 5 requests per minute. However, as
     // this is not a fixed value, we don't specify it as a fixed rate limit. Instead, to avoid sending off unnecessary
     // requests while being rate limited, we send out requests sequentially, and pause the scheduler when a rate limit
     // was hit.
     // Different to CryptoCompare, CoinGecko doesn't count rejected requests towards the API usage quota for rate limits
     // which, while not ideal, is why sending unnecessary requests for CoinGecko is not terribly bad.
-    [Provider.CoinGecko]: new RateLimitScheduler({ parallel: 1 }, 100),
+    [Provider.CoinGecko]: new RateLimitScheduler({ parallel: 1 }),
     unlimited: new RateLimitScheduler({}),
 };
 async function _fetch<T>(info: RequestInfo, init?: RequestInit): Promise<T>;
