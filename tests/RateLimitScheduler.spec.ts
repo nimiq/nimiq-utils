@@ -162,7 +162,7 @@ describe('RateLimitScheduler', () => {
         expect(setup.taskExecutions).toBe(taskCount);
     });
 
-    it('can get and set usages', async () => {
+    it('can get and overwrite usages', async () => {
         const limits = { minute: 5 };
         const taskCount = 12;
         const setup = await setupScheduler(limits, taskCount);
@@ -196,6 +196,27 @@ describe('RateLimitScheduler', () => {
         await wait(0);
         expect(setup.taskExecutions).toBe(taskCount + 1); // Ran all tasks we scheduled
         expect(scheduler.getUsages()).toEqual({ second: 1, minute: 1, hour: 1, day: 1, month: 1, parallel: 0 });
+    });
+
+    it('can conditionally set usages', async () => {
+        const scheduler = new RateLimitScheduler({});
+        expect(scheduler.getUsages()).toEqual({ second: 0, minute: 0, hour: 0, day: 0, month: 0, parallel: 0 });
+        scheduler.setUsages({ hour: 5 }); // overwrite
+        expect(scheduler.getUsages()).toEqual({ second: 0, minute: 0, hour: 5, day: 5, month: 5, parallel: 0 });
+        scheduler.setUsages({ day: 3 }, 'increase-only'); // should result in no change
+        expect(scheduler.getUsages()).toEqual({ second: 0, minute: 0, hour: 5, day: 5, month: 5, parallel: 0 });
+        scheduler.setUsages({ day: 7 }, 'increase-only');
+        expect(scheduler.getUsages()).toEqual({ second: 0, minute: 0, hour: 5, day: 7, month: 7, parallel: 0 });
+        scheduler.setUsages({ day: 11 }, 'decrease-only'); // should result in no change
+        expect(scheduler.getUsages()).toEqual({ second: 0, minute: 0, hour: 5, day: 7, month: 7, parallel: 0 });
+        scheduler.setUsages({ day: 3 }, 'decrease-only');
+        expect(scheduler.getUsages()).toEqual({ second: 0, minute: 0, hour: 3, day: 3, month: 7, parallel: 0 });
+        scheduler.setUsages({ minute: 9, day: 0 }); // Overwrite; on inconsistent usages, bias towards higher usages
+        expect(scheduler.getUsages()).toEqual({ second: 0, minute: 9, hour: 9, day: 9, month: 9, parallel: 0 });
+        scheduler.setUsages({ second: 1, minute: 2, hour: 3, day: 4, month: 5 }, 'increase-only');
+        expect(scheduler.getUsages()).toEqual({ second: 1, minute: 9, hour: 9, day: 9, month: 9, parallel: 0 });
+        scheduler.setUsages({ second: 2, minute: 3, hour: 4, day: 5, month: 6 }, 'decrease-only');
+        expect(scheduler.getUsages()).toEqual({ second: 1, minute: 3, hour: 4, day: 5, month: 6, parallel: 0 });
     });
 
     it('can pause tasks', async () => {

@@ -88,13 +88,23 @@ export class RateLimitScheduler {
     }
 
     /**
-     * Apply known usages, if such have for example been persisted or are reported by an API. Setting the count of
-     * currently running parallel tasks is not allowed. Be aware that this might still result in the scheduler's usages
-     * being out of sync due to race conditions, for example if the scheduler ran additional tasks while the server was
-     * reporting its usage stats.
+     * Apply known usages, if such have for example been persisted or are reported by an API. Usages can be either
+     * forced to be overwritten, or only be set if usages increase, or only if they decrease. Setting the count of
+     * currently running parallel tasks is not allowed.
+     * Be aware that even when setting usages reported by an API / a remote server via this method, the scheduler's
+     * usages can still be out of sync with the API due to race conditions, for example if the scheduler ran additional
+     * tasks while the server was reporting its usage stats, or if tasks and usage reports run / resolve in a different
+     * order than they were scheduled, or if the reported usage stats were for a different period than our current
+     * period. To circumvent such race conditions to some degree, the mode can be set to increase-only, which ensures
+     * that no additional tasks that were scheduled in the meantime are accidentally deducted by lower reported usages,
+     * and that the maximum of multiple setUsages calls, which might be out of order due to race conditions, eventually
+     * remains, and a period reset safety buffer can be set to reduce chances of setting usages for the wrong period.
      * Note that this affects future tasks and tasks currently in the queue but not past tasks that were already run.
      */
-    public setUsages(usages: RateLimitPeriodUsages) {
+    public setUsages(
+        usages: RateLimitPeriodUsages,
+        mode: 'overwrite' | 'increase-only' | 'decrease-only' = 'overwrite',
+    ) {
         this._updatePeriods();
         // Set the usages for periods that were passed, and constrain usages for all periods for consistency. Set usages
         // of longer periods are at least as high as those of shorter usages, and usages of shorter periods are at most
@@ -122,14 +132,22 @@ export class RateLimitScheduler {
         }
         // Set and constrain usages.
         for (const period of PERIODS) {
-            // For inconsistent usages, prioritize minimums, see above.
-            this._usages[period] = Math.max(
+            // For inconsistent passed usages, prioritize minimums, see above. This ensures consistent new usages, in
+            // the sense that usages of longer periods are greater or equal than those of shorter periods.
+            const newUsage = Math.max(
                 minimums[period],
                 Math.min(
                     maximums[period],
                     usages[period] ?? this._usages[period],
                 ),
             );
+            // Because old, previous usages and new usages are each consistent, the max (increase) or min (decrease) of
+            // both is also consistent.
+            if (mode === 'overwrite'
+                || (mode === 'increase-only' && newUsage > this._usages[period])
+                || (mode === 'decrease-only' && newUsage < this._usages[period])) {
+                this._usages[period] = newUsage;
+            }
         }
         // Evaluate new usages, which potentially allow starting additional tasks.
         this._startTasks();
@@ -148,8 +166,7 @@ export class RateLimitScheduler {
     public triggerRateLimit(period: RateLimitPeriod) {
         const rateLimit = this._rateLimits[period];
         if (!rateLimit) return; // The period is not rate limited.
-        const newUsage = Math.max(rateLimit, this._usages[period]);
-        this.setUsages({ [period]: newUsage });
+        this.setUsages({ [period]: rateLimit }, 'increase-only');
     }
 
     /**
