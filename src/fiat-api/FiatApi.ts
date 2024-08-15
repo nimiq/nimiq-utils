@@ -887,7 +887,10 @@ async function _fetch<T>(
                     && typeof parsedResponse.RateLimit?.max_calls?.[timePeriod] === 'number',
             )) {
                 const { calls_made: usages, max_calls: limits } = parsedResponse.RateLimit;
-                rateLimitScheduler.setUsages(usages);
+                // Set usages with mode increase-only, for highest usages to eventually survive, in case of responses of
+                // parallel requests arriving out of order, and to avoid removing counts of additional requests sent in
+                // the meantime.
+                rateLimitScheduler.setUsages(usages, 'increase-only');
                 // Ignore daily and monthly limits in hopes of the usage being reset earlier than on day or month reset,
                 // for example by IP change, but limit parallel requests when the daily or monthly limit is hit to avoid
                 // unnecessary parallel requests, see above. The parallel limit is reset on the next successful request.
