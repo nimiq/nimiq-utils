@@ -106,16 +106,26 @@ export class RateLimitScheduler {
         mode: 'overwrite' | 'increase-only' | 'decrease-only' = 'overwrite',
     ) {
         this._updatePeriods();
-        // Set the usages for periods that were passed, and constrain usages for all periods for consistency. Set usages
-        // of longer periods are at least as high as those of shorter usages, and usages of shorter periods are at most
-        // as high as those of longer periods. If the passed usages are inconsistent, we prioritize the minimums over
-        // the maximums, i.e. we assume higher usages.
+        // Set the usages for periods that were passed and constrain usages for other periods, ensuring consistency
+        // for all periods, where consistency means that usages of longer periods are greater or equal to usages of
+        // shorter periods. Thus, we set usages of longer periods at least as high as those of shorter periods, and
+        // usages of shorter periods at most as high as those of longer periods. If the passed usages are inconsistent,
+        // we ignore the inconsistent entries that are lower than expected, i.e. we prefer a bias towards higher usages.
+        usages = { ...usages }; // Create a copy as we might be deleting inconsistent entries.
         const minimums = {} as Record<RateLimitPeriod, number>;
         const maximums = {} as Record<RateLimitPeriod, number>;
         for (let i = PERIODS.length - 1; i >= 0; --i) {
-            // Iterate from short periods to long periods to establish minimum values for each period.
+            // Iterate from short periods to long periods to check for inconsistent passed usages, and establish minimum
+            // values for each period.
             const period = PERIODS[i];
             const shorterPeriod = PERIODS[i + 1] ?? PERIODS[PERIODS.length - 1];
+            if (shorterPeriod !== period
+                && typeof usages[period] === 'number'
+                && usages[period]! < minimums[shorterPeriod]) {
+                // The passed usages are inconsistent. Ignore the smaller than expected usage in favor of our bias
+                // towards higher usages.
+                delete usages[period];
+            }
             minimums[period] = Math.max(
                 usages[period] ?? 0,
                 minimums[shorterPeriod] ?? 0,
@@ -132,8 +142,13 @@ export class RateLimitScheduler {
         }
         // Set and constrain usages.
         for (const period of PERIODS) {
-            // For inconsistent passed usages, prioritize minimums, see above. This ensures consistent new usages, in
-            // the sense that usages of longer periods are greater or equal than those of shorter periods.
+            // Old usages are ensured to be consistent (i.e. usages of longer periods are greater or equal to usages of
+            // shorter periods) because they're always increased, set and reset in a consistent manner. Passed usages
+            // and minimums and maximums are enforced to be consistent, the way they are constructed, and minimums are
+            // lower or equal than the maximums. Thus, new usages constrained to minimums and maximums are consistent,
+            // too. Finally, the resulting usages are also consistent, because they're either directly overwritten by
+            // the new usages, or are constrained by the old, consistent usages as minimum (increase-only) or maximum
+            // (decrease-only).
             const newUsage = Math.max(
                 minimums[period],
                 Math.min(
@@ -141,8 +156,6 @@ export class RateLimitScheduler {
                     usages[period] ?? this._usages[period],
                 ),
             );
-            // Because old, previous usages and new usages are each consistent, the max (increase) or min (decrease) of
-            // both is also consistent.
             if (mode === 'overwrite'
                 || (mode === 'increase-only' && newUsage > this._usages[period])
                 || (mode === 'decrease-only' && newUsage < this._usages[period])) {

@@ -181,7 +181,8 @@ describe('RateLimitScheduler', () => {
         expect(setup.taskExecutions).toBe(2 * limits.minute); // no new tasks can run without waiting
         expect(scheduler.getUsages()).toEqual({ second: 5, minute: 5, hour: 20, day: 20, month: 20, parallel: 0 });
 
-        scheduler.setUsages({ minute: 0, day: 50 }); // Decrease minute and second, increase day and month
+        // Decrease minute and second, increase day and month, ignore inconsistent month with bias towards higher usages
+        scheduler.setUsages({ minute: 0, day: 50, month: 7 });
         await wait(0);
         expect(setup.taskExecutions).toBe(taskCount); // final tasks could immediately run without waiting
         expect(scheduler.getUsages()).toEqual({ second: 2, minute: 2, hour: 22, day: 52, month: 52, parallel: 0 });
