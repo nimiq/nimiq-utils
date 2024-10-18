@@ -26,7 +26,7 @@ export enum EthereumChain {
     ETHEREUM_MAINNET = 1,
     ETHEREUM_GOERLI_TESTNET = 5,
     POLYGON_MAINNET = 137,
-    POLYGON_MUMBAI_TESTNET = 80001,
+    POLYGON_AMOY_TESTNET = 80002,
 }
 
 enum EthereumBlockchainName {
@@ -47,8 +47,8 @@ export const ETHEREUM_SUPPORTED_CONTRACTS = {
     [EthereumChain.POLYGON_MAINNET]: {
         [Currency.USDC]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     },
-    [EthereumChain.POLYGON_MUMBAI_TESTNET]: {
-        [Currency.USDC]: '0x0fa8781a83e46826621b3bc094ea2a0212e71b23',
+    [EthereumChain.POLYGON_AMOY_TESTNET]: {
+        [Currency.USDC]: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
     },
 } as const;
 type EthereumSupportedContractCurrency = keyof (
@@ -580,7 +580,7 @@ function getEthereumBlockchainName(chainIdOrNativeCurrency: number | Currency)
         case Currency.ETH:
             return EthereumBlockchainName.ETHEREUM;
         case EthereumChain.POLYGON_MAINNET:
-        case EthereumChain.POLYGON_MUMBAI_TESTNET:
+        case EthereumChain.POLYGON_AMOY_TESTNET:
         case Currency.MATIC:
             return EthereumBlockchainName.POLYGON;
         default: // don't make any assumption for unknown chainIds or non-native Ethereum currencies
@@ -598,7 +598,7 @@ function getEthereumCurrency(chainIdOrBlockchainName: number | EthereumBlockchai
         case EthereumBlockchainName.ETHEREUM:
             return Currency.ETH;
         case EthereumChain.POLYGON_MAINNET:
-        case EthereumChain.POLYGON_MUMBAI_TESTNET:
+        case EthereumChain.POLYGON_AMOY_TESTNET:
         case EthereumBlockchainName.POLYGON:
             return Currency.MATIC;
         default: // don't make any assumption for unknown chainIds or blockchain names
