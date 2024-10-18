@@ -74,7 +74,7 @@ describe('CurrencyInfo', () => {
     });
 
     it('can generate names for different locales', () => {
-        const possibleLanguages = [];
+        const possibleLanguages: string[] = [];
         for (let char1 = 'a'.charCodeAt(0); char1 <= 'z'.charCodeAt(0); ++char1) {
             for (let char2 = 'a'.charCodeAt(0); char2 <= 'z'.charCodeAt(0); ++char2) {
                 possibleLanguages.push(`${String.fromCharCode(char1)}${String.fromCharCode(char2)}`);

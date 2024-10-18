@@ -20,6 +20,7 @@ export enum CryptoCurrency {
     BTC = 'btc',
     ETH = 'eth',
     USDC = 'usdc',
+    USDT = 'usdt',
 }
 
 // This enum has been generated from the generated lists CRYPTOCOMPARE_FIAT_CURRENCIES, COINGECKO_FIAT_CURRENCIES and
@@ -404,6 +405,7 @@ const COIN_IDS_COINGECKO = {
     [CryptoCurrency.BTC]: 'bitcoin',
     [CryptoCurrency.ETH]: 'ethereum',
     [CryptoCurrency.USDC]: 'usd-coin',
+    [CryptoCurrency.USDT]: 'tether',
 } as const;
 
 const ONE_SECOND = 1000;
