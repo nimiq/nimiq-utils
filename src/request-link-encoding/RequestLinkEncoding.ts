@@ -48,7 +48,7 @@ export const ETHEREUM_SUPPORTED_CONTRACTS = {
         [Currency.USDC]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     },
     [EthereumChain.POLYGON_AMOY_TESTNET]: {
-        [Currency.USDC]: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
+        [Currency.USDC]: '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582',
     },
 } as const;
 type EthereumSupportedContractCurrency = keyof (
