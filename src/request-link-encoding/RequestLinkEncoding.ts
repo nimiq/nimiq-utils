@@ -11,6 +11,7 @@ export enum Currency {
     ETH = 'eth',
     MATIC = 'matic',
     USDC = 'usdc',
+    USDT = 'usdt',
 }
 
 const DECIMALS = {
@@ -19,12 +20,13 @@ const DECIMALS = {
     [Currency.ETH]: 18,
     [Currency.MATIC]: 18,
     [Currency.USDC]: 6,
+    [Currency.USDT]: 6,
 } as const;
 
 // Uses chain ids as values.
 export enum EthereumChain {
     ETHEREUM_MAINNET = 1,
-    ETHEREUM_GOERLI_TESTNET = 5,
+    ETHEREUM_SEPOLIA_TESTNET = 11155111,
     POLYGON_MAINNET = 137,
     POLYGON_AMOY_TESTNET = 80002,
 }
@@ -39,16 +41,20 @@ type EthereumSupportedNativeCurrency = (typeof ETHEREUM_SUPPORTED_NATIVE_CURRENC
 
 export const ETHEREUM_SUPPORTED_CONTRACTS = {
     [EthereumChain.ETHEREUM_MAINNET]: {
-        [Currency.USDC]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+        [Currency.USDC]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        [Currency.USDT]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
     },
-    [EthereumChain.ETHEREUM_GOERLI_TESTNET]: {
-        [Currency.USDC]: '0xde637d4c445ca2aae8f782ffac8d2971b93a4998',
+    [EthereumChain.ETHEREUM_SEPOLIA_TESTNET]: {
+        [Currency.USDC]: '0xf08a50178dfcde18524640ea6618a1f965821715',
+        [Currency.USDT]: '0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0',
     },
     [EthereumChain.POLYGON_MAINNET]: {
-        [Currency.USDC]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+        [Currency.USDC]: '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',
+        [Currency.USDT]: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
     },
     [EthereumChain.POLYGON_AMOY_TESTNET]: {
         [Currency.USDC]: '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582',
+        [Currency.USDT]: '0x1616d425cd540b256475cbfb604586c8598ec0fb',
     },
 } as const;
 type EthereumSupportedContractCurrency = keyof (
@@ -133,6 +139,7 @@ export function createRequestLink(
             case Currency.ETH:
             case Currency.MATIC:
             case Currency.USDC:
+            case Currency.USDT:
                 return createEthereumRequestLink(recipient, amountOrOptions.currency, amountOrOptions);
             default:
                 throw new Error('Unsupported currency.');
@@ -162,13 +169,13 @@ type ParsedRequestLink<Currencies extends Currency> = (
 
 // Record<Currency, (address: string) => ReturnType> for currencies other than NIM.
 // Not supported for NIM because for NIM we apply address checks by default via ValidationUtils.
-// MATIC and USDC use the entry for ETH if provided.
+// MATIC, USDC and USDT use the entry for ETH if provided.
 type AddressChecks<Currencies extends Currency, ReturnType> = Currencies extends Exclude<Currencies, Currency.NIM>
     ? Partial<Record<
         Exclude<
             // If Currencies include one or more of EthereumSupportedCurrency, an entry for Currency.ETH can be passed.
             Currencies | (Currencies extends EthereumSupportedCurrency ? Currency.ETH : never),
-            Currency.NIM | Currency.MATIC | Currency.USDC
+            Currency.NIM | Currency.MATIC | Currency.USDC | Currency.USDT
         >,
         (address: string) => ReturnType
     >>
@@ -201,7 +208,9 @@ export function parseRequestLink<C extends Currency>(requestLink: string | URL, 
             Currency.BTC,
         );
     }
-    if ([...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES, Currency.USDC].some((currency) => currencies.includes(currency))
+    if (
+        [...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES, Currency.USDC, Currency.USDT]
+            .some((currency) => currencies.includes(currency))
         && new RegExp(`^(${Object.values(EthereumBlockchainName).join('|')}):$`, 'i').test(url.protocol)) {
         const parsedRequestLink = parseEthereumRequestLink(
             url,
@@ -359,10 +368,10 @@ export function parseBitcoinRequestLink(
     return { recipient, amount, fee, label, message };
 }
 
-// Following eip681. ETH, Matic and USDC (both on Ethereum and Polygon) are directly supported. For other currencies, a
-// custom contract address can be manually specified. However, the only supported smart contract function is /transfer.
-// Deviating from the standard, we use polygon: instead of ethereum: as protocol for requests on the Polygon chain which
-// is what many other wallets and exchanges do, too.
+// Following eip681. ETH, Matic, USDC and USDT (both on Ethereum and Polygon) are directly supported. For other
+// currencies, a custom contract address can be manually specified. However, the only supported smart contract function
+// is /transfer. Deviating from the standard, we use polygon: instead of ethereum: as protocol for requests on the
+// Polygon chain which is what many other wallets and exchanges do, too.
 export function createEthereumRequestLink(
     recipient: string, // addresses only; no support for ENS names; expected to be normalized
     currency: EthereumSupportedCurrency,
@@ -445,9 +454,9 @@ export function createEthereumRequestLink(
     return `${protocol}${targetAddress}${chainIdString}${functionString}${params}`;
 }
 
-// Following eip681. Support is limited to ETH, Matic and USDC (both on Ethereum and Polygon) and /transfer as the only
-// contract function. Scanning request links for contracts other than those defined in ETHEREUM_SUPPORTED_CONTRACTS or
-// chain ids not defined in the EthereumChain enum is not supported as those might refer to a currency other than the
+// Following eip681. Support is limited to ETH, Matic, USDC and USDT (both on Ethereum and Polygon) and /transfer as the
+// only contract function. Scanning request links for contracts other than those defined in ETHEREUM_SUPPORTED_CONTRACTS
+// or chain ids not defined in the EthereumChain enum is not supported as those might refer to a currency other than the
 // supported ones. If support for that would be needed in the future, undefined could be returned as currency, alongside
 // the parsed chain id and/or contract address.
 export function parseEthereumRequestLink(
@@ -576,7 +585,7 @@ function getEthereumBlockchainName(chainIdOrNativeCurrency: number | Currency)
 : null | EthereumBlockchainName {
     switch (chainIdOrNativeCurrency) {
         case EthereumChain.ETHEREUM_MAINNET:
-        case EthereumChain.ETHEREUM_GOERLI_TESTNET:
+        case EthereumChain.ETHEREUM_SEPOLIA_TESTNET:
         case Currency.ETH:
             return EthereumBlockchainName.ETHEREUM;
         case EthereumChain.POLYGON_MAINNET:
@@ -594,7 +603,7 @@ function getEthereumCurrency(chainIdOrBlockchainName: number | EthereumBlockchai
 : null | EthereumSupportedNativeCurrency {
     switch (chainIdOrBlockchainName) {
         case EthereumChain.ETHEREUM_MAINNET:
-        case EthereumChain.ETHEREUM_GOERLI_TESTNET:
+        case EthereumChain.ETHEREUM_SEPOLIA_TESTNET:
         case EthereumBlockchainName.ETHEREUM:
             return Currency.ETH;
         case EthereumChain.POLYGON_MAINNET:
