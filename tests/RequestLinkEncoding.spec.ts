@@ -172,16 +172,17 @@ describe('RequestLinkEncoding', () => {
         // Note: the test samples will include tests for known contract addresses on the "wrong" chain and chain ids for
         // a mismatching currency, but that's fine as contracts and chain ids are prioritized over the passed currency
         // in createEthereumRequestLink and parseEthereumRequestLink.
-        for (const currency of [...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES, Currency.USDC] as const) {
+        for (const currency of [...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES, Currency.USDC, Currency.USDT] as const) {
             for (const chainId of [undefined, ...knownEthereumChainIds, customChainId]) {
                 for (const contractAddress of [undefined, ...knownEthereumContracts, customContractAddress]) {
-                    for (const amount of [undefined, `2.014e${currency !== Currency.USDC ? 18 : 6}`]) {
+                    const decimals = currency === Currency.USDC || currency === Currency.USDT ? 6 : 18;
+                    for (const amount of [undefined, `2.014e${decimals}`]) {
                         for (const gasPrice of [undefined, '9e9']) {
                             for (const gasLimit of [undefined, 100000]) {
                                 // Alternative, much simplified and less versatile implementation of
                                 // RequestLinkEncoding.createEthereumLink
                                 const effectiveContractAddress = contractAddress
-                                    // @ts-ignore only Currency.USDC is a defined index
+                                    // @ts-ignore only Currency.USDC and Currency.USDT are defined indices
                                     || (ETHEREUM_SUPPORTED_CONTRACTS[chainId] || {})[currency];
                                 const [
                                     contractChainId,
@@ -222,18 +223,31 @@ describe('RequestLinkEncoding', () => {
                                     // Expected errors for disallowed inputs are tested in the next test
                                     // it('should throw error for Ethereum link creation due to bad arguments'):
                                     // - mismatching chainId and contractChainId
-                                    // - missing chain id and contract address for contract currencies (USDC)
-                                    // - missing contract address for custom chain id for contract currencies (USDC)
+                                    // - missing chain id and contract address for contract currencies (USDC, USDT)
+                                    // - missing contract address for custom chain id for contract currencies (USDC,
+                                    //   USDT)
                                     if (!(
                                         (chainId && contractChainId && chainId !== contractChainId)
-                                        || (currency === Currency.USDC && !chainId && !contractAddress)
-                                        || (currency === Currency.USDC && chainId === customChainId && !contractAddress)
+                                        || (
+                                            [Currency.USDC, Currency.USDT].includes(currency)
+                                            && !chainId
+                                            && !contractAddress
+                                        )
+                                        || (
+                                            [Currency.USDC, Currency.USDT].includes(currency)
+                                            && chainId === customChainId
+                                            && !contractAddress
+                                        )
                                     )) throw e;
                                 }
 
                                 const parseResult = RequestLinkEncoding.parseRequestLink(
                                     link,
-                                    { currencies: [...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES, Currency.USDC] },
+                                    { currencies: [
+                                        ...ETHEREUM_SUPPORTED_NATIVE_CURRENCIES,
+                                        Currency.USDC,
+                                        Currency.USDT,
+                                    ] },
                                 );
 
                                 // Link should only not be parseable when the chainId contradicts the expected chain id
@@ -250,17 +264,22 @@ describe('RequestLinkEncoding', () => {
                                     ? Currency.MATIC
                                     : Currency.ETH;
                                 const expectedCurrency = contractCurrency || chainCurrency;
-                                if ((!chainId && !contractAddress && currency !== Currency.USDC) || (contractAddress
-                                    // @ts-ignore only Currency.USDC is a defined index
+                                if ((
+                                    !chainId
+                                    && !contractAddress
+                                    && currency !== Currency.USDC
+                                    && currency !== Currency.USDT
+                                ) || (contractAddress
+                                    // @ts-ignore only Currency.USDC and Currency.USDT are defined indices
                                     ? contractAddress === ETHEREUM_SUPPORTED_CONTRACTS[contractChainId][currency]
                                     : chainId && currency === chainCurrency
                                 )) {
                                     // Cross-check our test implementation for when the parsed currency should match the
                                     // input currency, which should be the case when:
                                     // - no contract address and no chain id are set, because in that case they can not
-                                    //   overrule the input currency. If it's a contract currency (USDC), this is an
-                                    //   invalid currency though if no contract address and chain id are provided, see
-                                    //   link creation error handling above.
+                                    //   overrule the input currency. If it's a contract currency (USDC/USDT), this is
+                                    //   an invalid currency though if no contract address and chain id are provided,
+                                    //   see link creation error handling above.
                                     // - the contract address is set and matches what's defined for the input currency
                                     //   and chainId in ETHEREUM_SUPPORTED_CONTRACTS. Note that if the contract address
                                     //   is set, it has to be one of our known contracts at this point, because the
@@ -333,7 +352,7 @@ describe('RequestLinkEncoding', () => {
             chainId: RequestLinkEncoding.EthereumChain.ETHEREUM_MAINNET,
             contractAddress: RequestLinkEncoding.ETHEREUM_SUPPORTED_CONTRACTS
                 // eslint-disable-next-line no-unexpected-multiline
-                [RequestLinkEncoding.EthereumChain.ETHEREUM_GOERLI_TESTNET][Currency.USDC],
+                [RequestLinkEncoding.EthereumChain.ETHEREUM_SEPOLIA_TESTNET][Currency.USDC],
         })).toThrowError('chainId does not match chain id associated to contractAddress');
 
         for (const option of ['amount', 'gasPrice', 'gasLimit', 'chainId']) {
