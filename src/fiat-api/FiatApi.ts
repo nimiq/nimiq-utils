@@ -577,6 +577,9 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
     let providerHistoricRatesPromise: Promise<Array<[number, number]>>;
     switch (provider) {
         case Provider.CryptoCompare:
+            if (cryptoCurrency === CryptoCurrency.NIM && vsCurrency === FiatCurrency.USD) {
+                vsCurrency = CryptoCurrency.USDT;
+            }
             providerHistoricRatesPromise = (async () => {
                 let result: Array<[number, number]> = [];
                 let batchToTs = to; // last timestamp to include in current batch; inclusive
