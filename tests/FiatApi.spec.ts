@@ -18,6 +18,16 @@ import {
 } from '../src/fiat-api/FiatApi';
 
 const referenceHistoricRatesCryptoCompare = new Map([
+    [new Date('2024-01-01T00:00:00.000Z').getTime(), { usd: 42294.1598555961, crc: 22016468.0196614 }],
+    [new Date('2024-01-01T01:00:00.000Z').getTime(), { usd: 42489.3834465072, crc: 22118092.7820554 }],
+    [new Date('2024-01-01T02:00:00.000Z').getTime(), { usd: 42623.2161227302, crc: 22187760.1509335 }],
+
+    [new Date('2024-04-01T00:00:00.000Z').getTime(), { usd: 71321.7045409231, crc: 35827569.7503376 }],
+    [new Date('2024-04-02T00:00:00.000Z').getTime(), { usd: 69691.309237929, crc: 35040543.8563613 }],
+    [new Date('2024-04-03T00:00:00.000Z').getTime(), { usd: 65482.0758397414, crc: 32853912.7790636 }],
+]);
+
+const referenceHistoricRatesCryptoCompareLegacy = new Map([
     [new Date('2024-01-01T00:00:00.000Z').getTime(), { usd: 42280.14, crc: 22114627.226999998 }],
     [new Date('2024-01-01T01:00:00.000Z').getTime(), { usd: 42458.92, crc: 22208138.106 }],
     [new Date('2024-01-01T02:00:00.000Z').getTime(), { usd: 42599.81, crc: 22281830.6205 }],
@@ -75,6 +85,7 @@ async function testHistoricExchangeRates(
 ) {
     const referenceProviderRates = {
         [Provider.CryptoCompare]: referenceHistoricRatesCryptoCompare,
+        [Provider.CryptoCompareLegacy]: referenceHistoricRatesCryptoCompareLegacy,
         [Provider.CoinGecko]: referenceHistoricRatesCoinGecko,
     }[provider];
     const rates = await getHistoricExchangeRates.apply(null, [
@@ -111,7 +122,7 @@ function describeProviderTests(provider: Provider, coinGeckoProxyInfo?: CoinGeck
     const isCI = !!process.env.CI;
     const isPublicCoinGecko = provider === Provider.CoinGecko && !coinGeckoProxyInfo;
     const itUnlessPublicCoinGeckoCI = !isPublicCoinGecko || !isCI ? it : xit;
-    const timeout = !isPublicCoinGecko || isCI ? /* use default timeout of 5000 */ undefined : 300_000;
+    const timeout = !isPublicCoinGecko || isCI ? 15_000 : 300_000;
 
     // Tests for current rates
     itUnlessPublicCoinGeckoCI(
@@ -150,6 +161,7 @@ function describeProviderTests(provider: Provider, coinGeckoProxyInfo?: CoinGeck
 
 describe('FiatApi', () => {
     describe('CryptoCompare Provider', () => describeProviderTests(Provider.CryptoCompare));
+    describe('CryptoCompare Legacy Provider', () => describeProviderTests(Provider.CryptoCompareLegacy));
     describe('CoinGecko Provider', () => describeProviderTests(Provider.CoinGecko));
 
     const {
