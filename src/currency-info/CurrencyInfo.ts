@@ -16,7 +16,7 @@ export class CurrencyInfo {
     //
     // function parseWikipediaCurrencyList() {
     //     const sectionHeadline = document.querySelector('#List_of_circulating_currencies_by_state_or_territory')
-    //         .closest('h2');
+    //         .closest('div');
     //     const table = ((el) => {
     //         while (el.tagName !== 'TABLE' || !el.classList.contains('wikitable')) el = el.nextElementSibling;
     //         return el;
@@ -73,6 +73,7 @@ export class CurrencyInfo {
     // };
     //
     // const referenceCurrencySymbols = parseWikipediaCurrencyList();
+    //
     // for (const currency of Object.keys(referenceCurrencySymbols).sort()) {
     //     const referenceSymbols = referenceCurrencySymbols[currency];
     //     const extraSymbols = !EXTRA_SYMBOLS[currency]
@@ -156,7 +157,6 @@ export class CurrencyInfo {
         OMR: ['R.O.', 'ر.ع.'],
         PAB: 'B/.',
         PEN: 'S/', // mismatch to Wikipedia as actual wiki article shows it as S/, also in Spanish
-        PKR: '₨',
         QAR: ['QR', 'ر.ق'],
         RSD: 'дин.',
         SAR: ['SR', '﷼'],
@@ -172,6 +172,8 @@ export class CurrencyInfo {
         WST: 'T',
         XPF: '₣',
         YER: ['RI', '﷼'],
+        ZWG: 'ZiG',
+        ZWL: 'Z$',
     };
 
     // Some currencies have been devalued so much by inflation that their sub-units have been removed from circulation
