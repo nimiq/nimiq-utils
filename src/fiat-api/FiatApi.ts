@@ -23,14 +23,17 @@ export enum CryptoCurrency {
     USDT = 'usdt',
 }
 
-// This enum has been generated from the generated lists CRYPTOCOMPARE_FIAT_CURRENCIES, COINGECKO_FIAT_CURRENCIES and
-// BRIDGEABLE_FIAT_CURRENCIES defined below via the following script:
+// This enum has been generated from from the generated lists CRYPTOCOMPARE_CURRENT_RATES_FIAT_CURRENCIES,
+// CRYPTOCOMPARE_HISTORIC_RATES_FIAT_CURRENCIES, COINGECKO_FIAT_CURRENCIES and BRIDGEABLE_FIAT_CURRENCIES defined below
+// via the following script:
 //
-// const CRYPTOCOMPARE_FIAT_CURRENCIES = [ ...as defined below ];
+// const CRYPTOCOMPARE_CURRENT_RATES_FIAT_CURRENCIES = [ ...as defined below ];
+// const CRYPTOCOMPARE_HISTORIC_RATES_FIAT_CURRENCIES = [ ...as defined below ];
 // const COINGECKO_FIAT_CURRENCIES = [ ...as defined below ];
 // const BRIDGEABLE_FIAT_CURRENCIES = [ ...as defined below ];
 // const allFiatCurrencies = [...new Set([
-//     ...CRYPTOCOMPARE_FIAT_CURRENCIES,
+//     ...CRYPTOCOMPARE_CURRENT_RATES_FIAT_CURRENCIES,
+//     ...CRYPTOCOMPARE_HISTORIC_RATES_FIAT_CURRENCIES,
 //     ...COINGECKO_FIAT_CURRENCIES,
 //     ...BRIDGEABLE_FIAT_CURRENCIES,
 // ])].sort();
@@ -71,7 +74,6 @@ export enum FiatCurrency {
     COP = 'cop', // Colombian Peso
     CRC = 'crc', // Costa Rican Colón
     CUP = 'cup', // Cuban Peso
-    CVE = 'cve', // Cape Verdean Escudo
     CZK = 'czk', // Czech Koruna
     DJF = 'djf', // Djiboutian Franc
     DKK = 'dkk', // Danish Krone
@@ -178,7 +180,6 @@ export enum FiatCurrency {
     UGX = 'ugx', // Ugandan Shilling
     USD = 'usd', // US Dollar
     UYU = 'uyu', // Uruguayan Peso
-    UZS = 'uzs', // Uzbekistani Som
     VES = 'ves', // Venezuelan Bolívar
     VND = 'vnd', // Vietnamese Dong
     VUV = 'vuv', // Vanuatu Vatu
@@ -190,6 +191,7 @@ export enum FiatCurrency {
     YER = 'yer', // Yemeni Rial
     ZAR = 'zar', // South African Rand
     ZMW = 'zmw', // Zambian Kwacha
+    ZWL = 'zwl', // Zimbabwean Dollar (2009)
 }
 
 export type ProviderFiatCurrency<P extends Provider, T extends RateType> = P extends Provider.CryptoCompare
@@ -277,9 +279,9 @@ export type ProviderFiatCurrency<P extends Provider, T extends RateType> = P ext
 // }
 const CRYPTOCOMPARE_CURRENT_RATES_FIAT_CURRENCIES = ([
     'AED', 'AOA', 'ARS', 'AUD', 'BGN', 'BND', 'BOB', 'BRL', 'BYN', 'CAD', 'CHF', 'CLP', 'CNY', 'COP', 'CZK', 'DKK',
-    'ERN', 'EUR', 'GBP', 'GEL', 'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'JPY', 'KRW', 'KZT', 'MNT', 'MXN', 'MYR', 'NGN',
-    'NOK', 'NZD', 'PEN', 'PHP', 'PLN', 'RON', 'RUB', 'SEK', 'SGD', 'STN', 'THB', 'TRY', 'UAH', 'UGX', 'USD', 'VUV',
-    'ZAR', 'ZMW',
+    'ERN', 'EUR', 'GBP', 'GEL', 'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'ISK', 'JPY', 'KRW', 'KZT', 'MNT', 'MXN', 'MYR',
+    'NGN', 'NOK', 'NZD', 'PEN', 'PHP', 'PLN', 'RON', 'RUB', 'SEK', 'SGD', 'STN', 'THB', 'TRY', 'TWD', 'UAH', 'UGX',
+    'USD', 'VES', 'VUV', 'ZAR', 'ZMW',
 ] as const).map((ticker) => FiatCurrency[ticker]);
 const CRYPTOCOMPARE_HISTORIC_RATES_FIAT_CURRENCIES = ([
     'AED', 'ARS', 'AUD', 'BRL', 'CAD', 'CHF', 'COP', 'CZK', 'EUR', 'GBP', 'GEL', 'IDR', 'ILS', 'INR', 'JPY', 'KRW',
@@ -326,8 +328,8 @@ export type CoinGeckoFiatCurrency = (typeof COINGECKO_FIAT_CURRENCIES)[number];
 // the following script:
 //
 // const referenceCurrencySymbols = { ...parsed from Wikipedia as described in CurrencyInfo.ts };
-// const HISTORY_BRIDGEABLE_FIAT_CURRENCIES = [ ... as defined below (ticker strings only) ];
 // const CPL_BRIDGEABLE_FIAT_CURRENCIES = [ ...as defined below (ticker strings only) ];
+// const HISTORY_BRIDGEABLE_FIAT_CURRENCIES = [ ... as defined below (ticker strings only) ];
 //
 // const cplData = await fetch('https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/'
 //     + 'documents/exchangerates/rates').then((response) => response.json());
@@ -346,14 +348,14 @@ export type CoinGeckoFiatCurrency = (typeof COINGECKO_FIAT_CURRENCIES)[number];
 const CPL_BRIDGEABLE_FIAT_CURRENCIES = ([
     'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF',
     'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHF', 'CLP', 'CNY', 'COP', 'CUP',
-    'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP', 'GEL', 'GHS', 'GIP',
-    'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD',
-    'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD',
-    'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MYR', 'MZN', 'NAD', 'NGN',
-    'NIO', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB',
-    'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SOS', 'SRD', 'SSP', 'STN', 'SYP', 'SZL', 'THB', 'TJS',
-    'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST',
-    'XAF', 'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW',
+    'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP', 'GEL', 'GHS', 'GIP', 'GMD',
+    'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD', 'JPY',
+    'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD',
+    'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO',
+    'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF',
+    'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SOS', 'SRD', 'SSP', 'STN', 'SYP', 'SZL', 'THB', 'TJS', 'TMT',
+    'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XCD',
+    'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL',
 ] as const).map((ticker) => FiatCurrency[ticker]);
 export type CplBridgeableFiatCurrency = (typeof CPL_BRIDGEABLE_FIAT_CURRENCIES)[number];
 
