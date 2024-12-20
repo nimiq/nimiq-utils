@@ -13,6 +13,7 @@ import {
     ProviderFiatCurrency,
     getExchangeRates,
     getHistoricExchangeRates,
+    getHistoricExchangeRatesByRange,
     setCoinGeckoApiUrl,
     setCoinGeckoApiExtraHeader,
 } from '../src/fiat-api/FiatApi';
@@ -160,7 +161,33 @@ function describeProviderTests(provider: Provider, coinGeckoProxyInfo?: CoinGeck
 }
 
 describe('FiatApi', () => {
-    describe('CryptoCompare Provider', () => describeProviderTests(Provider.CryptoCompare));
+    describe('CryptoCompare Provider', () => {
+        describeProviderTests(Provider.CryptoCompare);
+
+        it('can be combined with CryptoCompareLegacy to get older rates than supported by CryptoCompare', async () => {
+            const CRYPTOCOMPARE_NIM_HISTORY_START = 1571356800 * 1000;
+            const ONE_HOUR = 60 * 60 * 1000;
+            const testRanges = [
+                // Overlapping CRYPTOCOMPARE_NIM_HISTORY_START
+                [CRYPTOCOMPARE_NIM_HISTORY_START - 2 * ONE_HOUR, CRYPTOCOMPARE_NIM_HISTORY_START + 2 * ONE_HOUR],
+                // Before CRYPTOCOMPARE_NIM_HISTORY_START
+                [CRYPTOCOMPARE_NIM_HISTORY_START - 5 * ONE_HOUR, CRYPTOCOMPARE_NIM_HISTORY_START - ONE_HOUR],
+            ];
+            await Promise.all(testRanges.map(async ([from, to]) => {
+                const rates = await getHistoricExchangeRatesByRange(
+                    CryptoCurrency.NIM,
+                    FiatCurrency.USD,
+                    from,
+                    to,
+                    Provider.CryptoCompare,
+                );
+                expect(rates.length).toBe(5);
+                expect(rates[0][0]).toBe(from);
+                expect(rates[4][0]).toBe(to);
+            }));
+        }, 10_000);
+    });
+
     describe('CryptoCompare Legacy Provider', () => describeProviderTests(Provider.CryptoCompareLegacy));
     describe('CoinGecko Provider', () => describeProviderTests(Provider.CoinGecko));
 

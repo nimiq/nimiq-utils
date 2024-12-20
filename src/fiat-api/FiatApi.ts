@@ -685,6 +685,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
     to: number, // in milliseconds
     provider: P = Provider.CryptoCompare as P,
 ): Promise<Array<[/* time in ms */ number, /* price */ number]>> {
+    const requestedVsCurrency = vsCurrency;
     let bridgedCurrency: Exclude<HistoryBridgeableFiatCurrency, ProviderFiatCurrency<P, RateType.HISTORIC>> | undefined;
     let bridgedHistoricRatesPromise: Promise<{[date: string]: number | undefined}> | undefined;
     if (isBridgedFiatCurrency(vsCurrency, provider, RateType.HISTORIC)
@@ -702,6 +703,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
     // from and to are expected in seconds.
     from = Math.floor(from / 1000);
     to = Math.ceil(to / 1000);
+    let missingTo = 0; // will be set if the history between from and missingTo was not available
 
     let providerHistoricRatesPromise: Promise<Array<[number, number]>>;
     switch (provider) {
@@ -711,28 +713,44 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                 let result: Array<[number, number]> = [];
                 const instrument = `${cryptoCurrency.toUpperCase()}-${vsCurrency.toUpperCase()}`;
                 let batchToTs = to; // last timestamp to include in current batch; inclusive
-                while (batchToTs >= from) {
-                    // eslint-disable-next-line no-await-in-loop
-                    const { Data: batch } = await _fetch<{
-                        // Type reduced to the properties of interest to us.
-                        Data: Array<{
-                            TIMESTAMP: number, // open time in seconds, see response schema documentation
-                            OPEN: number,
-                        }>,
-                    }>(
-                        `${API_URL_CRYPTOCOMPARE}/v1/historical/hours`
-                        + '?market=cadli&groups=OHLC&limit=2000&fill=false&apply_mapping=false'
-                        + `&instrument=${instrument}&to_ts=${batchToTs}`,
-                        provider,
-                    );
-                    const filteredAndTransformedBatch: Array<[number, number]> = [];
-                    for (const { TIMESTAMP: timestamp, OPEN: open } of batch) {
-                        if (timestamp < from) continue;
-                        filteredAndTransformedBatch.push([timestamp * 1000, open]);
+                try {
+                    while (batchToTs >= from) {
+                        // eslint-disable-next-line no-await-in-loop
+                        const { Data: batch } = await _fetch<{
+                            // Type reduced to the properties of interest to us.
+                            Data: Array<{
+                                TIMESTAMP: number, // open time in seconds, see response schema documentation
+                                OPEN: number,
+                            }>,
+                        }>(
+                            `${API_URL_CRYPTOCOMPARE}/v1/historical/hours`
+                            + '?market=cadli&groups=OHLC&limit=2000&fill=false&apply_mapping=false'
+                            + `&instrument=${instrument}&to_ts=${batchToTs}`,
+                            provider,
+                        );
+                        const filteredAndTransformedBatch: Array<[number, number]> = [];
+                        for (const { TIMESTAMP: timestamp, OPEN: open } of batch) {
+                            if (timestamp < from) continue;
+                            filteredAndTransformedBatch.push([timestamp * 1000, open]);
+                        }
+                        result = filteredAndTransformedBatch.concat(result);
+                        // Entries seem to be sorted by timestamp, although not specifically mentioned in documentation.
+                        batchToTs = batch[0].TIMESTAMP - 1;
                     }
-                    result = filteredAndTransformedBatch.concat(result);
-                    // Entries seem to be sorted by timestamp, although not specifically mentioned in the documentation.
-                    batchToTs = batch[0].TIMESTAMP - 1;
+                } catch (e) {
+                    if (e instanceof Error
+                        && e.message.includes('was not trading')
+                        && typeof (e.cause as any)?.other_info?.first === 'number') {
+                        // The time range requested by the user includes time before the first timestamp available on
+                        // CADLI for the requested instrument. We will need to use a fallback to fill in the missing
+                        // time range, if possible. Note that any entries including and after missingTo were returned
+                        // and collected successfully. Only as soon as to_ts itself is before missingTo, CryptoCompare
+                        // rejects the request with this error, which are then the entries missing.
+                        missingTo = Math.min((e.cause as any).other_info.first - (result.length ? 1 : 0), to);
+                    } else {
+                        // Rethrow other errors
+                        throw e;
+                    }
                 }
                 return result;
             })();
@@ -774,15 +792,23 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                         filteredAndTransformedBatch.push([timestamp * 1000, open]);
                     }
                     result = filteredAndTransformedBatch.concat(result);
+                    // Note that for CryptoCompareLegacy, we do not have to implement handling for the first available
+                    // history entry, as CryptoCompareLegacy propagates the first available price backwards to earlier
+                    // times, e.g. propagates the first NIM-BTC price backwards and converts with the BTC price at the
+                    // requested time for e.g. NIM-USD. We don't concern us here with whether this should be considered
+                    // good practice.
                     batchToTs = batchFromTs - 1;
                 }
                 return result;
             })();
             break;
         case Provider.CoinGecko: {
-            // Documentation: https://docs.coingecko.com/v3.0.1/reference/coins-id-market-chart-range
+            // Documentation: docs.coingecko.com/v3.0.1/reference/coins-id-market-chart-range
             const coinId = COIN_IDS_COINGECKO[cryptoCurrency.toLowerCase() as CryptoCurrency];
             // Note that timestamps returned by CoinGecko are already in ms, even though from and to were in seconds.
+            // Also note that for CoinGecko, we're not implementing handling for the first available history entry, as
+            // CoinGecko is only of limited use anyway as it only allows accessing the data of the last 365 days on the
+            // public API.
             providerHistoricRatesPromise = _fetch<{ prices: Array<[number, number]> }>(
                 `${API_URL_COINGECKO}/coins/${coinId}/market_chart/range`
                 + `?vs_currency=${vsCurrency}&from=${from}&to=${to}`,
@@ -800,17 +826,32 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
         providerHistoricRatesPromise,
         bridgedHistoricRatesPromise,
     ]);
+    let result = providerHistoricRates;
 
     if (bridgedCurrency && bridgedHistoricRates) {
         // Convert exchange rates to bridged currency and omit entries for which no bridged exchange rate is available.
-        return providerHistoricRates.map(([timestamp, coinUsdPrice]) => {
+        result = providerHistoricRates.map(([timestamp, coinUsdPrice]) => {
             const date = _getDateString(timestamp, HISTORY_BRIDGEABLE_CURRENCY_TIMEZONES[bridgedCurrency!]);
             const bridgedHistoricRate = bridgedHistoricRates[date];
             return bridgedHistoricRate ? [timestamp, coinUsdPrice * bridgedHistoricRate] : null;
         }).filter((entry): entry is [number, number] => entry !== null);
     }
 
-    return providerHistoricRates;
+    if (missingTo && isHistorySupportedFiatCurrency(requestedVsCurrency, Provider.CryptoCompareLegacy)) {
+        // Fill in missing time range via CryptoCompareLegacy as fallback, if possible, which provides exchange rates
+        // for arbitrary dates in the past, see above. Using CryptoCompare (non-legacy) with CCIX instead isn't a viable
+        // alternative, as it does not provide converted rates, e.g. NIM-JPY, only actually traded pairs like NIM-BTC.
+        const fallbackEntries = await getHistoricExchangeRatesByRange(
+            cryptoCurrency,
+            requestedVsCurrency,
+            from * 1000,
+            missingTo * 1000,
+            Provider.CryptoCompareLegacy,
+        );
+        result = fallbackEntries.concat(result);
+    }
+
+    return result;
 }
 
 /**
@@ -1097,7 +1138,10 @@ async function _fetch<T>(
         }
         if (cryptoCompareErrorType) {
             // On other CryptoCompare errors, do not retry, e.g. for api calls that require an API key.
-            throw new Error(`FiatApi got CryptoCompare error: ${cryptoCompareErrorMessage}`);
+            throw new Error(
+                `FiatApi got CryptoCompare error ${cryptoCompareErrorType}: ${cryptoCompareErrorMessage}`,
+                { cause: parsedResponse.Err },
+            );
         }
 
         if (response.status === 429) {
