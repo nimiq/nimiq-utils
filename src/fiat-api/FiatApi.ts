@@ -715,6 +715,10 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                 let batchToTs = to; // last timestamp to include in current batch; inclusive
                 try {
                     while (batchToTs >= from) {
+                        const limit = Math.min(
+                            2000, // maximum number of entries allowed to request per batch
+                            Math.ceil(((batchToTs - from) * 1000) / ONE_HOUR) + 1,
+                        );
                         // eslint-disable-next-line no-await-in-loop
                         const { Data: batch } = await _fetch<{
                             // Type reduced to the properties of interest to us.
@@ -724,8 +728,8 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                             }>,
                         }>(
                             `${API_URL_CRYPTOCOMPARE}/v1/historical/hours`
-                            + '?market=cadli&groups=OHLC&limit=2000&fill=false&apply_mapping=false'
-                            + `&instrument=${instrument}&to_ts=${batchToTs}`,
+                            + '?market=cadli&groups=OHLC&fill=false&apply_mapping=false'
+                            + `&instrument=${instrument}&to_ts=${batchToTs}&limit=${limit}`,
                             provider,
                         );
                         const filteredAndTransformedBatch: Array<[number, number]> = [];
@@ -768,6 +772,10 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                 let result: Array<[number, number]> = [];
                 let batchToTs = to; // last timestamp to include in current batch; inclusive
                 while (batchToTs >= from) {
+                    const limit = Math.min(
+                        2000, // maximum number of entries allowed to request per batch
+                        Math.ceil(((batchToTs - from) * 1000) / ONE_HOUR) + 1,
+                    ) - 1; // Legacy returns one entry more than requested. Adjust for consistent batch sizes to new API
                     // eslint-disable-next-line no-await-in-loop
                     const { Data: { TimeFrom: batchFromTs, Data: batch } } = await _fetch<{
                         // Type reduced to the properties of interest to us.
@@ -783,7 +791,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                         },
                     }>(
                         `${API_URL_CRYPTOCOMPARE_LEGACY}/v2/histohour`
-                        + `?fsym=${cryptoCurrency}&tsym=${vsCurrency}&toTs=${batchToTs}&limit=2000`,
+                        + `?fsym=${cryptoCurrency}&tsym=${vsCurrency}&toTs=${batchToTs}&limit=${limit}`,
                         provider,
                     );
                     const filteredAndTransformedBatch: Array<[number, number]> = [];
