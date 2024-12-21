@@ -1088,17 +1088,23 @@ async function _fetch<T>(
             ? parsedResponse.Message // for legacy min-api
             : parsedResponse?.Err?.message; // for new data-api
         if (cryptoCompareErrorType === 99) {
-            // CryptoCompare returns error type 99 when the rate limit is hit. The error message can differ. Messages
-            // that have been observed so far are "Rate limit excedeed. Please use an API key for your calls. To get an
-            // API key, go to https://www.cryptocompare.com/cryptopian/api-keys register, create a key and add it to
-            // your requests as either ? or &api_key=<generated key>." (for the legacy API without the first sentence),
-            // and for the legacy API only "You are over your rate limit please upgrade your account!", where the former
-            // is regularly returned for the new data-api, and for the legacy API seems to be returned when excessively
-            // spamming many parallel, or unnecessary / rejected requests, and/or continuing to send requests after
-            // limits have been exceeded by much. On rate limit, the response typically includes information about the
-            // limits and our current usage per time period. However, for the legacy min-api the response with the api
-            // key message contains a cool down period in seconds instead, which needs to be waited for. This has not
-            // been observed for the new data-api yet.
+            // CryptoCompare returns error type 99 when the rate limit is hit. The error message and other provided info
+            // can differ. Basically, two different types of rate limits have been observed: regular rate limits, and
+            // additional temporary banning when excessively spamming the API while being rate limited.
+            // Observed error messages on regular rate limit are for the legacy min-api "You are over your rate limit
+            // please upgrade your account!", and for the new data-api "Rate limit excedeed.", and on ban are for the
+            // min-api no specific message, and for the data-api "You have been hard blocked for at least <x> seconds
+            // beacuse you have made over 3x the allowed monthly limit of calls." For regular rate limits in the new
+            // data-api and on ban in both APIs, additionally the sentence "Please use an API key for your calls. To get
+            // an API key, go to https://www.cryptocompare.com/cryptopian/api-keys register, create a key and add it to
+            // your requests as either ? or &api_key=<generated key>." is included.
+            // On regular rate limits, additional info on the limits and current usage are included in the response, but
+            // not on ban. On ban, the legacy min-api provides the cooldown wait time in seconds, but the new data-api
+            // does not, apart from the info in the message.
+            // The regular rate limit occurs, when the usage in one period exceeds the rate limit for that period. The
+            // ban happens when continuing to excessively spam the API during rate limits, or maybe also on excessively
+            // many parallel requests. On experimentation with the new API, the ban happened once exceeding three times
+            // the daily limit (not three times the monthly limit as the message wronly says).
             // Note that rate limits can be hit, even though we're using a RateLimitScheduler, for example because it
             // doesn't know about previous usages until we get this info on hitting a rate limit, or because we're
             // ignoring monthly and daily limits, or the system clock might differ from the server clock, and thus
@@ -1107,7 +1113,7 @@ async function _fetch<T>(
             // eslint-disable-next-line no-console
             console.info(`FiatApi hit CryptoCompare rate limit: ${cryptoCompareErrorMessage}. Retrying...`);
             const cooldown = parsedResponse.Cooldown // for legacy min-api
-                || parsedResponse.Err?.other_info?.cooldown; // for new data-api. Assumed name, but not observed yet.
+                || Number.parseInt(cryptoCompareErrorMessage?.match(/\d+ seconds?/)?.[0] || '', 10); // for new data-api
             const rateLimitInfo = [
                 parsedResponse.RateLimit, // for legacy min-api
                 parsedResponse.Err?.other_info, // for new data-api
