@@ -1,4 +1,4 @@
-import { RateLimitScheduler } from '../rate-limit-scheduler/RateLimitScheduler';
+import { RateLimitScheduler, RateLimits, RateLimitPeriod } from '../rate-limit-scheduler/RateLimitScheduler';
 
 // This API supports using CryptoCompare (legacy min-api and newer data-api endpoints) or CoinGecko as data providers.
 // For both, the free API is used, in an unauthenticated fashion, i.e. without api keys. Rate limits are determined
@@ -742,15 +742,22 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                         batchToTs = batch[0].TIMESTAMP - 1;
                     }
                 } catch (e) {
-                    if (e instanceof Error
+                    const cryptoCompareHistoryStart = e instanceof Error
                         && e.message.includes('was not trading')
-                        && typeof (e.cause as any)?.other_info?.first === 'number') {
+                        && isNonNullObject(e.cause)
+                        && 'other_info' in e.cause
+                        && isNonNullObject(e.cause.other_info)
+                        && 'first' in e.cause.other_info
+                        && typeof e.cause.other_info.first === 'number'
+                        ? (e.cause.other_info as Extract<CryptoCompareError['other_info'], { first: number }>).first
+                        : undefined;
+                    if (cryptoCompareHistoryStart) {
                         // The time range requested by the user includes time before the first timestamp available on
                         // CADLI for the requested instrument. We will need to use a fallback to fill in the missing
                         // time range, if possible. Note that any entries including and after missingTo were returned
                         // and collected successfully. Only as soon as to_ts itself is before missingTo, CryptoCompare
                         // rejects the request with this error, which are then the entries missing.
-                        missingTo = Math.min((e.cause as any).other_info.first - (result.length ? 1 : 0), to);
+                        missingTo = Math.min(cryptoCompareHistoryStart - (result.length ? 1 : 0), to);
                     } else {
                         // Rethrow other errors
                         throw e;
@@ -1036,6 +1043,38 @@ const _rateLimitSchedulers = {
     [Provider.CoinGecko]: new RateLimitScheduler(_coingeckoRateLimits),
     unlimited: new RateLimitScheduler({}),
 };
+
+type CryptoCompareRateLimitInfo = {
+    calls_made: Record<RateLimitPeriod | 'total_calls', number>,
+    max_calls: Record<RateLimitPeriod, number>,
+};
+type EmptyObject = Record<PropertyKey, never>;
+// The new CryptoCompare data-api includes additional error information in the Err property of the response.
+type CryptoCompareError = {
+    message: string,
+} & ({
+    type: 99, // rate limit
+    other_info: CryptoCompareRateLimitInfo
+        | EmptyObject, // When banned, no info is provided.
+} | {
+    type: 1, // invalid parameter
+    other_info: {
+        // When to_ts is before the start of CrptoCompare's history for a requested instrument, the start of the
+        // available history is provided.
+        first: number,
+    } | EmptyObject, // on other errors, other info is provided which is of no relevance to us
+});
+// The CryptoCompareLegacy min-api provides error information in the response body itself.
+type CryptoCompareLegacyError = {
+    Response: 'Error',
+    Message: string,
+    Type: 99,
+} & ({
+    RateLimit: CryptoCompareRateLimitInfo,
+} | {
+    Cooldown: number,
+} | {});
+
 async function _fetch<T>(info: RequestInfo, init?: RequestInit): Promise<T>;
 async function _fetch<T>(info: RequestInfo, rateLimit?: Provider): Promise<T>;
 async function _fetch<T>(info: RequestInfo, init?: RequestInit, rateLimit?: Provider): Promise<T>;
@@ -1074,20 +1113,32 @@ async function _fetch<T>(
             continue;
         }
 
-        // eslint-disable-next-line no-await-in-loop
-        const parsedResponse = response.body ? await response.json() : null; // throws if response unexpectedly not json
+        const parsedResponse: unknown | { Err: CryptoCompareError } | CryptoCompareLegacyError | null = response.body
+            // eslint-disable-next-line no-await-in-loop
+            ? await response.json() // throws if response unexpectedly not json
+            : null;
 
         // CryptoCompare provides more information about an error, if any, in the response body, which isn't necessarily
         // reflected in the HTTP status code. While the legacy min-api responded with status code 200 even on errors,
         // the new data-api typically returns an HTTP error code, but might still also return 200 on partial errors, for
         // example if only one of multiple instruments is unknown.
-        const cryptoCompareErrorType = parsedResponse?.Response === 'Error'
-            ? parsedResponse.Type // for legacy min-api
-            : parsedResponse?.Err?.type; // for new data-api
-        const cryptoCompareErrorMessage = parsedResponse?.Response === 'Error'
-            ? parsedResponse.Message // for legacy min-api
-            : parsedResponse?.Err?.message; // for new data-api
-        if (cryptoCompareErrorType === 99) {
+        let cryptoCompareError: CryptoCompareError | CryptoCompareLegacyError | undefined;
+        let cryptoCompareErrorType: number | undefined;
+        let cryptoCompareErrorMessage: string | undefined;
+        if (isNonNullObject(parsedResponse)) {
+            if ('Err' in parsedResponse && isNonNullObject(parsedResponse.Err) && 'type' in parsedResponse.Err) {
+                // Response contains an error object of the new data-api.
+                cryptoCompareError = parsedResponse.Err as CryptoCompareError;
+                cryptoCompareErrorType = cryptoCompareError.type;
+                cryptoCompareErrorMessage = cryptoCompareError.message;
+            } else if ('Response' in parsedResponse && parsedResponse.Response === 'Error') {
+                // Response is an error object of the legacy min-api.
+                cryptoCompareError = parsedResponse as CryptoCompareLegacyError;
+                cryptoCompareErrorType = cryptoCompareError.Type;
+                cryptoCompareErrorMessage = cryptoCompareError.Message;
+            }
+        }
+        if (cryptoCompareError && cryptoCompareErrorType === 99) {
             // CryptoCompare returns error type 99 when the rate limit is hit. The error message and other provided info
             // can differ. Basically, two different types of rate limits have been observed: regular rate limits, and
             // additional temporary banning when excessively spamming the API while being rate limited.
@@ -1112,19 +1163,30 @@ async function _fetch<T>(
             // used in other tabs or apps.
             // eslint-disable-next-line no-console
             console.info(`FiatApi hit CryptoCompare rate limit: ${cryptoCompareErrorMessage}. Retrying...`);
-            const cooldown = parsedResponse.Cooldown // for legacy min-api
-                || Number.parseInt(cryptoCompareErrorMessage?.match(/\d+ seconds?/)?.[0] || '', 10); // for new data-api
-            const rateLimitInfo = [
-                parsedResponse.RateLimit, // for legacy min-api
-                parsedResponse.Err?.other_info, // for new data-api
-            ].find((info) => ['month', 'day', 'hour', 'minute', 'second'].every(
-                (timePeriod) => typeof info?.calls_made?.[timePeriod] === 'number'
-                    && typeof info?.max_calls?.[timePeriod] === 'number',
-            ));
+            const cooldown: number | undefined = 'Cooldown' in cryptoCompareError && cryptoCompareError.Cooldown
+                ? cryptoCompareError.Cooldown // for legacy min-api
+                : Number.parseInt(cryptoCompareErrorMessage?.match(/\d+ seconds?/)?.[0] || '', 10); // for new data-api
+            const potentialRateLimitInfo = 'RateLimit' in cryptoCompareError
+                ? cryptoCompareError.RateLimit
+                : 'other_info' in cryptoCompareError
+                    ? cryptoCompareError.other_info
+                    : undefined;
+            const rateLimitInfo = isNonNullObject(potentialRateLimitInfo)
+                && 'calls_made' in potentialRateLimitInfo
+                && isNonNullObject(potentialRateLimitInfo.calls_made)
+                && 'max_calls' in potentialRateLimitInfo
+                && isNonNullObject(potentialRateLimitInfo.max_calls)
+                && (['month', 'day', 'hour', 'minute', 'second'] as const).every(
+                    (timePeriod) => typeof potentialRateLimitInfo.calls_made[timePeriod] === 'number'
+                    && typeof potentialRateLimitInfo.max_calls[timePeriod] === 'number',
+                )
+                ? potentialRateLimitInfo
+                : undefined;
             if (cooldown) {
                 rateLimitScheduler.pause(cooldown * 1000);
             } else if (rateLimitInfo) {
-                const { calls_made: usages, max_calls: limits } = rateLimitInfo;
+                const limits: RateLimits = rateLimitInfo.max_calls;
+                const usages = rateLimitInfo.calls_made;
                 // Set usages with mode increase-only, for highest usages to eventually survive, in case of responses of
                 // parallel requests arriving out of order, and to avoid removing counts of additional requests sent in
                 // the meantime.
@@ -1132,7 +1194,7 @@ async function _fetch<T>(
                 // Ignore daily and monthly limits in hopes of the usage being reset earlier than on day or month reset,
                 // for example by IP change, but limit parallel requests when the daily or monthly limit is hit to avoid
                 // unnecessary parallel requests, see above. The parallel limit is reset on the next successful request.
-                if (usages.day > limits.day || usages.month > limits.month) {
+                if ((limits.day && usages.day > limits.day) || (limits.month && usages.month > limits.month)) {
                     limits.parallel = 1;
                 }
                 delete limits.day;
@@ -1154,7 +1216,7 @@ async function _fetch<T>(
             // On other CryptoCompare errors, do not retry, e.g. for api calls that require an API key.
             throw new Error(
                 `FiatApi got CryptoCompare error ${cryptoCompareErrorType}: ${cryptoCompareErrorMessage}`,
-                { cause: parsedResponse.Err },
+                { cause: cryptoCompareError },
             );
         }
 
@@ -1187,6 +1249,10 @@ async function _fetch<T>(
         result = parsedResponse;
     } while (!result);
     return result;
+}
+
+function isNonNullObject<T>(x: T): x is T & object {
+    return !!x && typeof x === 'object';
 }
 
 export function isProviderSupportedFiatCurrency<P extends Provider, T extends RateType>(
