@@ -1,6 +1,6 @@
 {
   "name": "@nimiq/utils",
-  "version": "0.11.7",
+  "version": "0.12.0",
   "description": "Nimiq Util Classes",
   "repository": "git@github.com:nimiq/nimiq-utils.git",
   "author": "Nimiq (https://www.nimiq.com)",
