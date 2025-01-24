@@ -3,11 +3,17 @@ import { RateLimitScheduler, RateLimits, RateLimitPeriod } from '../rate-limit-s
 // This API supports using CryptoCompare (legacy min-api and newer data-api endpoints) or CoinGecko as data providers.
 // For both, the free API is used, in an unauthenticated fashion, i.e. without api keys. Rate limits are determined
 // based on the user's IP.
-// The current recommendation is to use CryptoCompare as provider because its rate limits are significantly more
-// generous, and CoinGecko does not allow fetching historic rates past the last 365 days on the free API.
-// CryptoCompare's min-api is deprecated (see https://developers.ccdata.io/documentation/data-api/introduction), but
-// using it in conjunction with CryptoCompare's newer data-api endpoint can still make sense, as usages for both are
-// tracked separately, effectively doubling the allowance / rate limit.
+// The current recommendation is to use CryptoCompare as provider.
+// - CryptoCompare's rate limits are significantly more generous than for example CoinGecko's.
+// - CoinGecko does not allow fetching historic rates past the last 365 days on the free API.
+// - CryptoCompare's legacy min-api is deprecated (see https://developers.ccdata.io/documentation/data-api/introduction)
+//   but still usable with some limitations:
+//   > Historic rates for NIM are only supported for time ranges before November 2024, as after that, the reported
+//     exchange rates are very inaccurate.
+//   > Current exchange rates are only supported for a limited set of currencies for which still accurate results are
+//     returned for NIM. The list of supported currencies has been restricted accordingly.
+// - Using the legacy API in conjunction with CryptoCompare's newer data-api endpoint can make sense, as usages for both
+//   are tracked separately, effectively doubling the allowance / rate limit.
 export enum Provider {
     CryptoCompare = 'CryptoCompare',
     CryptoCompareLegacy = 'CryptoCompareLegacy',
@@ -187,6 +193,7 @@ export enum FiatCurrency {
     UGX = 'ugx', // Ugandan Shilling
     USD = 'usd', // US Dollar
     UYU = 'uyu', // Uruguayan Peso
+    UZS = 'uzs', // Uzbekistani Som
     VES = 'ves', // Venezuelan Bolívar
     VND = 'vnd', // Vietnamese Dong
     VUV = 'vuv', // Vanuatu Vatu
@@ -231,36 +238,56 @@ export type ProviderFiatCurrency<P extends Provider, T extends RateType> = P ext
 //     return result;
 // }
 //
-// async function _isSupportedCurrency(currency, forHistoricRates, forLegacyApi) {
-//     let errorMessage;
-//     if (forLegacyApi) {
-//         const fiatApiCryptoCurrencies = Object.keys(CryptoCurrency).join(',');
-//         // For historic rates use CCCAGG exchange / data set, the default used by CryptoCompare for historic rates.
-//         const exchangeParameter = forHistoricRates ? '&e=CCCAGG' : '';
-//         ({ Message: errorMessage } = await _fetch(
-//             'https://min-api.cryptocompare.com/data/pricemulti'
-//             + `?fsyms=${fiatApiCryptoCurrencies}&tsyms=${currency}${exchangeParameter}&relaxedValidation=false`,
-//         ));
-//         if (errorMessage?.includes('market does not exist')) return false;
-//     } else if (forHistoricRates) {
-//         const instrument = `NIM-${currency.toUpperCase()}`;
-//         ({ Err: { message: errorMessage } } = await _fetch(
-//             'https://data-api.cryptocompare.com/index/cc/v1/historical/hours'
-//             + `?market=cadli&instrument=${instrument}&apply_mapping=false&limit=1`,
-//         ));
-//         if (errorMessage?.includes('instrument parameter')) return false;
-//     } else {
+// async function _getCurrentExchangeRate(currency, forNewApi) {
+//     let rate, errorMessage;
+//     if (forNewApi) {
 //         const instruments = Object.keys(CryptoCurrency)
 //             .map((cryptoCurrency) => `${cryptoCurrency}-${currency.toUpperCase()}`)
 //             .join(',');
-//         ({ Err: { message: errorMessage } } = await _fetch(
+//         const result = await _fetch(
 //             'https://data-api.cryptocompare.com/index/cc/v1/latest/tick'
 //             + `?market=cadli&instruments=${instruments}&apply_mapping=false`,
-//         ));
+//         );
+//         rate = result?.Data?.[`NIM-${currency.toUpperCase()}`]?.VALUE;
+//         errorMessage = result?.Err?.message;
 //         if (errorMessage?.includes('instruments parameter')) return false;
+//     } else {
+//         const fiatApiCryptoCurrencies = Object.keys(CryptoCurrency).join(',');
+//         const result = await _fetch(
+//             'https://min-api.cryptocompare.com/data/pricemulti'
+//             + `?fsyms=${fiatApiCryptoCurrencies}&tsyms=${currency.toUpperCase()}&relaxedValidation=false`,
+//         );
+//         rate = result?.NIM?.[currency.toUpperCase()];
+//         errorMessage = result?.Message;
+//         if (errorMessage?.includes('market does not exist')) return false;
 //     }
 //     if (errorMessage) throw new Error(`Currency ${currency} check failed with unexpected error: ${errorMessage}`);
-//     return true;
+//     return rate || false;
+// }
+//
+// async function _getHistoricExchangeRate(currency, time, forNewApi) {
+//     time = Math.floor(time / 1000);
+//     let rate, errorMessage;
+//     if (forNewApi) {
+//         const instrument = `NIM-${currency.toUpperCase()}`;
+//         const result = await _fetch(
+//             'https://data-api.cryptocompare.com/index/cc/v1/historical/hours'
+//             + `?market=cadli&instrument=${instrument}&to_ts=${time}&apply_mapping=false&limit=1`,
+//         );
+//         rate = result?.Data?.[0]?.OPEN;
+//         errorMessage = result?.Err?.message;
+//         if (errorMessage?.includes('instrument parameter')) return false;
+//     } else {
+//         const result = await _fetch(
+//             'https://min-api.cryptocompare.com/data/v2/histohour'
+//             + `?fsym=NIM&tsym=${currency.toUpperCase()}&toTs=${time}&limit=1`,
+//         );
+//         rate = result?.Data?.Data?.[1]?.open; // Legacy API returns 2 results for limit 1
+//         errorMessage = result?.Message;
+//         if (errorMessage?.includes('market does not exist')) return false;
+//     }
+//     if (errorMessage) throw new Error(`Currency ${currency} check failed with unexpected error: ${errorMessage}`);
+//     return rate || false;
 // }
 //
 // let knownFiatCurrencyEntries = [];
@@ -284,23 +311,33 @@ export type ProviderFiatCurrency<P extends Provider, T extends RateType> = P ext
 // const supportedHistoricRatesFiatCurrencyEntries = [];
 // const legacySupportedCurrentRatesFiatCurrencyEntries = [];
 // const legacySupportedHistoricRatesFiatCurrencyEntries = [];
+// const legacySupportedAccurateHistoricRatesFiatCurrencyEntries = [];
+// const MAX_RATE_DEVIATION = 2 / 100; // percent
+// const now = Date.now();
 // for (const entry of knownFiatCurrencyEntries) {
 //     const { SYMBOL: currency, NAME: name } = entry;
 //     if (!(currency in referenceCurrencySymbols)) {
 //         console.log(`Currency ${currency} (${name}) is skipped because it's not circulating.`);
 //         continue;
 //     }
-//     if (await _isSupportedCurrency(currency, /* forHistoricRates */ false, /* forLegacyApi */ false)) {
+//     const currentRate = await _getCurrentExchangeRate(currency, true);
+//     if (currentRate) {
 //         supportedCurrentRatesFiatCurrencyEntries.push(entry);
 //     }
-//     if (await _isSupportedCurrency(currency, /* forHistoricRates */ true, /* forLegacyApi */ false)) {
+//     const historicRate = await _getHistoricExchangeRate(currency, now, true);
+//     if (historicRate) {
 //         supportedHistoricRatesFiatCurrencyEntries.push(entry);
 //     }
-//     if (await _isSupportedCurrency(currency, /* forHistoricRates */ false, /* forLegacyApi */ true)) {
+//     const legacyCurrentRate = await _getCurrentExchangeRate(currency, false);
+//     if (legacyCurrentRate && Math.abs(legacyCurrentRate - currentRate) / currentRate <= MAX_RATE_DEVIATION) {
 //         legacySupportedCurrentRatesFiatCurrencyEntries.push(entry);
 //     }
-//     if (await _isSupportedCurrency(currency, /* forHistoricRates */ true, /* forLegacyApi */ true)) {
+//     const legacyHistoricRate = await _getHistoricExchangeRate(currency, now, false);
+//     if (legacyHistoricRate) {
 //         legacySupportedHistoricRatesFiatCurrencyEntries.push(entry);
+//     }
+//     if (legacyHistoricRate && Math.abs(legacyHistoricRate - historicRate) / historicRate <= MAX_RATE_DEVIATION) {
+//         legacySupportedAccurateHistoricRatesFiatCurrencyEntries.push(entry);
 //     }
 // }
 //
@@ -327,7 +364,7 @@ export type ProviderFiatCurrency<P extends Provider, T extends RateType> = P ext
 //     if (supportedCurrentAndHistoricRatesFiatCurrencyEntries.some(({ SYMBOL }) => SYMBOL === currency)) continue;
 //     console.warn(`Previously supported ${currency} is not supported or circulating anymore.`);
 // }
-// console.log('CryptoCompare Legacy supported currencies for current rates:');
+// console.log('CryptoCompare Legacy supported currencies for current rates, without inaccurate currencies:');
 // console.log(legacySupportedCurrentRatesFiatCurrencyEntries
 //     .map(({ SYMBOL: currency }) => `'${currency}'`).join(', '));
 // for (const currency of CRYPTOCOMPARE_LEGACY_CURRENT_RATES_FIAT_CURRENCIES) {
@@ -341,6 +378,10 @@ export type ProviderFiatCurrency<P extends Provider, T extends RateType> = P ext
 //     if (legacySupportedHistoricRatesFiatCurrencyEntries.some(({ SYMBOL }) => SYMBOL === currency)) continue;
 //     console.warn(`Previously supported ${currency} is not supported or circulating anymore.`);
 // }
+// console.warn('Of those only the following are accurate for NIM on time ranges including times after '
+//     + 'CRYPTOCOMPARE_LEGACY_HISTORIC_RATES_NIM_ACCURACY_CUTOFF:');
+// console.log(legacySupportedAccurateHistoricRatesFiatCurrencyEntries
+//     .map(({ SYMBOL: currency }) => `'${currency}'`).join(', '));
 const CRYPTOCOMPARE_FIAT_CURRENCIES = ([
     'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF',
     'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHF', 'CLP', 'CNY', 'COP', 'CRC',
@@ -350,23 +391,41 @@ const CRYPTOCOMPARE_FIAT_CURRENCIES = ([
     'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MYR', 'MZN', 'NAD', 'NGN',
     'NIO', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB',
     'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SOS', 'SRD', 'SSP', 'STN', 'SYP', 'SZL', 'THB', 'TJS',
-    'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'VES', 'VND', 'VUV', 'WST', 'XAF',
-    'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL',
+    'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST',
+    'XAF', 'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL',
 ] as const).map((ticker) => FiatCurrency[ticker]);
+// Many currencies theoretically supported by the legacy API yield inaccurate NIM exchange rates, thus we exclude them
+// from the lists. An exchange rate is considered inaccurate if it deviates by more than MAX_RATE_DEVIATION from the
+// result of the new API. We only include currencies which were reported as accurate over multiple runs at different
+// times. On future updates of this list, no currencies should be added that were not accurate in the previous list,
+// i.e. entries should only be removed but not added.
 const CRYPTOCOMPARE_LEGACY_CURRENT_RATES_FIAT_CURRENCIES = ([
-    'AED', 'AOA', 'ARS', 'AUD', 'BGN', 'BND', 'BOB', 'BRL', 'BYN', 'CAD', 'CHF', 'CLP', 'CNY', 'COP', 'CZK', 'DKK',
-    'ERN', 'EUR', 'GBP', 'GEL', 'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'ISK', 'JPY', 'KRW', 'KZT', 'MNT', 'MXN', 'MYR',
-    'NGN', 'NOK', 'NZD', 'PEN', 'PHP', 'PLN', 'RON', 'RUB', 'SEK', 'SGD', 'STN', 'THB', 'TRY', 'TWD', 'UAH', 'UGX',
-    'USD', 'VES', 'VUV', 'ZAR', 'ZMW',
+    'AUD', 'BRL', 'CAD', 'CHF', 'CLP', 'CZK', 'EUR', 'GBP', 'HKD', 'IDR', 'ILS', 'JPY', 'KES', 'KZT', 'MXN', 'MYR',
+    'NZD', 'PEN', 'RON', 'SGD', 'THB', 'TRY', 'USD',
 ] as const).map((ticker) => FiatCurrency[ticker]);
+// Note: historic rates for NIM on the CryptoCompare legacy API are only accurate for time ranges before November 2024
+// (CRYPTOCOMPARE_LEGACY_HISTORIC_RATES_NIM_ACCURACY_CUTOFF).
 const CRYPTOCOMPARE_LEGACY_HISTORIC_RATES_FIAT_CURRENCIES = ([
-    'AED', 'ARS', 'AUD', 'BRL', 'CAD', 'CHF', 'COP', 'CZK', 'EUR', 'GBP', 'GEL', 'IDR', 'ILS', 'INR', 'JPY', 'KRW',
-    'KZT', 'MXN', 'MYR', 'NGN', 'NZD', 'PLN', 'RON', 'RUB', 'SGD', 'THB', 'TRY', 'UAH', 'USD', 'ZAR',
+    'AED', 'AOA', 'ARS', 'AUD', 'BGN', 'BRL', 'CAD', 'CHF', 'COP', 'CZK', 'EUR', 'GBP', 'GEL', 'HKD', 'IDR', 'ILS',
+    'INR', 'JPY', 'KRW', 'KZT', 'MXN', 'MYR', 'NGN', 'NZD', 'PHP', 'PLN', 'RON', 'RUB', 'SGD', 'THB', 'TRY', 'UAH',
+    'USD', 'ZAR',
 ] as const).map((ticker) => FiatCurrency[ticker]);
 export type CryptoCompareFiatCurrency = (typeof CRYPTOCOMPARE_FIAT_CURRENCIES)[number];
 export type CryptoCompareLegacyFiatCurrency<T extends RateType> = T extends RateType.CURRENT
     ? (typeof CRYPTOCOMPARE_LEGACY_CURRENT_RATES_FIAT_CURRENCIES)[number]
     : (typeof CRYPTOCOMPARE_LEGACY_HISTORIC_RATES_FIAT_CURRENCIES)[number];
+
+// Cutoff time when historic rates for NIM start being inaccurate on the legacy API. This has been determined with help
+// of the following utility, making use of _getHistoricExchangeRate from above:
+// async function calculateRateDeviation(currency, date) {
+//     const time = Date.parse(date);
+//     const [rate, legacyRate] = await Promise.all([
+//         _getHistoricExchangeRate(currency, time, true),
+//         _getHistoricExchangeRate(currency, time, false),
+//     ]);
+//     return Math.abs(legacyRate - rate) / rate * 100 + '%';
+// }
+const CRYPTOCOMPARE_LEGACY_HISTORIC_RATES_NIM_ACCURACY_CUTOFF = Date.parse('2024-11-01');
 
 // Fiat currencies supported by CoinGecko, all of which support historic rates.
 // Note that CoinGecko supports more vs_currencies (see https://api.coingecko.com/api/v3/simple/supported_vs_currencies)
@@ -431,8 +490,8 @@ const CPL_BRIDGEABLE_FIAT_CURRENCIES = ([
     'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO',
     'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF',
     'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SOS', 'SRD', 'SSP', 'STN', 'SYP', 'SZL', 'THB', 'TJS', 'TMT',
-    'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XCD',
-    'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL',
+    'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST', 'XAF',
+    'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL',
 ] as const).map((ticker) => FiatCurrency[ticker]);
 export type CplBridgeableFiatCurrency = (typeof CPL_BRIDGEABLE_FIAT_CURRENCIES)[number];
 
@@ -685,6 +744,14 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
     to: number, // in milliseconds
     provider: P = Provider.CryptoCompare as P,
 ): Promise<Array<[/* time in ms */ number, /* price */ number]>> {
+    if (provider === Provider.CryptoCompareLegacy && cryptoCurrency === CryptoCurrency.NIM
+        && to >= CRYPTOCOMPARE_LEGACY_HISTORIC_RATES_NIM_ACCURACY_CUTOFF) {
+        // Historic rates for NIM are only supported before CRYPTOCOMPARE_LEGACY_HISTORIC_RATES_NIM_ACCURACY_CUTOFF, as
+        // after that, the reported exchange rates are very inaccurate.
+        throw new Error(`The legacy API only supports historic rates for NIM before ${
+            new Date(CRYPTOCOMPARE_LEGACY_HISTORIC_RATES_NIM_ACCURACY_CUTOFF)}.`);
+    }
+
     const requestedVsCurrency = vsCurrency;
     let bridgedCurrency: Exclude<HistoryBridgeableFiatCurrency, ProviderFiatCurrency<P, RateType.HISTORIC>> | undefined;
     let bridgedHistoricRatesPromise: Promise<{[date: string]: number | undefined}> | undefined;
