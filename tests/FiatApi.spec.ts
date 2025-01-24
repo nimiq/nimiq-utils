@@ -19,36 +19,36 @@ import {
 } from '../src/fiat-api/FiatApi';
 
 const referenceHistoricRatesCryptoCompare = new Map([
-    [new Date('2024-01-01T00:00:00.000Z').getTime(), { usd: 42294.1598555961, crc: 22016468.0196614 }],
-    [new Date('2024-01-01T01:00:00.000Z').getTime(), { usd: 42489.3834465072, crc: 22118092.7820554 }],
-    [new Date('2024-01-01T02:00:00.000Z').getTime(), { usd: 42623.2161227302, crc: 22187760.1509335 }],
+    [new Date('2024-10-01T00:00:00.000Z').getTime(), { usd: 63_332.7776140374, crc: 32_909_989.0116007 }],
+    [new Date('2024-10-01T01:00:00.000Z').getTime(), { usd: 63_516.7161678004, crc: 33_005_570.099486 }],
+    [new Date('2024-10-01T02:00:00.000Z').getTime(), { usd: 63_441.8695515777, crc: 32_966_677.1058382 }],
 
-    [new Date('2024-04-01T00:00:00.000Z').getTime(), { usd: 71321.7045409231, crc: 35827569.7503376 }],
-    [new Date('2024-04-02T00:00:00.000Z').getTime(), { usd: 69691.309237929, crc: 35040543.8563613 }],
-    [new Date('2024-04-03T00:00:00.000Z').getTime(), { usd: 65482.0758397414, crc: 32853912.7790636 }],
+    [new Date('2025-01-01T00:00:00.000Z').getTime(), { usd: 93_441.6983892194, crc: 47_576_081.440686 }],
+    [new Date('2025-01-02T00:00:00.000Z').getTime(), { usd: 94_451.9403687362, crc: 48_090_448.7469403 }],
+    [new Date('2025-01-03T00:00:00.000Z').getTime(), { usd: 96_919.3484077694, crc: 49_410_413.8563481 }],
 ]);
 
 const referenceHistoricRatesCryptoCompareLegacy = new Map([
-    [new Date('2024-01-01T00:00:00.000Z').getTime(), { usd: 42280.14, crc: 22114627.226999998 }],
-    [new Date('2024-01-01T01:00:00.000Z').getTime(), { usd: 42458.92, crc: 22208138.106 }],
-    [new Date('2024-01-01T02:00:00.000Z').getTime(), { usd: 42599.81, crc: 22281830.6205 }],
+    [new Date('2024-10-01T00:00:00.000Z').getTime(), { usd: 63_314.81, crc: 32_915_470.2747 }],
+    [new Date('2024-10-01T01:00:00.000Z').getTime(), { usd: 63_503.7, crc: 33_013_668.518999998 }],
+    [new Date('2024-10-01T02:00:00.000Z').getTime(), { usd: 63_427.01, crc: 32_973_799.6887 }],
 
-    [new Date('2024-04-01T00:00:00.000Z').getTime(), { usd: 71312.91, crc: 35870393.730000004 }],
-    [new Date('2024-04-02T00:00:00.000Z').getTime(), { usd: 69686.37, crc: 35052244.11 }],
-    [new Date('2024-04-03T00:00:00.000Z').getTime(), { usd: 65466.81, crc: 32847317.2494 }],
+    [new Date('2025-01-01T00:00:00.000Z').getTime(), { usd: 93_391.98, crc: 47_601_892.206 }],
+    [new Date('2025-01-02T00:00:00.000Z').getTime(), { usd: 94_392.51, crc: 48_111_862.346999995 }],
+    [new Date('2025-01-03T00:00:00.000Z').getTime(), { usd: 96_900.96, crc: 49_390_419.312 }],
 ]);
 
 // Timestamps chosen in a way, that two CoinGecko request chunks get created (a single chunk spans 90 days max).
 // Note: CoinGecko's public api only allows fetching historic rates for the last 365 days. Therefore, this test vector
-// needs to be updated on a yearly basis.
+// needs to be updated on a regular basis.
 const referenceHistoricRatesCoinGecko = new Map([
-    [new Date('2024-01-01T00:00:00.000Z').getTime(), { usd: 42261.72545509639, crc: 22104995.499288168 }],
-    [new Date('2024-01-01T01:00:00.000Z').getTime(), { usd: 42490.22251263108, crc: 22224510.885231685 }],
-    [new Date('2024-01-01T02:00:00.000Z').getTime(), { usd: 42652.12131449001, crc: 22309192.053544 }],
+    [new Date('2024-10-01T00:00:00.000Z').getTime(), { usd: 63_371.32651243254, crc: 32_944_851.514018305 }],
+    [new Date('2024-10-01T01:00:00.000Z').getTime(), { usd: 63_501.04284259247, crc: 33_012_287.142578546 }],
+    [new Date('2024-10-01T02:00:00.000Z').getTime(), { usd: 63_419.78842455574, crc: 32_970_045.408273797 }],
 
-    [new Date('2024-04-01T00:00:00.000Z').getTime(), { usd: 71182.42807620876, crc: 35804761.32233301 }],
-    [new Date('2024-04-02T00:00:00.000Z').getTime(), { usd: 69634.9924715534, crc: 35026401.21319136 }],
-    [new Date('2024-04-03T00:00:00.000Z').getTime(), { usd: 65561.26872480597, crc: 32894710.969984144 }],
+    [new Date('2025-01-01T00:00:00.000Z').getTime(), { usd: 93_504.13056022623, crc: 47_659_055.346547306 }],
+    [new Date('2025-01-02T00:00:00.000Z').getTime(), { usd: 94_391.07877439166, crc: 48_111_132.85130743 }],
+    [new Date('2025-01-03T00:00:00.000Z').getTime(), { usd: 96_894.10388881556, crc: 49_386_924.752129294 }],
 ]);
 
 // Clear any remaining RateLimitScheduler timeouts after each test.
