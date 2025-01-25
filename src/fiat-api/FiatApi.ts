@@ -724,11 +724,18 @@ export async function getExchangeRates<
 }
 
 /**
+ * Optional options for CyrptoCompare and CryptoCompareLegacy. See:
+ * - for CryptoCompare: developers.cryptocompare.com/documentation/data-api/index_cc_v1_historical_hours
+ * - for CryptoCompareLegacy: developers.cryptocompare.com/documentation/legacy/Historical/dataHistohour
+ */
+type CryptoCompareHistoryOptions = {
+    interval?: 'days' | 'hours' | 'minutes', // default: 'hours'
+    aggregate?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+        | 24 | 25 | 26 | 27 | 28 | 29 | 30, // Aggregate the data of multiple intervals, default: 1
+};
+
+/**
  * Request historic exchange rates by range. Input and output timestamps are in milliseconds.
- *
- * Additional notes for CryptoCompare:
- * We currently return data at hourly resolution. However, minutely or daily data would also be possible, support for
- * which should then be added via an options object in the function signature, if needed.
  *
  * Additional notes for CoinGecko:
  * The free, public API limits historic exchange rates to the past 365 days. Requesting older data results in 401 -
@@ -743,6 +750,9 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
     from: number, // in milliseconds
     to: number, // in milliseconds
     provider: P = Provider.CryptoCompare as P,
+    options: P extends Provider.CryptoCompare | Provider.CryptoCompareLegacy
+        ? CryptoCompareHistoryOptions
+        : never = {} as typeof options,
 ): Promise<Array<[/* time in ms */ number, /* price */ number]>> {
     if (provider === Provider.CryptoCompareLegacy && cryptoCurrency === CryptoCurrency.NIM
         && to >= CRYPTOCOMPARE_LEGACY_HISTORIC_RATES_NIM_ACCURACY_CUTOFF) {
@@ -777,14 +787,16 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
         case Provider.CryptoCompare:
             // Documentation: developers.cryptocompare.com/documentation/data-api/index_cc_v1_historical_hours
             providerHistoricRatesPromise = (async () => {
-                let result: Array<[number, number]> = [];
                 const instrument = `${cryptoCurrency.toUpperCase()}-${vsCurrency.toUpperCase()}`;
+                const { interval, aggregate, aggregatedIntervalTime } = _parseCryptoCompareHistoryOptions(options);
+
+                let result: Array<[number, number]> = [];
                 let batchToTs = to; // last timestamp to include in current batch; inclusive
                 try {
                     while (batchToTs >= from) {
                         const limit = Math.min(
-                            2000, // maximum number of entries allowed to request per batch
-                            Math.ceil(((batchToTs - from) * 1000) / ONE_HOUR) + 1,
+                            Math.floor(2000 / aggregate), // maximum number of entries allowed to request per batch
+                            Math.ceil(((batchToTs - from) * 1000) / aggregatedIntervalTime) + 1,
                         );
                         // eslint-disable-next-line no-await-in-loop
                         const { Data: batch } = await _fetch<{
@@ -794,9 +806,11 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                                 OPEN: number,
                             }>,
                         }>(
-                            `${API_URL_CRYPTOCOMPARE}/v1/historical/hours`
+                            // eslint-disable-next-line prefer-template
+                            `${API_URL_CRYPTOCOMPARE}/v1/historical/${interval}`
                             + '?market=cadli&groups=OHLC&fill=false&apply_mapping=false'
-                            + `&instrument=${instrument}&to_ts=${batchToTs}&limit=${limit}`,
+                            + `&instrument=${instrument}&to_ts=${batchToTs}&limit=${limit}`
+                            + (aggregate !== 1 ? `&aggregate=${aggregate}` : ''),
                             provider,
                         );
                         const filteredAndTransformedBatch: Array<[number, number]> = [];
@@ -843,12 +857,14 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                 vsCurrency = CryptoCurrency.USDT;
             }
             providerHistoricRatesPromise = (async () => {
+                const { interval, aggregate, aggregatedIntervalTime } = _parseCryptoCompareHistoryOptions(options);
+
                 let result: Array<[number, number]> = [];
                 let batchToTs = to; // last timestamp to include in current batch; inclusive
                 while (batchToTs >= from) {
                     const limit = Math.min(
-                        2000, // maximum number of entries allowed to request per batch
-                        Math.ceil(((batchToTs - from) * 1000) / ONE_HOUR) + 1,
+                        Math.floor(2000 / aggregate), // maximum number of entries allowed to request per batch
+                        Math.ceil(((batchToTs - from) * 1000) / aggregatedIntervalTime) + 1,
                     ) - 1; // Legacy returns one entry more than requested. Adjust for consistent batch sizes to new API
                     // eslint-disable-next-line no-await-in-loop
                     const { Data: { TimeFrom: batchFromTs, Data: batch } } = await _fetch<{
@@ -864,8 +880,10 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                             }>
                         },
                     }>(
-                        `${API_URL_CRYPTOCOMPARE_LEGACY}/v2/histohour`
-                        + `?fsym=${cryptoCurrency}&tsym=${vsCurrency}&toTs=${batchToTs}&limit=${limit}`,
+                        // eslint-disable-next-line prefer-template
+                        `${API_URL_CRYPTOCOMPARE_LEGACY}/v2/histo${interval.replace(/s$/, '')}`
+                        + `?fsym=${cryptoCurrency}&tsym=${vsCurrency}&toTs=${batchToTs}&limit=${limit}`
+                        + (aggregate !== 1 ? `&aggregate=${aggregate}` : ''),
                         provider,
                     );
                     const filteredAndTransformedBatch: Array<[number, number]> = [];
@@ -929,6 +947,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
             from * 1000,
             missingTo * 1000,
             Provider.CryptoCompareLegacy,
+            options,
         );
         result = fallbackEntries.concat(result);
     }
@@ -944,23 +963,29 @@ export async function getHistoricExchangeRates<P extends Provider = Provider.Cry
     vsCurrency: ProviderFiatCurrency<P, RateType.HISTORIC> | HistoryBridgeableFiatCurrency | CryptoCurrency,
     timestamps: number[],
     provider: P = Provider.CryptoCompare as P,
-    options: P extends Provider.CoinGecko ? { disableMinutelyData?: boolean } : never = {} as typeof options,
+    options: P extends Provider.CryptoCompare | Provider.CryptoCompareLegacy
+        ? CryptoCompareHistoryOptions // can be used to increase or reduce the time resolution of fetched data
+        : { disableMinutelyData?: boolean } = {} as typeof options,
 ): Promise<Map<number, number|undefined>> {
     const result = new Map<number, number|undefined>();
     if (!timestamps.length) return result;
     timestamps.sort((a, b) => a - b);
 
+    const cryptoCompareOptions = 'interval' in options || 'aggregate' in options ? options : {};
+    const { aggregatedIntervalTime } = _parseCryptoCompareHistoryOptions(cryptoCompareOptions);
+
     let prices: Array<[number, number]>;
     switch (provider) {
         case Provider.CryptoCompare:
         case Provider.CryptoCompareLegacy:
-            prices = await getHistoricExchangeRatesByRange(
+            prices = await getHistoricExchangeRatesByRange<Provider.CryptoCompare | Provider.CryptoCompareLegacy>(
                 cryptoCurrency,
                 vsCurrency,
-                // Prices are exactly 1h apart, choose from&to such we get earlier&later data point for interpolation.
-                timestamps[0] - ONE_HOUR,
-                timestamps[timestamps.length - 1] + ONE_HOUR,
+                // Choose `from` and `to` such that we get earlier and later data points for interpolation.
+                timestamps[0] - aggregatedIntervalTime,
+                timestamps[timestamps.length - 1] + aggregatedIntervalTime,
                 provider,
+                cryptoCompareOptions,
             );
             break;
         case Provider.CoinGecko: {
@@ -1019,6 +1044,9 @@ export async function getHistoricExchangeRates<P extends Provider = Provider.Cry
     // For every requested timestamp interpolate the price from the timestamps we got from the API
     let timestampIndex = 0;
     let priceIndex = 0;
+    // Accept only data for interpolation of a requested timestamp if it's within two days from it, or two times the
+    // aggregatedIntervalTime, if a lower time resolution was requested.
+    const maxAllowedTimeDelta = Math.max(2 * ONE_DAY, 2 * aggregatedIntervalTime);
     while (timestampIndex < timestamps.length) {
         // Search priceIndex at which predecessor price timestamp < our timestamp <= current price timestamp.
         const timestamp = timestamps[timestampIndex];
@@ -1031,8 +1059,8 @@ export async function getHistoricExchangeRates<P extends Provider = Provider.Cry
             // still occur in exceptional cases when the gap between two data points was larger than our margin or the
             // requested timestamp was before the provider even started recording price data or is in the future.
             const priceEntry = prices[Math.min(priceIndex, prices.length - 1)];
-            if (Math.abs(timestamp - priceEntry[0]) < 2 * ONE_DAY && timestamp <= Date.now()) {
-                // Accept the single price entry's price if it's within a limit of 2 days and we're not making
+            if (Math.abs(timestamp - priceEntry[0]) < maxAllowedTimeDelta && timestamp <= Date.now()) {
+                // Accept the single price entry's price if it's within maxAllowedTimeDelta and we're not making
                 // assumptions about the future.
                 result.set(timestamp, priceEntry[1]);
             }
@@ -1041,8 +1069,8 @@ export async function getHistoricExchangeRates<P extends Provider = Provider.Cry
             const predecessorEntry = prices[priceIndex - 1];
             const currentEntry = prices[priceIndex];
             const timeDelta = currentEntry[0] - predecessorEntry[0];
-            if (timeDelta < 2 * ONE_DAY) {
-                // accept the interpolation if timeDelta is within 2 days (typically should be 1 hour).
+            if (timeDelta < maxAllowedTimeDelta) {
+                // accept the interpolation if timeDelta is within maxAllowedTimeDelta (typically should be 1 hour).
                 const priceDelta = currentEntry[1] - predecessorEntry[1];
                 const interpolatedPrice = predecessorEntry[1]
                     + priceDelta * ((timestamp - predecessorEntry[0]) / timeDelta);
@@ -1052,6 +1080,17 @@ export async function getHistoricExchangeRates<P extends Provider = Provider.Cry
         ++timestampIndex; // Continue with next timestamp and check same priceIndex
     }
     return result;
+}
+
+function _parseCryptoCompareHistoryOptions(options: CryptoCompareHistoryOptions) {
+    const interval = options.interval || 'hours';
+    const aggregate = options.aggregate || 1;
+    const aggregatedIntervalTime = {
+        minutes: ONE_MINUTE,
+        hours: ONE_HOUR,
+        days: ONE_DAY,
+    }[interval] * aggregate;
+    return { interval, aggregate, aggregatedIntervalTime };
 }
 
 function _findCoinGeckoTimestampChunk(

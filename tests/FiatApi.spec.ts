@@ -99,6 +99,22 @@ async function testHistoricExchangeRates(
     const referenceRates = new Map([...referenceProviderRates.entries()]
         .map(([timestamp, { [vsCurrency]: rate }]) => [timestamp, rate]));
     expect(rates).toEqual(referenceRates);
+
+    if (provider === Provider.CryptoCompare || provider === Provider.CryptoCompareLegacy) {
+        // Test requesting data at lower time resolution.
+        const lowerTimeResolutionRates = await getHistoricExchangeRates(
+            CryptoCurrency.BTC,
+            vsCurrency,
+            [...referenceProviderRates.keys()],
+            provider,
+            { interval: 'days', aggregate: 2 },
+        );
+        for (const [timestamp, referenceRate] of referenceRates.entries()) {
+            // Expect the results at lower time resolution to still be somewhat close to more precise data.
+            const lowerTimeResolutionRate = lowerTimeResolutionRates.get(timestamp) || Number.NaN;
+            expect(Math.abs(lowerTimeResolutionRate - referenceRate) / referenceRate < 0.1);
+        }
+    }
 }
 
 type CoinGeckoProxyInfo = { url: string, authHeaderName: string, authToken: string };
