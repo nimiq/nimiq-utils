@@ -633,7 +633,7 @@ export async function getExchangeRates<
                         batchStart,
                         Math.min(instruments.length, batchStart + maxBatchSize),
                     );
-                    batchPromises.push(_fetch<{ Data: Record</* instrument */ string, { VALUE: number }> }>(
+                    batchPromises.push(fetchFiatApi<{ Data: Record</* instrument */ string, { VALUE: number }> }>(
                         `${API_URL_CRYPTOCOMPARE}/v1/latest/tick`
                         + `?market=cadli&instruments=${batchInstruments.join(',')}&groups=VALUE&apply_mapping=false`,
                         provider,
@@ -665,7 +665,7 @@ export async function getExchangeRates<
                         batchStart,
                         Math.min(providerVsCurrencies.length, batchStart + maxBatchSize),
                     );
-                    batchPromises.push(_fetch<Record<string, Record<string, number>>>(
+                    batchPromises.push(fetchFiatApi<Record<string, Record<string, number>>>(
                         `${API_URL_CRYPTOCOMPARE_LEGACY}/pricemulti`
                         + `?fsyms=${cryptoCurrencies.join(',')}&tsyms=${batchVsCurrencies.join(',')}`,
                         provider,
@@ -690,7 +690,7 @@ export async function getExchangeRates<
             // Documentation: docs.coingecko.com/v3.0.1/reference/simple-price
             // Note that providerVsCurrencies do not need to be converted to coin ids, even for crypto currencies.
             const coinIds = cryptoCurrencies.map((currency) => COIN_IDS_COINGECKO[currency]);
-            providerExchangeRatesPromise = _fetch<Record<string, Record<string, number>>>(
+            providerExchangeRatesPromise = fetchFiatApi<Record<string, Record<string, number>>>(
                 `${API_URL_COINGECKO}/simple/price`
                 + `?ids=${coinIds.join(',')}&vs_currencies=${providerVsCurrencies.join(',')}`,
                 provider,
@@ -799,7 +799,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                             Math.ceil(((batchToTs - from) * 1000) / aggregatedIntervalTime) + 1,
                         );
                         // eslint-disable-next-line no-await-in-loop
-                        const { Data: batch } = await _fetch<{
+                        const { Data: batch } = await fetchFiatApi<{
                             // Type reduced to the properties of interest to us.
                             Data: Array<{
                                 TIMESTAMP: number, // open time in seconds, see response schema documentation
@@ -867,7 +867,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
                         Math.ceil(((batchToTs - from) * 1000) / aggregatedIntervalTime) + 1,
                     ) - 1; // Legacy returns one entry more than requested. Adjust for consistent batch sizes to new API
                     // eslint-disable-next-line no-await-in-loop
-                    const { Data: { TimeFrom: batchFromTs, Data: batch } } = await _fetch<{
+                    const { Data: { TimeFrom: batchFromTs, Data: batch } } = await fetchFiatApi<{
                         // Type reduced to the properties of interest to us.
                         Data: {
                             TimeFrom: number,
@@ -909,7 +909,7 @@ export async function getHistoricExchangeRatesByRange<P extends Provider = Provi
             // Also note that for CoinGecko, we're not implementing handling for the first available history entry, as
             // CoinGecko is only of limited use anyway as it only allows accessing the data of the last 365 days on the
             // public API.
-            providerHistoricRatesPromise = _fetch<{ prices: Array<[number, number]> }>(
+            providerHistoricRatesPromise = fetchFiatApi<{ prices: Array<[number, number]> }>(
                 `${API_URL_COINGECKO}/coins/${coinId}/market_chart/range`
                 + `?vs_currency=${vsCurrency}&from=${from}&to=${to}`,
                 provider,
@@ -1181,10 +1181,10 @@ type CryptoCompareLegacyError = {
     Cooldown: number,
 } | {});
 
-async function _fetch<T>(info: RequestInfo, init?: RequestInit): Promise<T>;
-async function _fetch<T>(info: RequestInfo, rateLimit?: Provider): Promise<T>;
-async function _fetch<T>(info: RequestInfo, init?: RequestInit, rateLimit?: Provider): Promise<T>;
-async function _fetch<T>(
+export async function fetchFiatApi<T>(info: RequestInfo, init?: RequestInit): Promise<T>;
+export async function fetchFiatApi<T>(info: RequestInfo, rateLimit?: Provider): Promise<T>;
+export async function fetchFiatApi<T>(info: RequestInfo, init?: RequestInit, rateLimit?: Provider): Promise<T>;
+export async function fetchFiatApi<T>(
     info: RequestInfo,
     initOrRateLimit?: RequestInit | Provider,
     rateLimit?: Provider,
@@ -1419,7 +1419,7 @@ async function _getBridgeableFiatCurrencyExchangeRates<B extends BridgeableFiatC
     const cplBridgeableFiatCurrencies = CPL_BRIDGEABLE_FIAT_CURRENCIES
         .filter((c) => bridgeableFiatCurrencies.includes(c as B));
     if (cplBridgeableFiatCurrencies.length) {
-        apiPromises.push(_fetch<FirebaseRawResponse>(
+        apiPromises.push(fetchFiatApi<FirebaseRawResponse>(
             'https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/documents/'
                 + 'exchangerates/rates',
         ).then((exchangeRatesResponse) => {
@@ -1455,7 +1455,9 @@ async function _getHistoricBridgeableFiatCurrencyExchangeRatesByRange(
     const fromDate = _getDateString(from, timezone);
     const toDate = to === from ? fromDate : _getDateString(to, timezone);
     // Note: entries for future dates are omitted and thus basically undefined which is reflected in the return type.
-    return _fetch<{[date: string]: number}>(`https://usd-crc-historic-rate.deno.dev/api/rates/${fromDate}/${toDate}`);
+    return fetchFiatApi<{[date: string]: number}>(
+        `https://usd-crc-historic-rate.deno.dev/api/rates/${fromDate}/${toDate}`,
+    );
 }
 
 /**
