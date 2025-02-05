@@ -4,31 +4,31 @@
 export const TOTAL_SUPPLY = 21e14;
 
 /**
- * The date of the proof-of-stake fork.
+ * The date of the proof-of-stake migration.
  */
-// export const PROOF_OF_STAKE_FORK_DATE = new Date('2024-11-19T16:45:20.000Z')
-export const PROOF_OF_STAKE_FORK_DATE = new Date('2024-11-19');
+// export const PROOF_OF_STAKE_MIGRATION_DATE = new Date('2024-11-19T16:45:20.000Z')
+export const PROOF_OF_STAKE_MIGRATION_DATE = new Date('2024-11-19');
 
 /**
- * The total supply of the cryptocurrency at the proof-of-stake fork date, in NIM.
+ * The total supply of the cryptocurrency at the proof-of-stake migration date, in NIM.
  *
  * Same as:
- * powSupplyAfter(powBlockHeightAt(PROOF_OF_STAKE_FORK_DATE))
+ * powSupplyAfter(powBlockHeightAt(PROOF_OF_STAKE_MIGRATION_DATE))
  */
-export const SUPPLY_AT_PROOF_OF_STAKE_FORK_DATE = 12_893_109_654.06244;
+export const SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE = 12_893_109_654.06244;
 
 /**
- * The total supply of the cryptocurrency in **Testnet** at the proof-of-stake fork date, in NIM.
+ * The total supply of the cryptocurrency in **Testnet** at the proof-of-stake migration date, in NIM.
  *
  * Same as:
- * powSupplyAfter(powBlockHeightAt(PROOF_OF_STAKE_FORK_DATE))
+ * powSupplyAfter(powBlockHeightAt(PROOF_OF_STAKE_MIGRATION_DATE))
  */
-export const SUPPLY_AT_PROOF_OF_STAKE_FORK_DATE_TESTNET = 12_030_755_339.52899;
+export const SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET = 12_030_755_339.52899;
 
 /**
- * The block height of the proof-of-stake fork.
+ * The block height of the proof-of-stake migration.
  */
-export const PROOF_OF_STAKE_FORK_BLOCK = 3456000;
+export const PROOF_OF_STAKE_MIGRATION_BLOCK = 3456000;
 
 /**
  * The initial supply of the cryptocurrency, in Lunas.
