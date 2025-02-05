@@ -1,8 +1,8 @@
 import {
     POS_DECAY_PER_DAY,
-    PROOF_OF_STAKE_FORK_DATE,
-    SUPPLY_AT_PROOF_OF_STAKE_FORK_DATE,
-    SUPPLY_AT_PROOF_OF_STAKE_FORK_DATE_TESTNET,
+    PROOF_OF_STAKE_MIGRATION_DATE,
+    SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE,
+    SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET,
 } from '../albatross-policy/albatross-policy';
 import { posSupplyAt } from '../supply-calculator/supply-calculator';
 
@@ -91,10 +91,10 @@ export function calculateStakingRewards(params: CalculateStakingRewardsParams): 
     }
 
     const genesisSupply = network === 'test-albatross'
-        ? SUPPLY_AT_PROOF_OF_STAKE_FORK_DATE_TESTNET
-        : SUPPLY_AT_PROOF_OF_STAKE_FORK_DATE;
+        ? SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET
+        : SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE;
 
-    const oneDayAfterGenesis = PROOF_OF_STAKE_FORK_DATE.getTime() + 24 * 60 * 60 * 1000;
+    const oneDayAfterGenesis = PROOF_OF_STAKE_MIGRATION_DATE.getTime() + 24 * 60 * 60 * 1000;
     const initialRewardsPerDay = posSupplyAt(oneDayAfterGenesis, { network }) - genesisSupply;
     const decayFactor = Math.E ** (-POS_DECAY_PER_DAY * days);
 

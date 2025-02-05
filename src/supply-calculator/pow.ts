@@ -1,6 +1,6 @@
 import {
-    PROOF_OF_STAKE_FORK_BLOCK,
-    PROOF_OF_STAKE_FORK_DATE,
+    PROOF_OF_STAKE_MIGRATION_BLOCK,
+    PROOF_OF_STAKE_MIGRATION_DATE,
     PROOF_OF_WORK_EMISSION_SPEED,
     PROOF_OF_WORK_EMISSION_TAIL_REWARD,
     PROOF_OF_WORK_EMISSION_TAIL_START,
@@ -29,7 +29,7 @@ function _powSupplyAfter(initialSupply: number | undefined, blockHeight: number,
  * Extrapolate PoW block height for a certain date.
  */
 export function powBlockHeightAt(date: Date): number {
-    return PROOF_OF_STAKE_FORK_BLOCK + ((date.getTime() - PROOF_OF_STAKE_FORK_DATE.getTime()) / (60e3));
+    return PROOF_OF_STAKE_MIGRATION_BLOCK + ((date.getTime() - PROOF_OF_STAKE_MIGRATION_DATE.getTime()) / (60e3));
 }
 
 const supplyCache = new Map<number, number>();
