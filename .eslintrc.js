@@ -1,7 +1,7 @@
 const airbnb = require('eslint-config-airbnb-base/rules/style');
 
 // Do not restrict usage of for...of
-const noRestrictedSyntax = airbnb.rules['no-restricted-syntax'].slice(1).filter(r => r.selector !== 'ForOfStatement');
+const noRestrictedSyntax = airbnb.rules['no-restricted-syntax'].slice(1).filter((r) => r.selector !== 'ForOfStatement');
 
 module.exports = {
     env: {
@@ -24,14 +24,14 @@ module.exports = {
         '@typescript-eslint',
     ],
     rules: {
-        'indent': ['error', 4, { 'SwitchCase': 1 }],
+        indent: ['error', 4, { SwitchCase: 1 }],
         'max-len': ['error', 120],
         'no-underscore-dangle': 'off',
         'no-plusplus': 'off',
         'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
         'import/prefer-default-export': 'off',
-        'object-curly-newline': ['error', { 'ObjectPattern': { 'multiline': true } }],
-        'prefer-const': ['error', {'destructuring': 'all'}],
+        'object-curly-newline': ['error', { ObjectPattern: { multiline: true } }],
+        'prefer-const': ['error', { destructuring: 'all' }],
         'no-nested-ternary': 'off',
         'no-restricted-syntax': ['error', ...noRestrictedSyntax],
         'no-continue': 'off',
