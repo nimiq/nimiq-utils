@@ -13,6 +13,7 @@ export default defineBuildConfig({
         'src/request-link-encoding/RequestLinkEncoding',
         'src/tweenable/Tweenable',
         'src/utf8-tools/Utf8Tools',
+        'src/rate-limit-scheduler/RateLimitScheduler',
         'src/validation-utils/ValidationUtils',
         'src/rewards-calculator/rewards-calculator',
         'src/albatross-policy/albatross-policy',
