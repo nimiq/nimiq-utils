@@ -728,7 +728,7 @@ export async function getExchangeRates<
  * - for CryptoCompare: developers.cryptocompare.com/documentation/data-api/index_cc_v1_historical_hours
  * - for CryptoCompareLegacy: developers.cryptocompare.com/documentation/legacy/Historical/dataHistohour
  */
-type CryptoCompareHistoryOptions = {
+export type CryptoCompareHistoryOptions = {
     interval?: 'days' | 'hours' | 'minutes', // default: 'hours'
     aggregate?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
         | 24 | 25 | 26 | 27 | 28 | 29 | 30, // Aggregate the data of multiple intervals, default: 1
