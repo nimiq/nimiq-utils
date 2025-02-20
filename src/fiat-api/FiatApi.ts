@@ -211,8 +211,8 @@ export enum FiatCurrency {
 export type ProviderFiatCurrency<P extends Provider, T extends RateType> = P extends Provider.CryptoCompare
     ? CryptoCompareFiatCurrency
     : P extends Provider.CryptoCompareLegacy
-        ? CryptoCompareLegacyFiatCurrency<T>
-        : CoinGeckoFiatCurrency;
+    ? CryptoCompareLegacyFiatCurrency<T>
+    : CoinGeckoFiatCurrency;
 
 // Fiat currencies supported by CryptoCompare.
 // For the new API, we're using the new default index, CADLI (https://ccdata.io/indices/cadli), while for the Legacy API
@@ -728,10 +728,10 @@ export async function getExchangeRates<
  * - for CryptoCompare: developers.cryptocompare.com/documentation/data-api/index_cc_v1_historical_hours
  * - for CryptoCompareLegacy: developers.cryptocompare.com/documentation/legacy/Historical/dataHistohour
  */
-type CryptoCompareHistoryOptions = {
+export type CryptoCompareHistoryOptions = {
     interval?: 'days' | 'hours' | 'minutes', // default: 'hours'
     aggregate?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
-        | 24 | 25 | 26 | 27 | 28 | 29 | 30, // Aggregate the data of multiple intervals, default: 1
+    | 24 | 25 | 26 | 27 | 28 | 29 | 30, // Aggregate the data of multiple intervals, default: 1
 };
 
 /**
@@ -1161,7 +1161,7 @@ type CryptoCompareError = {
 } & ({
     type: 99, // rate limit
     other_info: CryptoCompareRateLimitInfo
-        | EmptyObject, // When banned, no info is provided.
+    | EmptyObject, // When banned, no info is provided.
 } | {
     type: 1, // invalid parameter
     other_info: {
@@ -1284,7 +1284,7 @@ export async function fetchFiatApi<T>(
                 && isNonNullObject(potentialRateLimitInfo.max_calls)
                 && (['month', 'day', 'hour', 'minute', 'second'] as const).every(
                     (timePeriod) => typeof potentialRateLimitInfo.calls_made[timePeriod] === 'number'
-                    && typeof potentialRateLimitInfo.max_calls[timePeriod] === 'number',
+                        && typeof potentialRateLimitInfo.max_calls[timePeriod] === 'number',
                 )
                 ? potentialRateLimitInfo
                 : undefined;
@@ -1390,7 +1390,7 @@ export function isBridgedFiatCurrency<P extends Provider, T extends RateType>(
 }
 
 export function isHistorySupportedFiatCurrency<P extends Provider>(currency: unknown, provider: P)
-: currency is ProviderFiatCurrency<P, RateType.HISTORIC> | HistoryBridgeableFiatCurrency {
+    : currency is ProviderFiatCurrency<P, RateType.HISTORIC> | HistoryBridgeableFiatCurrency {
     return isProviderSupportedFiatCurrency(currency, provider, RateType.HISTORIC)
         || HISTORY_BRIDGEABLE_FIAT_CURRENCIES.includes(currency as any);
 }
@@ -1399,7 +1399,7 @@ export function isHistorySupportedFiatCurrency<P extends Provider>(currency: unk
  * Get today's exchange rates to USD. Rates can be undefined if the user's clock is in the future.
  */
 async function _getBridgeableFiatCurrencyExchangeRates<B extends BridgeableFiatCurrency>(bridgeableFiatCurrencies: B[])
-: Promise<Record<B, number | undefined>> {
+    : Promise<Record<B, number | undefined>> {
     const apiPromises: Array<Promise<Partial<Record<B, number | undefined>>>> = [];
 
     // Note that history-bridgeable currencies and cpl-bridgeable currencies don't overlap by design.
@@ -1421,7 +1421,7 @@ async function _getBridgeableFiatCurrencyExchangeRates<B extends BridgeableFiatC
     if (cplBridgeableFiatCurrencies.length) {
         apiPromises.push(fetchFiatApi<FirebaseRawResponse>(
             'https://firestore.googleapis.com/v1/projects/checkout-service/databases/(default)/documents/'
-                + 'exchangerates/rates',
+            + 'exchangerates/rates',
         ).then((exchangeRatesResponse) => {
             const exchangeRates = _parseCplExchangeRateResponse(exchangeRatesResponse);
             // Reduce to only the requested cplBridgeableFiatCurrencies.
