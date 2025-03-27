@@ -31,6 +31,11 @@ export const SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET = 12_030_755_339.52
 export const PROOF_OF_STAKE_MIGRATION_BLOCK = 3456000;
 
 /**
+ * The block height of the proof-of-stake migration in **Testnet**.
+ */
+export const PROOF_OF_STAKE_MIGRATION_BLOCK_TESTNET = 3032010;
+
+/**
  * The initial supply of the cryptocurrency, in Lunas.
  */
 export const PROOF_OF_WORK_INITIAL_SUPPLY = 2520000000e5;
