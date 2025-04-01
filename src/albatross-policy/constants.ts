@@ -6,8 +6,12 @@ export const TOTAL_SUPPLY = 21e14;
 /**
  * The date of the proof-of-stake migration.
  */
-// export const PROOF_OF_STAKE_MIGRATION_DATE = new Date('2024-11-19T16:45:20.000Z')
-export const PROOF_OF_STAKE_MIGRATION_DATE = new Date('2024-11-19');
+export const PROOF_OF_STAKE_MIGRATION_DATE = new Date('2024-11-19T16:45:20.000Z');
+
+/**
+ * The date of the proof-of-stake migration in **Testnet**.
+ */
+export const PROOF_OF_STAKE_MIGRATION_DATE_TESTNET = new Date('2024-11-13T20:00:00.000Z');
 
 /**
  * The total supply of the cryptocurrency at the proof-of-stake migration date, in NIM.
@@ -29,6 +33,11 @@ export const SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET = 12_030_755_339.52
  * The block height of the proof-of-stake migration.
  */
 export const PROOF_OF_STAKE_MIGRATION_BLOCK = 3456000;
+
+/**
+ * The block height of the proof-of-stake migration in **Testnet**.
+ */
+export const PROOF_OF_STAKE_MIGRATION_BLOCK_TESTNET = 3032010;
 
 /**
  * The initial supply of the cryptocurrency, in Lunas.
