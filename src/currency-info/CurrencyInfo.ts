@@ -337,10 +337,14 @@ export class CurrencyInfo {
         // see https://en.wikipedia.org/wiki/ISO_4217#National_currencies.
         const currencyCountry = this.code.substring(0, 2);
 
+        // Check if we're in a browser environment
+        const isBrowserEnv = typeof globalThis.navigator !== 'undefined';
+        const navigatorLanguage = isBrowserEnv ? globalThis.navigator.language : 'en-US';
+
         const nameLocalesToTry = [
             ...(locale ? [locale] : []), // try requested locale
-            `${navigator.language.substring(0, 2)}-${currencyCountry}`, // user language as spoken in currency country
-            navigator.language, // fallback
+            ...(isBrowserEnv ? [`${navigatorLanguage.substring(0, 2)}-${currencyCountry}`] : []), // user language as spoken in currency country
+            ...(isBrowserEnv ? [navigatorLanguage] : []), // fallback
             'en-US', // en-US as last resort
         ];
         let supportsDisplayNames = 'DisplayNames' in Intl;
