@@ -339,14 +339,16 @@ export class CurrencyInfo {
 
         // Check if we're in a browser environment
         const isBrowserEnv = typeof globalThis.navigator !== 'undefined';
-        const navigatorLanguage = isBrowserEnv ? globalThis.navigator.language : 'en-US';
 
         const nameLocalesToTry = [
             ...(locale ? [locale] : []), // try requested locale
-            ...(isBrowserEnv ? [`${navigatorLanguage.substring(0, 2)}-${currencyCountry}`] : []), // user language as spoken in currency country
-            ...(isBrowserEnv ? [navigatorLanguage] : []), // fallback
-            'en-US', // en-US as last resort
+            ...(isBrowserEnv
+                ? [`${navigator.language.substring(0, 2)}-${currencyCountry}`]
+                : []
+            ), // user language as spoken in currency country
+            ...(isBrowserEnv ? [navigator.language] : []), // fallback
         ];
+
         let supportsDisplayNames = 'DisplayNames' in Intl;
         // also normalizes the locales
         [this.locale] = supportsDisplayNames
