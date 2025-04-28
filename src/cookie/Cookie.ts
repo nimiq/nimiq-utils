@@ -4,6 +4,8 @@
  * @returns {string|null} Returns the value of the Cookie, if this one was found. Otherwise return null.
  */
 export function getCookie(cookieName: string): string | null {
+    if (typeof globalThis.document === 'undefined') return null;
+
     const match = document.cookie.match(new RegExp(`(^| )${encodeURIComponent(cookieName)}=([^;]+)`));
     return match && decodeURIComponent(match[2]);
 }
@@ -37,6 +39,8 @@ export function setCookie(
         samesite?: 'lax'|'strict'|'none',
     },
 ) {
+    if (typeof globalThis.document === 'undefined') return;
+
     if (typeof cookieName !== 'string') throw new Error('cookieName must be a string');
     if (typeof cookieValue !== 'string') throw new Error('cookieValue must be a string');
 
@@ -80,5 +84,7 @@ export function setCookie(
  * @param {string} cookieName - the Name / Key of the Cookie to be unset / removed
  */
 export function unsetCookie(cookieName: string) {
+    if (typeof globalThis.document === 'undefined') return;
+
     document.cookie = `${encodeURIComponent(cookieName)}=;max-age=0`;
 }

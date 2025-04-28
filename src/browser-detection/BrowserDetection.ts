@@ -7,6 +7,10 @@ class BrowserDetection {
         };
     }
 
+    private static isBrowser(): boolean {
+        return typeof globalThis.window !== 'undefined' && typeof globalThis.document !== 'undefined';
+    }
+
     /* eslint-disable max-len */
     // Also includes tablets.
     // Inspired by:
@@ -15,6 +19,7 @@ class BrowserDetection {
     // - http://detectmobilebrowsers.com/about (tablets)
     /* eslint-enable max-len */
     static isMobile() {
+        if (!this.isBrowser()) return false;
         return /i?Phone|iP(ad|od)|Android|BlackBerry|Opera Mini|WPDesktop|Mobi(le)?|Silk/i.test(navigator.userAgent);
     }
 
@@ -37,6 +42,7 @@ class BrowserDetection {
     // - Brave: is indistinguishable from Chrome user agents
     /* eslint-enable max-len */
     static detectBrowser() {
+        if (!this.isBrowser()) return BrowserDetection.Browser.UNKNOWN;
         if (BrowserDetection._detectedBrowser) {
             return BrowserDetection._detectedBrowser;
         }
@@ -69,6 +75,7 @@ class BrowserDetection {
     }
 
     static detectVersion() {
+        if (!this.isBrowser()) return null;
         if (typeof BrowserDetection._detectedVersion !== 'undefined') {
             return BrowserDetection._detectedVersion;
         }
@@ -111,34 +118,42 @@ class BrowserDetection {
     }
 
     static isChrome() {
+        if (!this.isBrowser()) return false;
         return BrowserDetection.detectBrowser() === BrowserDetection.Browser.CHROME;
     }
 
     static isFirefox() {
+        if (!this.isBrowser()) return false;
         return BrowserDetection.detectBrowser() === BrowserDetection.Browser.FIREFOX;
     }
 
     static isOpera() {
+        if (!this.isBrowser()) return false;
         return BrowserDetection.detectBrowser() === BrowserDetection.Browser.OPERA;
     }
 
     static isEdge() {
+        if (!this.isBrowser()) return false;
         return BrowserDetection.detectBrowser() === BrowserDetection.Browser.EDGE;
     }
 
     static isSafari() {
+        if (!this.isBrowser()) return false;
         return BrowserDetection.detectBrowser() === BrowserDetection.Browser.SAFARI;
     }
 
     static isBrave() {
+        if (!this.isBrowser()) return false;
         return BrowserDetection.detectBrowser() === BrowserDetection.Browser.BRAVE;
     }
 
     static isIOS() {
+        if (!this.isBrowser()) return false;
         return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     }
 
     static isBadIOS() {
+        if (!this.isBrowser()) return false;
         const browserInfo = BrowserDetection.getBrowserInfo();
         // Check for iOS < 11 or 11.2 which has the WASM bug
         return browserInfo.browser === BrowserDetection.Browser.SAFARI
@@ -154,6 +169,7 @@ class BrowserDetection {
      * @returns {Promise}
      */
     static isPrivateMode() {
+        if (!this.isBrowser()) return Promise.resolve(false);
         return new Promise((resolve) => {
             const on = () => resolve(true); // is in private mode
             const off = () => resolve(false); // not private mode

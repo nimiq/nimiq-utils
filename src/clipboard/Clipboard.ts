@@ -1,5 +1,7 @@
 export class Clipboard {
-    public static copy(text: string) {
+    public static copy(text: string): boolean {
+        if (typeof globalThis.document === 'undefined') return false;
+
         // Simplified and typed version of https://github.com/sindresorhus/copy-text-to-clipboard
         // Additionally added a fix for correctly restoring selections in input fields.
         const element = document.createElement('textarea');
