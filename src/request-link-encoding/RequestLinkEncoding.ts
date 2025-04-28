@@ -128,7 +128,7 @@ export function createRequestLink(
     recipient: string,
     amountOrOptions?: number | GeneralRequestLinkOptions, // amount in Nim or options object
     message?: string,
-    basePath: string = typeof globalThis.window !== 'undefined' ? globalThis.window.location.host : '',
+    basePath: string = typeof globalThis.window !== 'undefined' ? globalThis.window.location.host : 'wallet.nimiq.com',
 ): string {
     if (typeof amountOrOptions === 'object') {
         switch (amountOrOptions.currency) {
@@ -224,9 +224,13 @@ export function parseRequestLink<C extends Currency>(requestLink: string | URL, 
     return null;
 }
 
+const defaultCreateNimiqRequestLinkOptions: NimiqRequestLinkOptions = {
+    basePath: typeof globalThis.window !== 'undefined' ? globalThis.window.location.host : 'wallet.nimiq.com',
+};
+
 export function createNimiqRequestLink(
     recipient: string,
-    options: NimiqRequestLinkOptions = { basePath: typeof globalThis.window !== 'undefined' ? globalThis.window.location.host : '' },
+    options: NimiqRequestLinkOptions = defaultCreateNimiqRequestLinkOptions,
 ): string {
     const { amount, message, label, basePath, type = NimiqRequestLinkType.SAFE } = options;
 
