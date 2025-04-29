@@ -10,6 +10,14 @@ import {
     PROOF_OF_STAKE_MIGRATION_DATE_TESTNET,
 } from './constants';
 
+function getNetwork(network?: string) {
+    if (!network) return { isMainnet: true, isTestnet: false }; // default to mainnet
+    if (network?.toLowerCase().includes('test')) return { isMainnet: false, isTestnet: true };
+    if (network?.toLowerCase().includes('main')) return { isMainnet: true, isTestnet: false };
+    console.warn(`Network "${network}" not implemented.`);
+    return { isMainnet: false, isTestnet: false };
+}
+
 export interface BaseAlbatrossPolicyOptions {
     /**
      * Whether to use the testnet block height for proof-of-stake migration.
@@ -23,25 +31,34 @@ export interface BaseAlbatrossPolicyOptions {
     migrationBlock?: number;
 }
 
+/* eslint-disable max-len */
 /**
  * Gets the appropriate migration block based on options.
  * If a custom migrationBlock is provided in options, that takes precedence.
- * Otherwise, checks if testnet is true or a string containing 'test'.
+ * Otherwise, it checks if the network is testnet and returns the corresponding migration block.
+ *
+ * Check https://github.com/nimiq/core-rs-albatross/blob/7b6cb0f5f90afff74ccaa14fe33dec3622ce228e/primitives/src/networks.rs#L74-L85 to see the network names.
  */
-const getMigrationBlock = (options: BaseAlbatrossPolicyOptions = { network: 'main-albatross' }): number => {
+export function getMigrationBlock(options: BaseAlbatrossPolicyOptions = { network: 'main-albatross' }): number {
     if (options.migrationBlock !== undefined) return options.migrationBlock;
-    const isTestnet = options.network?.toLowerCase().includes('test');
-    return isTestnet ? PROOF_OF_STAKE_MIGRATION_BLOCK_TESTNET : PROOF_OF_STAKE_MIGRATION_BLOCK;
-};
+    const { isMainnet, isTestnet } = getNetwork(options.network);
+    if (isTestnet) return PROOF_OF_STAKE_MIGRATION_BLOCK_TESTNET;
+    if (isMainnet) return PROOF_OF_STAKE_MIGRATION_BLOCK;
+    throw new Error(`Network "${options.network}" not implemented.`);
+}
+/* eslint-disable-next-line max-len */
 
 /**
  * Returns information about the migration block based on the network.
  */
-export function getMigrationBlockInfo({ network }: Pick<BaseAlbatrossPolicyOptions, 'network'>) {
+export function getMigrationBlockInfo({ network }: Pick<BaseAlbatrossPolicyOptions, 'network'> = {}) {
     const migrationBlock = getMigrationBlock({ network });
-    const isTestnet = network?.toLowerCase().includes('test');
+    const { isTestnet, isMainnet } = getNetwork(network);
+    if (!isTestnet && !isMainnet) {
+        throw new Error(`Network "${network}" not implemented.`);
+    }
     const date = isTestnet ? PROOF_OF_STAKE_MIGRATION_DATE_TESTNET : PROOF_OF_STAKE_MIGRATION_DATE;
-    const timestamp = Math.floor(date.getTime());
+    const timestamp = date.getTime();
     return { timestamp, date, migrationBlock };
 }
 
@@ -98,6 +115,8 @@ export function isMacroBlockAt(blockNumber: number, options: BaseAlbatrossPolicy
  * Checks if a given block number is an election block.
  */
 export function isElectionBlockAt(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): boolean {
+    const migrationBlock = getMigrationBlock(options);
+    if (blockNumber < migrationBlock) return false;
     return epochIndexAt(blockNumber, options) === BLOCKS_PER_EPOCH - 1;
 }
 
