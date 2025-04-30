@@ -10,46 +10,52 @@ import {
     PROOF_OF_STAKE_MIGRATION_DATE_TESTNET,
 } from './constants';
 
+/**
+ * Determine network flags.
+ * @param network - Optional network name or identifier.
+ * @returns Flags for mainnet/testnet.
+ */
 function getNetwork(network?: string) {
-    if (!network) return { isMainnet: true, isTestnet: false }; // default to mainnet
-    if (network?.toLowerCase().includes('test')) return { isMainnet: false, isTestnet: true };
-    if (network?.toLowerCase().includes('main')) return { isMainnet: true, isTestnet: false };
+    if (!network) return { isMainnet: true, isTestnet: false };
+    const nl = network.toLowerCase();
+    if (nl.includes('test')) return { isMainnet: false, isTestnet: true };
+    if (nl.includes('main')) return { isMainnet: true, isTestnet: false };
     console.warn(`Network "${network}" not implemented.`);
     return { isMainnet: false, isTestnet: false };
 }
 
 export interface BaseAlbatrossPolicyOptions {
+    /* eslint-disable max-len */
     /**
-     * Whether to use the testnet block height for proof-of-stake migration.
-     * Can be a boolean or a string containing 'test' to use testnet values.
+     * Network name for selecting PoS migration values. Different networks have different migration blocks and therefore
+     * different epoch and batch calculations.
+     * Check https://github.com/nimiq/core-rs-albatross/blob/7b6cb0f5f90afff74ccaa14fe33dec3622ce228e/primitives/src/networks.rs#L74-L85 to see the network names.
      * @default 'main-albatross'
      */
     network?: string;
+    /* eslint-enable max-len */
+
     /**
-     * Custom migration block to use instead of the default.
+     * Override the default migration block.
      */
     migrationBlock?: number;
 }
 
-/* eslint-disable max-len */
 /**
- * Gets the appropriate migration block based on options.
- * If a custom migrationBlock is provided in options, that takes precedence.
- * Otherwise, it checks if the network is testnet and returns the corresponding migration block.
- *
- * Check https://github.com/nimiq/core-rs-albatross/blob/7b6cb0f5f90afff74ccaa14fe33dec3622ce228e/primitives/src/networks.rs#L74-L85 to see the network names.
+ * Get the PoS migration block height.
+ * @param options - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function getMigrationBlock(options: BaseAlbatrossPolicyOptions = { network: 'main-albatross' }): number {
+export function getMigrationBlock(options: BaseAlbatrossPolicyOptions = { network: 'main-albatross' }) {
     if (options.migrationBlock !== undefined) return options.migrationBlock;
-    const { isMainnet, isTestnet } = getNetwork(options.network);
+    const { isTestnet, isMainnet } = getNetwork(options.network);
     if (isTestnet) return PROOF_OF_STAKE_MIGRATION_BLOCK_TESTNET;
     if (isMainnet) return PROOF_OF_STAKE_MIGRATION_BLOCK;
     throw new Error(`Network "${options.network}" not implemented.`);
 }
-/* eslint-disable-next-line max-len */
 
 /**
- * Returns information about the migration block based on the network.
+ * Get migration block info for a network.
+ * @param opts - Contains optional network. {@link BaseAlbatrossPolicyOptions}
  */
 export function getMigrationBlockInfo({ network }: Pick<BaseAlbatrossPolicyOptions, 'network'> = {}) {
     const migrationBlock = getMigrationBlock({ network });
@@ -57,229 +63,195 @@ export function getMigrationBlockInfo({ network }: Pick<BaseAlbatrossPolicyOptio
     if (!isTestnet && !isMainnet) {
         throw new Error(`Network "${network}" not implemented.`);
     }
-    const date = isTestnet ? PROOF_OF_STAKE_MIGRATION_DATE_TESTNET : PROOF_OF_STAKE_MIGRATION_DATE;
-    const timestamp = date.getTime();
-    return { timestamp, date, migrationBlock };
+    const date = isTestnet
+        ? PROOF_OF_STAKE_MIGRATION_DATE_TESTNET
+        : PROOF_OF_STAKE_MIGRATION_DATE;
+    return { migrationBlock, date, timestamp: date.getTime() };
 }
 
 /**
- * Returns the epoch number for a given block number.
+ * Compute epoch number at a block.
+ * @param blockNumber - Block height.
+ * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function epochAt(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): number {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber <= migrationBlock) return 0;
-    const offset = blockNumber - migrationBlock;
-    return Math.floor((offset + BLOCKS_PER_EPOCH - 1) / BLOCKS_PER_EPOCH);
+export function epochAt(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    const genesis = getMigrationBlock(opts);
+    if (blockNumber <= genesis) return 0;
+    return Math.floor((blockNumber - genesis + BLOCKS_PER_EPOCH - 1) / BLOCKS_PER_EPOCH);
 }
 
 /**
- * Returns the epoch index for a given block number.
- * Adjusted to add BLOCKS_PER_EPOCH - 1 before taking the modulo.
+ * Compute epoch index within its epoch.
+ * @param blockNumber - Block height.
+ * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function epochIndexAt(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): number {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber < migrationBlock) return blockNumber;
-    return (blockNumber - migrationBlock + BLOCKS_PER_EPOCH - 1) % BLOCKS_PER_EPOCH;
+export function epochIndexAt(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    const genesis = getMigrationBlock(opts);
+    if (blockNumber < genesis) return blockNumber;
+    return (blockNumber - genesis + BLOCKS_PER_EPOCH - 1) % BLOCKS_PER_EPOCH;
 }
 
 /**
- * Returns the batch number for a given block number.
+ * Compute batch number at a block.
+ * @param blockNumber - Block height.
+ * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function batchAt(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): number {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber <= migrationBlock) return 0;
-    const offset = blockNumber - migrationBlock;
-    return Math.floor((offset + BLOCKS_PER_BATCH - 1) / BLOCKS_PER_BATCH);
+export function batchAt(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    const genesis = getMigrationBlock(opts);
+    if (blockNumber <= genesis) return 0;
+    return Math.floor((blockNumber - genesis + BLOCKS_PER_BATCH - 1) / BLOCKS_PER_BATCH);
 }
 
 /**
- * Returns the batch index for a given block number.
- * Adjusted to add BLOCKS_PER_BATCH - 1 before taking the modulo.
+ * Compute batch index within its batch.
+ * @param blockNumber - Block height.
+ * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function batchIndexAt(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): number {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber < migrationBlock) return blockNumber;
-    return (blockNumber - migrationBlock + BLOCKS_PER_BATCH - 1) % BLOCKS_PER_BATCH;
+export function batchIndexAt(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    const genesis = getMigrationBlock(opts);
+    if (blockNumber < genesis) return blockNumber;
+    return (blockNumber - genesis + BLOCKS_PER_BATCH - 1) % BLOCKS_PER_BATCH;
 }
 
 /**
- * Checks if a given block number is a macro block.
+ * Check if a block is a macro block.
+ * @param blockNumber - Block height.
+  * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function isMacroBlockAt(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): boolean {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber < migrationBlock) return false;
-    return batchIndexAt(blockNumber, options) === BLOCKS_PER_BATCH - 1;
+export function isMacroBlockAt(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    return blockNumber >= getMigrationBlock(opts)
+        && batchIndexAt(blockNumber, opts) === BLOCKS_PER_BATCH - 1;
 }
 
 /**
- * Checks if a given block number is an election block.
+ * Check if a block is an election block.
+ * @param blockNumber - Block height.
+  * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function isElectionBlockAt(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): boolean {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber < migrationBlock) return false;
-    return epochIndexAt(blockNumber, options) === BLOCKS_PER_EPOCH - 1;
+export function isElectionBlockAt(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    return blockNumber >= getMigrationBlock(opts)
+        && epochIndexAt(blockNumber, opts) === BLOCKS_PER_EPOCH - 1;
 }
 
 /**
- * Checks if a given block number is a micro block.
+ * Check if a block is a micro block.
+ * @param blockNumber - Block height.
+  * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function isMicroBlockAt(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): boolean {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber < migrationBlock) return false;
-    return !isMacroBlockAt(blockNumber, options);
+export function isMicroBlockAt(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    return blockNumber >= getMigrationBlock(opts) && !isMacroBlockAt(blockNumber, opts);
 }
 
 /**
- * Returns the next macro block number after the given block number.
+ * Get next macro block after a block.
+ * @param blockNumber - Block height.
+  * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function macroBlockAfter(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): number | undefined {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber < migrationBlock) return migrationBlock;
-
-    const offset = blockNumber - migrationBlock;
-    const batchCount = Math.floor(offset / BLOCKS_PER_BATCH) + 1;
-
-    // Check for safe integer multiplication
-    const mulResult = batchCount * BLOCKS_PER_BATCH;
-    if (!Number.isSafeInteger(mulResult)) return undefined;
-
-    // Check for safe integer addition
-    const addResult = mulResult + migrationBlock;
-    if (!Number.isSafeInteger(addResult)) return undefined;
-
-    return addResult;
+export function macroBlockAfter(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    const genesis = getMigrationBlock(opts);
+    if (blockNumber < genesis) return genesis;
+    const next = (Math.floor((blockNumber - genesis) / BLOCKS_PER_BATCH) + 1)
+        * BLOCKS_PER_BATCH + genesis;
+    return Number.isSafeInteger(next) ? next : undefined;
 }
 
 /**
- * Returns the last macro block number before the given block number.
+ * Get last macro block before a block.
+ * @param blockNumber - Block height.
+  * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function lastMacroBlock(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): number | undefined {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber < migrationBlock) throw new Error('No macro blocks before proof-of-stake migration');
-
-    const offset = blockNumber - migrationBlock;
-    const batchCount = Math.floor(offset / BLOCKS_PER_BATCH);
-
-    // Check for safe integer multiplication
-    const mulResult = batchCount * BLOCKS_PER_BATCH;
-    if (!Number.isSafeInteger(mulResult)) return undefined;
-
-    // Check for safe integer addition
-    const addResult = mulResult + migrationBlock;
-    if (!Number.isSafeInteger(addResult)) return undefined;
-
-    return addResult;
+export function lastMacroBlock(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    const genesis = getMigrationBlock(opts);
+    if (blockNumber < genesis) throw new Error('No macro blocks before PoS migration');
+    const prev = Math.floor((blockNumber - genesis) / BLOCKS_PER_BATCH)
+        * BLOCKS_PER_BATCH + genesis;
+    return Number.isSafeInteger(prev) ? prev : undefined;
 }
 
 /**
- * Returns the next election block number after the given block number.
+ * Get next election block after a block.
+ * @param blockNumber - Block height.
+  * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function electionBlockAfter(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): number | undefined {
-    const migrationBlock = getMigrationBlock(options);
-    if (blockNumber < migrationBlock) return migrationBlock;
-
-    const offset = blockNumber - migrationBlock;
-    const epochCount = Math.floor(offset / BLOCKS_PER_EPOCH) + 1;
-
-    // Check for safe integer multiplication
-    const mulResult = epochCount * BLOCKS_PER_EPOCH;
-    if (!Number.isSafeInteger(mulResult)) return undefined;
-
-    // Check for safe integer addition
-    const addResult = mulResult + migrationBlock;
-    if (!Number.isSafeInteger(addResult)) return undefined;
-
-    return addResult;
+export function electionBlockAfter(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    const genesis = getMigrationBlock(opts);
+    if (blockNumber < genesis) return genesis;
+    const next = (Math.floor((blockNumber - genesis) / BLOCKS_PER_EPOCH) + 1)
+        * BLOCKS_PER_EPOCH + genesis;
+    return Number.isSafeInteger(next) ? next : undefined;
 }
 
 /**
- * Returns the first block number of the given epoch.
+ * Get first block of an epoch.
+ * @param epoch - Epoch number (1-based).
+  * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function firstBlockOf(epoch: number, options: BaseAlbatrossPolicyOptions = {}): number | undefined {
+export function firstBlockOf(epoch: number, opts: BaseAlbatrossPolicyOptions = {}) {
     if (epoch <= 0) return undefined;
-
-    const migrationBlock = getMigrationBlock(options);
-
-    // Check for safe integer subtraction
-    const subResult = epoch - 1;
-    if (!Number.isSafeInteger(subResult)) return undefined;
-
-    // Check for safe integer multiplication
-    const mulResult = subResult * BLOCKS_PER_EPOCH;
-    if (!Number.isSafeInteger(mulResult)) return undefined;
-
-    // Check for safe integer addition
-    const addResult = mulResult + migrationBlock + 1;
-    if (!Number.isSafeInteger(addResult)) return undefined;
-
-    return addResult;
+    const genesis = getMigrationBlock(opts);
+    const block = (epoch - 1) * BLOCKS_PER_EPOCH + genesis + 1;
+    return Number.isSafeInteger(block) ? block : undefined;
 }
 
 /**
- * Returns the block number after the jail period.
+ * Get block after jail period.
+ * @param blockNumber - Starting block height.
  */
-export function blockAfterJail(blockNumber: number): number | undefined {
-    const mulResult = BLOCKS_PER_EPOCH * JAIL_EPOCHS;
-    if (!Number.isSafeInteger(mulResult)) return undefined;
-    const addResult = blockNumber + mulResult + 1;
-    if (!Number.isSafeInteger(addResult)) return undefined;
-    return addResult;
+export function blockAfterJail(blockNumber: number) {
+    const result = blockNumber + BLOCKS_PER_EPOCH * JAIL_EPOCHS + 1;
+    return Number.isSafeInteger(result) ? result : undefined;
 }
 
 /**
- * Returns the election block number for a given epoch.
+ * Get election block for an epoch.
+ * @param epoch - Epoch number.
+  * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function electionBlockOf(epoch: number, options: BaseAlbatrossPolicyOptions = {}): number | undefined {
+export function electionBlockOf(epoch: number, opts: BaseAlbatrossPolicyOptions = {}) {
     if (epoch < 0) return undefined;
-    const genesisBlock = getMigrationBlock(options);
-    const mulResult = epoch * BLOCKS_PER_EPOCH;
-    if (!Number.isSafeInteger(mulResult)) return undefined;
-    const addResult = mulResult + genesisBlock;
-    if (!Number.isSafeInteger(addResult)) return undefined;
-    return addResult;
+    const genesis = getMigrationBlock(opts);
+    const block = epoch * BLOCKS_PER_EPOCH + genesis;
+    return Number.isSafeInteger(block) ? block : undefined;
 }
 
 /**
- * Calculates rewards penalty due to batch delay.
+ * Calculate reward penalty from batch delay.
+ * @param delayMs - Delay in ms.
  */
-export function batchDelayPenalty(delayMs: number): number {
+export function batchDelayPenalty(delayMs: number) {
     if (!Number.isSafeInteger(delayMs) || delayMs < 0) {
         return MINIMUM_REWARDS_PERCENTAGE;
     }
-
-    // Calculate (BLOCKS_DELAY_DECAY ** delayMs)
-    const decayPower = BLOCKS_DELAY_DECAY ** delayMs;
-    // Calculate final decay = decayPower ** delayMs
-    const finalDecay = decayPower ** delayMs;
-
-    return (1 - MINIMUM_REWARDS_PERCENTAGE) * finalDecay + MINIMUM_REWARDS_PERCENTAGE;
+    const decay = BLOCKS_DELAY_DECAY ** delayMs;
+    const finalDecay = decay ** delayMs;
+    return finalDecay * (1 - MINIMUM_REWARDS_PERCENTAGE) + MINIMUM_REWARDS_PERCENTAGE;
 }
 
 /**
- * Returns true if the block number is the first batch of an epoch.
+ * Check if block starts the first batch of an epoch.
+ * @param blockNumber - Block height.
+  * @param opts - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function firstBatchOfEpoch(blockNumber: number, options: BaseAlbatrossPolicyOptions = {}): boolean {
-    return epochIndexAt(blockNumber, options) < BLOCKS_PER_BATCH;
+export function firstBatchOfEpoch(blockNumber: number, opts: BaseAlbatrossPolicyOptions = {}) {
+    return epochIndexAt(blockNumber, opts) < BLOCKS_PER_BATCH;
 }
 
 /**
- * Returns the last block number of the reporting window for a given block number.
+ * Get last block of reporting window.
+ * @param blockNumber - Block height.
  */
-export function lastBlockOfReportingWindow(blockNumber: number): number | undefined {
-    const addResult = blockNumber + BLOCKS_PER_EPOCH;
-    if (!Number.isSafeInteger(addResult)) return undefined;
-    return addResult;
+export function lastBlockOfReportingWindow(blockNumber: number) {
+    const last = blockNumber + BLOCKS_PER_EPOCH;
+    return Number.isSafeInteger(last) ? last : undefined;
 }
 
 /**
- * Returns the block number immediately after the reporting window for a given block number.
+ * Get block immediately after the reporting window.
+ * @param blockNumber - Block height.
  */
-export function blockAfterReportingWindow(blockNumber: number): number | undefined {
-    const lastBlock = lastBlockOfReportingWindow(blockNumber);
-    if (lastBlock === undefined) return undefined;
-
-    const addResult = lastBlock + 1;
-    if (!Number.isSafeInteger(addResult)) return undefined;
-
-    return addResult;
+export function blockAfterReportingWindow(blockNumber: number) {
+    const last = lastBlockOfReportingWindow(blockNumber);
+    if (last === undefined) return undefined;
+    const next = last + 1;
+    return Number.isSafeInteger(next) ? next : undefined;
 }
