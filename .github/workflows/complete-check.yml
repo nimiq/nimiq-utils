@@ -2,7 +2,8 @@ name: Complete Check
 
 on:
   - push
-  - pull_request
+  # - pull_request
+  - workflow_dispatch
 
 jobs:
   build:
@@ -16,15 +17,15 @@ jobs:
     - name: Install modules
       run: yarn
     - name: Run
-      # env:
+      env:
       #   COINGECKO_PROXY_AUTHORIZATION_HEADER: ${{ secrets.COINGECKO_PROXY_AUTHORIZATION_HEADER }}
       #   CI_AUTHORIZATION_TOKEN: ${{ secrets.CI_AUTHORIZATION_TOKEN }}
 
       # For Albatross Policy Tests
-      #   NIMIQ_RPC_URL: ${{ secrets.NIMIQ_RPC_URL }}
-      #   NIMIQ_RPC_USERNAME: ${{ secrets.NIMIQ_RPC_USERNAME }}
-      #   NIMIQ_RPC_PASSWORD: ${{ secrets.NIMIQ_RPC_PASSWORD }}
-      #   NIMIQ_TESTNET_RPC_URL: ${{ secrets.NIMIQ_TESTNET_RPC_URL }}
-      #   NIMIQ_TESTNET_RPC_USERNAME: ${{ secrets.NIMIQ_TESTNET_RPC_USERNAME }}
-      #   NIMIQ_TESTNET_RPC_PASSWORD: ${{ secrets.NIMIQ_TESTNET_RPC_PASSWORD }}
+        NIMIQ_RPC_URL: ${{ secrets.NIMIQ_RPC_URL }}
+        NIMIQ_RPC_USERNAME: ${{ secrets.NIMIQ_RPC_USERNAME }}
+        NIMIQ_RPC_PASSWORD: ${{ secrets.NIMIQ_RPC_PASSWORD }}
+        NIMIQ_TESTNET_RPC_URL: ${{ secrets.NIMIQ_TESTNET_RPC_URL }}
+        NIMIQ_TESTNET_RPC_USERNAME: ${{ secrets.NIMIQ_TESTNET_RPC_USERNAME }}
+        NIMIQ_TESTNET_RPC_PASSWORD: ${{ secrets.NIMIQ_TESTNET_RPC_PASSWORD }}
       run: yarn pr
