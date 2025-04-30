@@ -103,10 +103,10 @@
     }
   },
   "dependencies": {
-    "big-integer": "^1.6.44",
-    "dotenv": "^16.5.0"
+    "big-integer": "^1.6.44"
   },
   "devDependencies": {
+    "dotenv": "^16.5.0",
     "@types/jest": "^29.5.11",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
