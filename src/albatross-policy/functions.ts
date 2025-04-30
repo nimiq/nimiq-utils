@@ -45,24 +45,26 @@ export interface BaseAlbatrossPolicyOptions {
  * Get the PoS migration block height.
  * @param options - Policy options. {@link BaseAlbatrossPolicyOptions}
  */
-export function getMigrationBlock(options: BaseAlbatrossPolicyOptions = { network: 'main-albatross' }) {
-    if (options.migrationBlock !== undefined) return options.migrationBlock;
-    const { isTestnet, isMainnet } = getNetwork(options.network);
+export function getMigrationBlock(options: BaseAlbatrossPolicyOptions = {}) {
+    const { network = 'main-albatross', migrationBlock } = options;
+    if (migrationBlock !== undefined) return migrationBlock;
+    const { isTestnet, isMainnet } = getNetwork(network);
     if (isTestnet) return PROOF_OF_STAKE_MIGRATION_BLOCK_TESTNET;
     if (isMainnet) return PROOF_OF_STAKE_MIGRATION_BLOCK;
-    throw new Error(`Network "${options.network}" not implemented.`);
+    throw new Error(`Network "${network}" not implemented.`);
 }
 
 /**
  * Get migration block info for a network.
  * @param opts - Contains optional network. {@link BaseAlbatrossPolicyOptions}
  */
-export function getMigrationBlockInfo({ network }: Pick<BaseAlbatrossPolicyOptions, 'network'> = {}) {
-    const migrationBlock = getMigrationBlock({ network });
+export function getMigrationBlockInfo(options: BaseAlbatrossPolicyOptions = {}) {
+    const { network } = options;
     const { isTestnet, isMainnet } = getNetwork(network);
     if (!isTestnet && !isMainnet) {
         throw new Error(`Network "${network}" not implemented.`);
     }
+    const migrationBlock = getMigrationBlock(options);
     const date = isTestnet
         ? PROOF_OF_STAKE_MIGRATION_DATE_TESTNET
         : PROOF_OF_STAKE_MIGRATION_DATE;
