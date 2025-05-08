@@ -68,7 +68,7 @@ export function getMigrationBlockInfo(options: BaseAlbatrossPolicyOptions = {}) 
     const date = isTestnet
         ? PROOF_OF_STAKE_MIGRATION_DATE_TESTNET
         : PROOF_OF_STAKE_MIGRATION_DATE;
-    return { migrationBlock, date, timestamp: date.getTime() };
+    return { migrationBlock, date, timestamp: date.getTime(), isTestnet, isMainnet };
 }
 
 /**

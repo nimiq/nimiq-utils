@@ -4,6 +4,8 @@
  * This test validates our client-side calculations match the RPC implementation.
  */
 
+/* eslint-disable max-len */
+
 import * as dotenv from 'dotenv';
 import { BLOCKS_PER_EPOCH } from '../src/albatross-policy/constants';
 import * as functions from '../src/albatross-policy/functions';
