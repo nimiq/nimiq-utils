@@ -9,37 +9,9 @@
 import * as dotenv from 'dotenv';
 import { BLOCKS_PER_EPOCH } from '../src/albatross-policy/constants';
 import * as functions from '../src/albatross-policy/functions';
+import { rpcCall } from './utils/rpc-utils-test';
 
 dotenv.config();
-
-interface RpcOptions {
-    url?: string;
-    username?: string;
-    password?: string;
-    network?: string;
-}
-
-async function rpcCall(method: string, params: any[], options: RpcOptions): Promise<any> {
-    if (!options.url) {
-        throw new Error('RPC URL is required');
-    }
-
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-    // Add basic auth if credentials are provided
-    if (options.username && options.password) {
-        const auth = Buffer.from(`${options.username}:${options.password}`).toString('base64');
-        headers.Authorization = `Basic ${auth}`;
-    }
-
-    const body = JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 });
-    const fetchOptions = { method: 'POST', headers, body };
-    const response = await fetch(options.url, fetchOptions);
-    if (!response.ok) throw new Error(`HTTP error: ${JSON.stringify({ response, text: await response.text() })}.`);
-    const responseBody = await response.json();
-    if (responseBody.error) throw new Error(`RPC error: ${responseBody.error.message}`);
-    return responseBody.result.data;
-}
 
 describe('Albatross Policy RPC Comparisons', () => {
     // Define networks to test
@@ -144,9 +116,9 @@ describe('Albatross Policy RPC Comparisons', () => {
                             return;
                         }
 
-                        it(`matches RPC ${rpcName} for block ${block}`, async () => {
+                        it(`matches RPC ${rpcName} for block ${block} on ${network.name}`, async () => {
                             const rpcParams = [block];
-                            const expected = await rpcCall(rpcName, rpcParams, { url, username, password });
+                            const expected = await rpcCall(rpcName, rpcParams, { url, username, password, network: networkParam });
                             const actual = fn(block, { network: networkParam });
                             expect(actual).toEqual(expected);
                         });
@@ -159,9 +131,9 @@ describe('Albatross Policy RPC Comparisons', () => {
                 const fn = functions[fnName];
                 describe(fnName, () => {
                     epochs.forEach((epoch) => {
-                        it(`matches RPC ${rpcName} for epoch ${epoch}`, async () => {
+                        it(`matches RPC ${rpcName} for epoch ${epoch} on ${network.name}`, async () => {
                             const rpcParams = [epoch];
-                            const expected = await rpcCall(rpcName, rpcParams, { url, username, password });
+                            const expected = await rpcCall(rpcName, rpcParams, { url, username, password, network: networkParam });
                             const actual = fn(epoch, { network: networkParam });
                             expect(actual).toEqual(expected);
                         });

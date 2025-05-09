@@ -1,0 +1,4381 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3455999 on mainnet: getBatchAt([3455999]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3455999 on mainnet: getBatchAt([3455999]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3455999 on mainnet: getBatchAt([3455999]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3455999,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3456000 on mainnet: getBatchAt([3456000]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3456000 on mainnet: getBatchAt([3456000]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3456000 on mainnet: getBatchAt([3456000]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3456000,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3456001 on mainnet: getBatchAt([3456001]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3456001 on mainnet: getBatchAt([3456001]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3456001 on mainnet: getBatchAt([3456001]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3456001,
+  ],
+  "result": 1,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3672100 on mainnet: getBatchAt([3672100]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3672100 on mainnet: getBatchAt([3672100]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 3672100 on mainnet: getBatchAt([3672100]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3672100,
+  ],
+  "result": 3602,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 435456000 on mainnet: getBatchAt([435456000]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 435456000 on mainnet: getBatchAt([435456000]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchAt matches RPC getBatchAt for block 435456000 on mainnet: getBatchAt([435456000]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    435456000,
+  ],
+  "result": 7200000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3455999 on mainnet: getBatchIndexAt([3455999]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3455999 on mainnet: getBatchIndexAt([3455999]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3455999 on mainnet: getBatchIndexAt([3455999]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3455999,
+  ],
+  "result": 3455999,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3456000 on mainnet: getBatchIndexAt([3456000]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3456000 on mainnet: getBatchIndexAt([3456000]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3456000 on mainnet: getBatchIndexAt([3456000]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3456000,
+  ],
+  "result": 59,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3456001 on mainnet: getBatchIndexAt([3456001]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3456001 on mainnet: getBatchIndexAt([3456001]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3456001 on mainnet: getBatchIndexAt([3456001]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3456001,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3672100 on mainnet: getBatchIndexAt([3672100]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3672100 on mainnet: getBatchIndexAt([3672100]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 3672100 on mainnet: getBatchIndexAt([3672100]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3672100,
+  ],
+  "result": 39,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 435456000 on mainnet: getBatchIndexAt([435456000]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 435456000 on mainnet: getBatchIndexAt([435456000]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet batchIndexAt matches RPC getBatchIndexAt for block 435456000 on mainnet: getBatchIndexAt([435456000]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    435456000,
+  ],
+  "result": 59,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3455999 on mainnet: getBlockAfterJail([3455999]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3455999 on mainnet: getBlockAfterJail([3455999]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3455999 on mainnet: getBlockAfterJail([3455999]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3455999,
+  ],
+  "result": 3801600,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3456000 on mainnet: getBlockAfterJail([3456000]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3456000 on mainnet: getBlockAfterJail([3456000]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3456000 on mainnet: getBlockAfterJail([3456000]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3456000,
+  ],
+  "result": 3801601,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3456001 on mainnet: getBlockAfterJail([3456001]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3456001 on mainnet: getBlockAfterJail([3456001]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3456001 on mainnet: getBlockAfterJail([3456001]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3456001,
+  ],
+  "result": 3801602,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3672100 on mainnet: getBlockAfterJail([3672100]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3672100 on mainnet: getBlockAfterJail([3672100]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 3672100 on mainnet: getBlockAfterJail([3672100]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3672100,
+  ],
+  "result": 4017701,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 435456000 on mainnet: getBlockAfterJail([435456000]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 435456000 on mainnet: getBlockAfterJail([435456000]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterJail matches RPC getBlockAfterJail for block 435456000 on mainnet: getBlockAfterJail([435456000]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    435456000,
+  ],
+  "result": 435801601,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3455999 on mainnet: getBlockAfterReportingWindow([3455999]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3455999 on mainnet: getBlockAfterReportingWindow([3455999]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3455999 on mainnet: getBlockAfterReportingWindow([3455999]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3455999,
+  ],
+  "result": 3499200,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3456000 on mainnet: getBlockAfterReportingWindow([3456000]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3456000 on mainnet: getBlockAfterReportingWindow([3456000]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3456000 on mainnet: getBlockAfterReportingWindow([3456000]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3456000,
+  ],
+  "result": 3499201,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3456001 on mainnet: getBlockAfterReportingWindow([3456001]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3456001 on mainnet: getBlockAfterReportingWindow([3456001]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3456001 on mainnet: getBlockAfterReportingWindow([3456001]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3456001,
+  ],
+  "result": 3499202,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3672100 on mainnet: getBlockAfterReportingWindow([3672100]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3672100 on mainnet: getBlockAfterReportingWindow([3672100]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3672100 on mainnet: getBlockAfterReportingWindow([3672100]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3672100,
+  ],
+  "result": 3715301,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 435456000 on mainnet: getBlockAfterReportingWindow([435456000]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 435456000 on mainnet: getBlockAfterReportingWindow([435456000]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 435456000 on mainnet: getBlockAfterReportingWindow([435456000]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    435456000,
+  ],
+  "result": 435499201,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3455999 on mainnet: getElectionBlockAfter([3455999]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3455999 on mainnet: getElectionBlockAfter([3455999]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3455999 on mainnet: getElectionBlockAfter([3455999]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3455999,
+  ],
+  "result": 3456000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3456000 on mainnet: getElectionBlockAfter([3456000]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3456000 on mainnet: getElectionBlockAfter([3456000]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3456000 on mainnet: getElectionBlockAfter([3456000]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3456000,
+  ],
+  "result": 3499200,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3456001 on mainnet: getElectionBlockAfter([3456001]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3456001 on mainnet: getElectionBlockAfter([3456001]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3456001 on mainnet: getElectionBlockAfter([3456001]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3456001,
+  ],
+  "result": 3499200,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3672100 on mainnet: getElectionBlockAfter([3672100]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3672100 on mainnet: getElectionBlockAfter([3672100]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 3672100 on mainnet: getElectionBlockAfter([3672100]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3672100,
+  ],
+  "result": 3715200,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 435456000 on mainnet: getElectionBlockAfter([435456000]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 435456000 on mainnet: getElectionBlockAfter([435456000]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockAfter matches RPC getElectionBlockAfter for block 435456000 on mainnet: getElectionBlockAfter([435456000]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    435456000,
+  ],
+  "result": 435499200,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 1 on mainnet: getElectionBlockOf([1]) 1`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 1 on mainnet: getElectionBlockOf([1]) 2`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 1 on mainnet: getElectionBlockOf([1]) 3`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1,
+  ],
+  "result": 3499200,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 10 on mainnet: getElectionBlockOf([10]) 1`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    10,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 10 on mainnet: getElectionBlockOf([10]) 2`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    10,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 10 on mainnet: getElectionBlockOf([10]) 3`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    10,
+  ],
+  "result": 3888000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 100 on mainnet: getElectionBlockOf([100]) 1`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 100 on mainnet: getElectionBlockOf([100]) 2`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 100 on mainnet: getElectionBlockOf([100]) 3`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    100,
+  ],
+  "result": 7776000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 1000 on mainnet: getElectionBlockOf([1000]) 1`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 1000 on mainnet: getElectionBlockOf([1000]) 2`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet electionBlockOf matches RPC getElectionBlockOf for epoch 1000 on mainnet: getElectionBlockOf([1000]) 3`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": 46656000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3455999 on mainnet: getEpochAt([3455999]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3455999 on mainnet: getEpochAt([3455999]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3455999 on mainnet: getEpochAt([3455999]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3455999,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3456000 on mainnet: getEpochAt([3456000]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3456000 on mainnet: getEpochAt([3456000]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3456000 on mainnet: getEpochAt([3456000]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3456000,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3456001 on mainnet: getEpochAt([3456001]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3456001 on mainnet: getEpochAt([3456001]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3456001 on mainnet: getEpochAt([3456001]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3456001,
+  ],
+  "result": 1,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3672100 on mainnet: getEpochAt([3672100]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3672100 on mainnet: getEpochAt([3672100]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 3672100 on mainnet: getEpochAt([3672100]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3672100,
+  ],
+  "result": 6,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 435456000 on mainnet: getEpochAt([435456000]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 435456000 on mainnet: getEpochAt([435456000]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochAt matches RPC getEpochAt for block 435456000 on mainnet: getEpochAt([435456000]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    435456000,
+  ],
+  "result": 10000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3455999 on mainnet: getEpochIndexAt([3455999]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3455999 on mainnet: getEpochIndexAt([3455999]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3455999 on mainnet: getEpochIndexAt([3455999]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3455999,
+  ],
+  "result": 3455999,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3456000 on mainnet: getEpochIndexAt([3456000]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3456000 on mainnet: getEpochIndexAt([3456000]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3456000 on mainnet: getEpochIndexAt([3456000]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3456000,
+  ],
+  "result": 43199,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3456001 on mainnet: getEpochIndexAt([3456001]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3456001 on mainnet: getEpochIndexAt([3456001]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3456001 on mainnet: getEpochIndexAt([3456001]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3456001,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3672100 on mainnet: getEpochIndexAt([3672100]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3672100 on mainnet: getEpochIndexAt([3672100]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 3672100 on mainnet: getEpochIndexAt([3672100]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3672100,
+  ],
+  "result": 99,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 435456000 on mainnet: getEpochIndexAt([435456000]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 435456000 on mainnet: getEpochIndexAt([435456000]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet epochIndexAt matches RPC getEpochIndexAt for block 435456000 on mainnet: getEpochIndexAt([435456000]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    435456000,
+  ],
+  "result": 43199,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3455999 on mainnet: getFirstBatchOfEpoch([3455999]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3455999 on mainnet: getFirstBatchOfEpoch([3455999]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3455999 on mainnet: getFirstBatchOfEpoch([3455999]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3455999,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3456000 on mainnet: getFirstBatchOfEpoch([3456000]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3456000 on mainnet: getFirstBatchOfEpoch([3456000]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3456000 on mainnet: getFirstBatchOfEpoch([3456000]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3456000,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3456001 on mainnet: getFirstBatchOfEpoch([3456001]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3456001 on mainnet: getFirstBatchOfEpoch([3456001]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3456001 on mainnet: getFirstBatchOfEpoch([3456001]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3456001,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3672100 on mainnet: getFirstBatchOfEpoch([3672100]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3672100 on mainnet: getFirstBatchOfEpoch([3672100]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3672100 on mainnet: getFirstBatchOfEpoch([3672100]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3672100,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 435456000 on mainnet: getFirstBatchOfEpoch([435456000]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 435456000 on mainnet: getFirstBatchOfEpoch([435456000]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 435456000 on mainnet: getFirstBatchOfEpoch([435456000]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    435456000,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 1 on mainnet: getFirstBlockOf([1]) 1`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 1 on mainnet: getFirstBlockOf([1]) 2`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 1 on mainnet: getFirstBlockOf([1]) 3`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1,
+  ],
+  "result": 3456001,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 10 on mainnet: getFirstBlockOf([10]) 1`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    10,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 10 on mainnet: getFirstBlockOf([10]) 2`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    10,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 10 on mainnet: getFirstBlockOf([10]) 3`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    10,
+  ],
+  "result": 3844801,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 100 on mainnet: getFirstBlockOf([100]) 1`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 100 on mainnet: getFirstBlockOf([100]) 2`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 100 on mainnet: getFirstBlockOf([100]) 3`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    100,
+  ],
+  "result": 7732801,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 1000 on mainnet: getFirstBlockOf([1000]) 1`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 1000 on mainnet: getFirstBlockOf([1000]) 2`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet firstBlockOf matches RPC getFirstBlockOf for epoch 1000 on mainnet: getFirstBlockOf([1000]) 3`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": 46612801,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3455999 on mainnet: isElectionBlockAt([3455999]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3455999 on mainnet: isElectionBlockAt([3455999]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3455999 on mainnet: isElectionBlockAt([3455999]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3455999,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3456000 on mainnet: isElectionBlockAt([3456000]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3456000 on mainnet: isElectionBlockAt([3456000]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3456000 on mainnet: isElectionBlockAt([3456000]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3456000,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3456001 on mainnet: isElectionBlockAt([3456001]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3456001 on mainnet: isElectionBlockAt([3456001]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3456001 on mainnet: isElectionBlockAt([3456001]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3456001,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3672100 on mainnet: isElectionBlockAt([3672100]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3672100 on mainnet: isElectionBlockAt([3672100]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 3672100 on mainnet: isElectionBlockAt([3672100]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3672100,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 435456000 on mainnet: isElectionBlockAt([435456000]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 435456000 on mainnet: isElectionBlockAt([435456000]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isElectionBlockAt matches RPC isElectionBlockAt for block 435456000 on mainnet: isElectionBlockAt([435456000]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    435456000,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3455999 on mainnet: isMacroBlockAt([3455999]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3455999 on mainnet: isMacroBlockAt([3455999]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3455999 on mainnet: isMacroBlockAt([3455999]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3455999,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3456000 on mainnet: isMacroBlockAt([3456000]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3456000 on mainnet: isMacroBlockAt([3456000]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3456000 on mainnet: isMacroBlockAt([3456000]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3456000,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3456001 on mainnet: isMacroBlockAt([3456001]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3456001 on mainnet: isMacroBlockAt([3456001]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3456001 on mainnet: isMacroBlockAt([3456001]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3456001,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3672100 on mainnet: isMacroBlockAt([3672100]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3672100 on mainnet: isMacroBlockAt([3672100]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 3672100 on mainnet: isMacroBlockAt([3672100]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3672100,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 435456000 on mainnet: isMacroBlockAt([435456000]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 435456000 on mainnet: isMacroBlockAt([435456000]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMacroBlockAt matches RPC isMacroBlockAt for block 435456000 on mainnet: isMacroBlockAt([435456000]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    435456000,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3455999 on mainnet: isMicroBlockAt([3455999]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3455999 on mainnet: isMicroBlockAt([3455999]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3455999 on mainnet: isMicroBlockAt([3455999]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3455999,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3456000 on mainnet: isMicroBlockAt([3456000]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3456000 on mainnet: isMicroBlockAt([3456000]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3456000 on mainnet: isMicroBlockAt([3456000]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3456000,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3456001 on mainnet: isMicroBlockAt([3456001]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3456001 on mainnet: isMicroBlockAt([3456001]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3456001 on mainnet: isMicroBlockAt([3456001]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3456001,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3672100 on mainnet: isMicroBlockAt([3672100]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3672100 on mainnet: isMicroBlockAt([3672100]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 3672100 on mainnet: isMicroBlockAt([3672100]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3672100,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 435456000 on mainnet: isMicroBlockAt([435456000]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 435456000 on mainnet: isMicroBlockAt([435456000]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet isMicroBlockAt matches RPC isMicroBlockAt for block 435456000 on mainnet: isMicroBlockAt([435456000]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    435456000,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 3456000 on mainnet: getLastMacroBlock([3456000]) 1`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 3456000 on mainnet: getLastMacroBlock([3456000]) 2`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 3456000 on mainnet: getLastMacroBlock([3456000]) 3`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3456000,
+  ],
+  "result": 3456000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 3456001 on mainnet: getLastMacroBlock([3456001]) 1`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 3456001 on mainnet: getLastMacroBlock([3456001]) 2`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 3456001 on mainnet: getLastMacroBlock([3456001]) 3`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3456001,
+  ],
+  "result": 3456000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 3672100 on mainnet: getLastMacroBlock([3672100]) 1`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 3672100 on mainnet: getLastMacroBlock([3672100]) 2`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 3672100 on mainnet: getLastMacroBlock([3672100]) 3`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3672100,
+  ],
+  "result": 3672060,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 435456000 on mainnet: getLastMacroBlock([435456000]) 1`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 435456000 on mainnet: getLastMacroBlock([435456000]) 2`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet lastMacroBlock matches RPC getLastMacroBlock for block 435456000 on mainnet: getLastMacroBlock([435456000]) 3`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    435456000,
+  ],
+  "result": 435456000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3455999 on mainnet: getMacroBlockAfter([3455999]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3455999,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3455999 on mainnet: getMacroBlockAfter([3455999]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3455999,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3455999 on mainnet: getMacroBlockAfter([3455999]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3455999,
+  ],
+  "result": 3456000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3456000 on mainnet: getMacroBlockAfter([3456000]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3456000 on mainnet: getMacroBlockAfter([3456000]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3456000 on mainnet: getMacroBlockAfter([3456000]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3456000,
+  ],
+  "result": 3456060,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3456001 on mainnet: getMacroBlockAfter([3456001]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3456001,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3456001 on mainnet: getMacroBlockAfter([3456001]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3456001,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3456001 on mainnet: getMacroBlockAfter([3456001]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3456001,
+  ],
+  "result": 3456060,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3672100 on mainnet: getMacroBlockAfter([3672100]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3672100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3672100 on mainnet: getMacroBlockAfter([3672100]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3672100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 3672100 on mainnet: getMacroBlockAfter([3672100]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3672100,
+  ],
+  "result": 3672120,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 435456000 on mainnet: getMacroBlockAfter([435456000]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    435456000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 435456000 on mainnet: getMacroBlockAfter([435456000]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    435456000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet macroBlockAfter matches RPC getMacroBlockAfter for block 435456000 on mainnet: getMacroBlockAfter([435456000]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    435456000,
+  ],
+  "result": 435456060,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet verifies RPC connection by testing a small case: getEpochAt([3000000]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3000000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet verifies RPC connection by testing a small case: getEpochAt([3000000]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3000000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: mainnet verifies RPC connection by testing a small case: getEpochAt([3000000]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3000000,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3032009 on testnet: getBatchAt([3032009]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3032009 on testnet: getBatchAt([3032009]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3032009 on testnet: getBatchAt([3032009]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3032009,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3032010 on testnet: getBatchAt([3032010]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3032010 on testnet: getBatchAt([3032010]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3032010 on testnet: getBatchAt([3032010]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3032010,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3032011 on testnet: getBatchAt([3032011]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3032011 on testnet: getBatchAt([3032011]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3032011 on testnet: getBatchAt([3032011]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3032011,
+  ],
+  "result": 1,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3248110 on testnet: getBatchAt([3248110]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3248110 on testnet: getBatchAt([3248110]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 3248110 on testnet: getBatchAt([3248110]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    3248110,
+  ],
+  "result": 3602,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 435032010 on testnet: getBatchAt([435032010]) 1`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 435032010 on testnet: getBatchAt([435032010]) 2`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchAt matches RPC getBatchAt for block 435032010 on testnet: getBatchAt([435032010]) 3`] = `
+{
+  "method": "getBatchAt",
+  "params": [
+    435032010,
+  ],
+  "result": 7200000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3032009 on testnet: getBatchIndexAt([3032009]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3032009 on testnet: getBatchIndexAt([3032009]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3032009 on testnet: getBatchIndexAt([3032009]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3032009,
+  ],
+  "result": 3032009,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3032010 on testnet: getBatchIndexAt([3032010]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3032010 on testnet: getBatchIndexAt([3032010]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3032010 on testnet: getBatchIndexAt([3032010]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3032010,
+  ],
+  "result": 59,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3032011 on testnet: getBatchIndexAt([3032011]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3032011 on testnet: getBatchIndexAt([3032011]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3032011 on testnet: getBatchIndexAt([3032011]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3032011,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3248110 on testnet: getBatchIndexAt([3248110]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3248110 on testnet: getBatchIndexAt([3248110]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 3248110 on testnet: getBatchIndexAt([3248110]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    3248110,
+  ],
+  "result": 39,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 435032010 on testnet: getBatchIndexAt([435032010]) 1`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 435032010 on testnet: getBatchIndexAt([435032010]) 2`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet batchIndexAt matches RPC getBatchIndexAt for block 435032010 on testnet: getBatchIndexAt([435032010]) 3`] = `
+{
+  "method": "getBatchIndexAt",
+  "params": [
+    435032010,
+  ],
+  "result": 59,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3032009 on testnet: getBlockAfterJail([3032009]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3032009 on testnet: getBlockAfterJail([3032009]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3032009 on testnet: getBlockAfterJail([3032009]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3032009,
+  ],
+  "result": 3377610,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3032010 on testnet: getBlockAfterJail([3032010]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3032010 on testnet: getBlockAfterJail([3032010]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3032010 on testnet: getBlockAfterJail([3032010]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3032010,
+  ],
+  "result": 3377611,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3032011 on testnet: getBlockAfterJail([3032011]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3032011 on testnet: getBlockAfterJail([3032011]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3032011 on testnet: getBlockAfterJail([3032011]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3032011,
+  ],
+  "result": 3377612,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3248110 on testnet: getBlockAfterJail([3248110]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3248110 on testnet: getBlockAfterJail([3248110]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 3248110 on testnet: getBlockAfterJail([3248110]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    3248110,
+  ],
+  "result": 3593711,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 435032010 on testnet: getBlockAfterJail([435032010]) 1`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 435032010 on testnet: getBlockAfterJail([435032010]) 2`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterJail matches RPC getBlockAfterJail for block 435032010 on testnet: getBlockAfterJail([435032010]) 3`] = `
+{
+  "method": "getBlockAfterJail",
+  "params": [
+    435032010,
+  ],
+  "result": 435377611,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3032009 on testnet: getBlockAfterReportingWindow([3032009]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3032009 on testnet: getBlockAfterReportingWindow([3032009]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3032009 on testnet: getBlockAfterReportingWindow([3032009]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3032009,
+  ],
+  "result": 3075210,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3032010 on testnet: getBlockAfterReportingWindow([3032010]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3032010 on testnet: getBlockAfterReportingWindow([3032010]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3032010 on testnet: getBlockAfterReportingWindow([3032010]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3032010,
+  ],
+  "result": 3075211,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3032011 on testnet: getBlockAfterReportingWindow([3032011]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3032011 on testnet: getBlockAfterReportingWindow([3032011]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3032011 on testnet: getBlockAfterReportingWindow([3032011]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3032011,
+  ],
+  "result": 3075212,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3248110 on testnet: getBlockAfterReportingWindow([3248110]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3248110 on testnet: getBlockAfterReportingWindow([3248110]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 3248110 on testnet: getBlockAfterReportingWindow([3248110]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    3248110,
+  ],
+  "result": 3291311,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 435032010 on testnet: getBlockAfterReportingWindow([435032010]) 1`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 435032010 on testnet: getBlockAfterReportingWindow([435032010]) 2`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet blockAfterReportingWindow matches RPC getBlockAfterReportingWindow for block 435032010 on testnet: getBlockAfterReportingWindow([435032010]) 3`] = `
+{
+  "method": "getBlockAfterReportingWindow",
+  "params": [
+    435032010,
+  ],
+  "result": 435075211,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3032009 on testnet: getElectionBlockAfter([3032009]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3032009 on testnet: getElectionBlockAfter([3032009]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3032009 on testnet: getElectionBlockAfter([3032009]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3032009,
+  ],
+  "result": 3032010,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3032010 on testnet: getElectionBlockAfter([3032010]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3032010 on testnet: getElectionBlockAfter([3032010]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3032010 on testnet: getElectionBlockAfter([3032010]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3032010,
+  ],
+  "result": 3075210,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3032011 on testnet: getElectionBlockAfter([3032011]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3032011 on testnet: getElectionBlockAfter([3032011]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3032011 on testnet: getElectionBlockAfter([3032011]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3032011,
+  ],
+  "result": 3075210,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3248110 on testnet: getElectionBlockAfter([3248110]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3248110 on testnet: getElectionBlockAfter([3248110]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 3248110 on testnet: getElectionBlockAfter([3248110]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    3248110,
+  ],
+  "result": 3291210,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 435032010 on testnet: getElectionBlockAfter([435032010]) 1`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 435032010 on testnet: getElectionBlockAfter([435032010]) 2`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockAfter matches RPC getElectionBlockAfter for block 435032010 on testnet: getElectionBlockAfter([435032010]) 3`] = `
+{
+  "method": "getElectionBlockAfter",
+  "params": [
+    435032010,
+  ],
+  "result": 435075210,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 1 on testnet: getElectionBlockOf([1]) 1`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 1 on testnet: getElectionBlockOf([1]) 2`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 1 on testnet: getElectionBlockOf([1]) 3`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1,
+  ],
+  "result": 3075210,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 10 on testnet: getElectionBlockOf([10]) 1`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    10,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 10 on testnet: getElectionBlockOf([10]) 2`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    10,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 10 on testnet: getElectionBlockOf([10]) 3`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    10,
+  ],
+  "result": 3464010,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 100 on testnet: getElectionBlockOf([100]) 1`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 100 on testnet: getElectionBlockOf([100]) 2`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 100 on testnet: getElectionBlockOf([100]) 3`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    100,
+  ],
+  "result": 7352010,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 1000 on testnet: getElectionBlockOf([1000]) 1`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 1000 on testnet: getElectionBlockOf([1000]) 2`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet electionBlockOf matches RPC getElectionBlockOf for epoch 1000 on testnet: getElectionBlockOf([1000]) 3`] = `
+{
+  "method": "getElectionBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": 46232010,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3032009 on testnet: getEpochAt([3032009]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3032009 on testnet: getEpochAt([3032009]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3032009 on testnet: getEpochAt([3032009]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3032009,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3032010 on testnet: getEpochAt([3032010]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3032010 on testnet: getEpochAt([3032010]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3032010 on testnet: getEpochAt([3032010]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3032010,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3032011 on testnet: getEpochAt([3032011]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3032011 on testnet: getEpochAt([3032011]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3032011 on testnet: getEpochAt([3032011]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3032011,
+  ],
+  "result": 1,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3248110 on testnet: getEpochAt([3248110]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3248110 on testnet: getEpochAt([3248110]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 3248110 on testnet: getEpochAt([3248110]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3248110,
+  ],
+  "result": 6,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 435032010 on testnet: getEpochAt([435032010]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 435032010 on testnet: getEpochAt([435032010]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochAt matches RPC getEpochAt for block 435032010 on testnet: getEpochAt([435032010]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    435032010,
+  ],
+  "result": 10000,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3032009 on testnet: getEpochIndexAt([3032009]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3032009 on testnet: getEpochIndexAt([3032009]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3032009 on testnet: getEpochIndexAt([3032009]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3032009,
+  ],
+  "result": 3032009,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3032010 on testnet: getEpochIndexAt([3032010]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3032010 on testnet: getEpochIndexAt([3032010]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3032010 on testnet: getEpochIndexAt([3032010]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3032010,
+  ],
+  "result": 43199,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3032011 on testnet: getEpochIndexAt([3032011]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3032011 on testnet: getEpochIndexAt([3032011]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3032011 on testnet: getEpochIndexAt([3032011]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3032011,
+  ],
+  "result": 0,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3248110 on testnet: getEpochIndexAt([3248110]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3248110 on testnet: getEpochIndexAt([3248110]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 3248110 on testnet: getEpochIndexAt([3248110]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    3248110,
+  ],
+  "result": 99,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 435032010 on testnet: getEpochIndexAt([435032010]) 1`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 435032010 on testnet: getEpochIndexAt([435032010]) 2`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet epochIndexAt matches RPC getEpochIndexAt for block 435032010 on testnet: getEpochIndexAt([435032010]) 3`] = `
+{
+  "method": "getEpochIndexAt",
+  "params": [
+    435032010,
+  ],
+  "result": 43199,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3032009 on testnet: getFirstBatchOfEpoch([3032009]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3032009 on testnet: getFirstBatchOfEpoch([3032009]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3032009 on testnet: getFirstBatchOfEpoch([3032009]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3032009,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3032010 on testnet: getFirstBatchOfEpoch([3032010]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3032010 on testnet: getFirstBatchOfEpoch([3032010]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3032010 on testnet: getFirstBatchOfEpoch([3032010]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3032010,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3032011 on testnet: getFirstBatchOfEpoch([3032011]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3032011 on testnet: getFirstBatchOfEpoch([3032011]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3032011 on testnet: getFirstBatchOfEpoch([3032011]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3032011,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3248110 on testnet: getFirstBatchOfEpoch([3248110]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3248110 on testnet: getFirstBatchOfEpoch([3248110]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 3248110 on testnet: getFirstBatchOfEpoch([3248110]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    3248110,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 435032010 on testnet: getFirstBatchOfEpoch([435032010]) 1`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 435032010 on testnet: getFirstBatchOfEpoch([435032010]) 2`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBatchOfEpoch matches RPC getFirstBatchOfEpoch for block 435032010 on testnet: getFirstBatchOfEpoch([435032010]) 3`] = `
+{
+  "method": "getFirstBatchOfEpoch",
+  "params": [
+    435032010,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 1 on testnet: getFirstBlockOf([1]) 1`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 1 on testnet: getFirstBlockOf([1]) 2`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 1 on testnet: getFirstBlockOf([1]) 3`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1,
+  ],
+  "result": 3032011,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 10 on testnet: getFirstBlockOf([10]) 1`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    10,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 10 on testnet: getFirstBlockOf([10]) 2`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    10,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 10 on testnet: getFirstBlockOf([10]) 3`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    10,
+  ],
+  "result": 3420811,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 100 on testnet: getFirstBlockOf([100]) 1`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    100,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 100 on testnet: getFirstBlockOf([100]) 2`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    100,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 100 on testnet: getFirstBlockOf([100]) 3`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    100,
+  ],
+  "result": 7308811,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 1000 on testnet: getFirstBlockOf([1000]) 1`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 1000 on testnet: getFirstBlockOf([1000]) 2`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet firstBlockOf matches RPC getFirstBlockOf for epoch 1000 on testnet: getFirstBlockOf([1000]) 3`] = `
+{
+  "method": "getFirstBlockOf",
+  "params": [
+    1000,
+  ],
+  "result": 46188811,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3032009 on testnet: isElectionBlockAt([3032009]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3032009 on testnet: isElectionBlockAt([3032009]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3032009 on testnet: isElectionBlockAt([3032009]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3032009,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3032010 on testnet: isElectionBlockAt([3032010]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3032010 on testnet: isElectionBlockAt([3032010]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3032010 on testnet: isElectionBlockAt([3032010]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3032010,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3032011 on testnet: isElectionBlockAt([3032011]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3032011 on testnet: isElectionBlockAt([3032011]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3032011 on testnet: isElectionBlockAt([3032011]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3032011,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3248110 on testnet: isElectionBlockAt([3248110]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3248110 on testnet: isElectionBlockAt([3248110]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 3248110 on testnet: isElectionBlockAt([3248110]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    3248110,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 435032010 on testnet: isElectionBlockAt([435032010]) 1`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 435032010 on testnet: isElectionBlockAt([435032010]) 2`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isElectionBlockAt matches RPC isElectionBlockAt for block 435032010 on testnet: isElectionBlockAt([435032010]) 3`] = `
+{
+  "method": "isElectionBlockAt",
+  "params": [
+    435032010,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3032009 on testnet: isMacroBlockAt([3032009]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3032009 on testnet: isMacroBlockAt([3032009]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3032009 on testnet: isMacroBlockAt([3032009]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3032009,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3032010 on testnet: isMacroBlockAt([3032010]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3032010 on testnet: isMacroBlockAt([3032010]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3032010 on testnet: isMacroBlockAt([3032010]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3032010,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3032011 on testnet: isMacroBlockAt([3032011]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3032011 on testnet: isMacroBlockAt([3032011]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3032011 on testnet: isMacroBlockAt([3032011]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3032011,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3248110 on testnet: isMacroBlockAt([3248110]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3248110 on testnet: isMacroBlockAt([3248110]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 3248110 on testnet: isMacroBlockAt([3248110]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    3248110,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 435032010 on testnet: isMacroBlockAt([435032010]) 1`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 435032010 on testnet: isMacroBlockAt([435032010]) 2`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMacroBlockAt matches RPC isMacroBlockAt for block 435032010 on testnet: isMacroBlockAt([435032010]) 3`] = `
+{
+  "method": "isMacroBlockAt",
+  "params": [
+    435032010,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3032009 on testnet: isMicroBlockAt([3032009]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3032009 on testnet: isMicroBlockAt([3032009]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3032009 on testnet: isMicroBlockAt([3032009]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3032009,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3032010 on testnet: isMicroBlockAt([3032010]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3032010 on testnet: isMicroBlockAt([3032010]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3032010 on testnet: isMicroBlockAt([3032010]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3032010,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3032011 on testnet: isMicroBlockAt([3032011]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3032011 on testnet: isMicroBlockAt([3032011]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3032011 on testnet: isMicroBlockAt([3032011]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3032011,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3248110 on testnet: isMicroBlockAt([3248110]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3248110 on testnet: isMicroBlockAt([3248110]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 3248110 on testnet: isMicroBlockAt([3248110]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    3248110,
+  ],
+  "result": true,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 435032010 on testnet: isMicroBlockAt([435032010]) 1`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 435032010 on testnet: isMicroBlockAt([435032010]) 2`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet isMicroBlockAt matches RPC isMicroBlockAt for block 435032010 on testnet: isMicroBlockAt([435032010]) 3`] = `
+{
+  "method": "isMicroBlockAt",
+  "params": [
+    435032010,
+  ],
+  "result": false,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 3032010 on testnet: getLastMacroBlock([3032010]) 1`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 3032010 on testnet: getLastMacroBlock([3032010]) 2`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 3032010 on testnet: getLastMacroBlock([3032010]) 3`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3032010,
+  ],
+  "result": 3032010,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 3032011 on testnet: getLastMacroBlock([3032011]) 1`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 3032011 on testnet: getLastMacroBlock([3032011]) 2`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 3032011 on testnet: getLastMacroBlock([3032011]) 3`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3032011,
+  ],
+  "result": 3032010,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 3248110 on testnet: getLastMacroBlock([3248110]) 1`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 3248110 on testnet: getLastMacroBlock([3248110]) 2`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 3248110 on testnet: getLastMacroBlock([3248110]) 3`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    3248110,
+  ],
+  "result": 3248070,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 435032010 on testnet: getLastMacroBlock([435032010]) 1`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 435032010 on testnet: getLastMacroBlock([435032010]) 2`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet lastMacroBlock matches RPC getLastMacroBlock for block 435032010 on testnet: getLastMacroBlock([435032010]) 3`] = `
+{
+  "method": "getLastMacroBlock",
+  "params": [
+    435032010,
+  ],
+  "result": 435032010,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3032009 on testnet: getMacroBlockAfter([3032009]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3032009,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3032009 on testnet: getMacroBlockAfter([3032009]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3032009,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3032009 on testnet: getMacroBlockAfter([3032009]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3032009,
+  ],
+  "result": 3032010,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3032010 on testnet: getMacroBlockAfter([3032010]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3032010 on testnet: getMacroBlockAfter([3032010]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3032010 on testnet: getMacroBlockAfter([3032010]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3032010,
+  ],
+  "result": 3032070,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3032011 on testnet: getMacroBlockAfter([3032011]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3032011,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3032011 on testnet: getMacroBlockAfter([3032011]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3032011,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3032011 on testnet: getMacroBlockAfter([3032011]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3032011,
+  ],
+  "result": 3032070,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3248110 on testnet: getMacroBlockAfter([3248110]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3248110,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3248110 on testnet: getMacroBlockAfter([3248110]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3248110,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 3248110 on testnet: getMacroBlockAfter([3248110]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    3248110,
+  ],
+  "result": 3248130,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 435032010 on testnet: getMacroBlockAfter([435032010]) 1`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    435032010,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 435032010 on testnet: getMacroBlockAfter([435032010]) 2`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    435032010,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet macroBlockAfter matches RPC getMacroBlockAfter for block 435032010 on testnet: getMacroBlockAfter([435032010]) 3`] = `
+{
+  "method": "getMacroBlockAfter",
+  "params": [
+    435032010,
+  ],
+  "result": 435032070,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet verifies RPC connection by testing a small case: getEpochAt([3000000]) 1`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3000000,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet verifies RPC connection by testing a small case: getEpochAt([3000000]) 2`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3000000,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Albatross Policy RPC Comparisons Network: testnet verifies RPC connection by testing a small case: getEpochAt([3000000]) 3`] = `
+{
+  "method": "getEpochAt",
+  "params": [
+    3000000,
+  ],
+  "result": 0,
+}
+`;

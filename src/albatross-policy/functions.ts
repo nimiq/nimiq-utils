@@ -8,6 +8,8 @@ import {
     PROOF_OF_STAKE_MIGRATION_BLOCK_TESTNET,
     PROOF_OF_STAKE_MIGRATION_DATE,
     PROOF_OF_STAKE_MIGRATION_DATE_TESTNET,
+    SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE,
+    SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET,
 } from './constants';
 
 /**
@@ -68,7 +70,8 @@ export function getMigrationBlockInfo(options: BaseAlbatrossPolicyOptions = {}) 
     const date = isTestnet
         ? PROOF_OF_STAKE_MIGRATION_DATE_TESTNET
         : PROOF_OF_STAKE_MIGRATION_DATE;
-    return { migrationBlock, date, timestamp: date.getTime(), isTestnet, isMainnet };
+    const genesisSupply = isTestnet ? SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET : SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE;
+    return { migrationBlock, date, timestamp: date.getTime(), genesisSupply, isTestnet, isMainnet };
 }
 
 /**

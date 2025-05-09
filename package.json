@@ -14,6 +14,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "jest",
+    "test:update": "jest --updateSnapshot",
     "pr": "yarn test && yarn build"
   },
   "files": [

@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Supply Calculator RPC Comparisons Network: mainnet Supply at timestamp [main-albatross] - matches RPC getSupplyAt for Current time: getSupplyAt([1289310965406244,1732034720000,1746723234681]) 1`] = `
+{
+  "method": "getSupplyAt",
+  "params": [
+    1289310965406244,
+    1732034720000,
+    1746723234681,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Supply Calculator RPC Comparisons Network: mainnet Supply at timestamp [main-albatross] - matches RPC getSupplyAt for Current time: getSupplyAt([1289310965406244,1732034720000,1746723234681]) 2`] = `
+{
+  "method": "getSupplyAt",
+  "params": [
+    1289310965406244,
+    1732034720000,
+    1746723234681,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Supply Calculator RPC Comparisons Network: mainnet Supply at timestamp [main-albatross] - matches RPC getSupplyAt for Current time: getSupplyAt([1289310965406244,1732034720000,1746723234681]) 3`] = `
+{
+  "method": "getSupplyAt",
+  "params": [
+    1289310965406244,
+    1732034720000,
+    1746723234681,
+  ],
+  "result": 1335273483335262,
+}
+`;
+
+exports[`Supply Calculator RPC Comparisons Network: mainnet Supply at timestamp [main-albatross] - matches RPC getSupplyAt for One month later: getSupplyAt([1289310965406244,1732034720000,1749315234681]) 1`] = `
+{
+  "method": "getSupplyAt",
+  "params": [
+    1289310965406244,
+    1732034720000,
+    1749315234681,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Supply Calculator RPC Comparisons Network: mainnet Supply at timestamp [main-albatross] - matches RPC getSupplyAt for One month later: getSupplyAt([1289310965406244,1732034720000,1749315234681]) 2`] = `
+{
+  "method": "getSupplyAt",
+  "params": [
+    1289310965406244,
+    1732034720000,
+    1749315234681,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Supply Calculator RPC Comparisons Network: mainnet Supply at timestamp [main-albatross] - matches RPC getSupplyAt for One month later: getSupplyAt([1289310965406244,1732034720000,1749315234681]) 3`] = `
+{
+  "method": "getSupplyAt",
+  "params": [
+    1289310965406244,
+    1732034720000,
+    1749315234681,
+  ],
+  "result": 1343109414398216,
+}
+`;
+
+exports[`Supply Calculator RPC Comparisons Network: mainnet Supply at timestamp [main-albatross] - matches RPC getSupplyAt for One year later: getSupplyAt([1289310965406244,1732034720000,1778259234681]) 1`] = `
+{
+  "method": "getSupplyAt",
+  "params": [
+    1289310965406244,
+    1732034720000,
+    1778259234681,
+  ],
+  "result": null,
+}
+`;
+
+exports[`Supply Calculator RPC Comparisons Network: mainnet Supply at timestamp [main-albatross] - matches RPC getSupplyAt for One year later: getSupplyAt([1289310965406244,1732034720000,1778259234681]) 2`] = `
+{
+  "method": "getSupplyAt",
+  "params": [
+    1289310965406244,
+    1732034720000,
+    1778259234681,
+  ],
+  "result": "placeholder",
+}
+`;
+
+exports[`Supply Calculator RPC Comparisons Network: mainnet Supply at timestamp [main-albatross] - matches RPC getSupplyAt for One year later: getSupplyAt([1289310965406244,1732034720000,1778259234681]) 3`] = `
+{
+  "method": "getSupplyAt",
+  "params": [
+    1289310965406244,
+    1732034720000,
+    1778259234681,
+  ],
+  "result": 1425341356325259,
+}
+`;
