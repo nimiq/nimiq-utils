@@ -9,38 +9,11 @@
 import * as dotenv from 'dotenv';
 import { getMigrationBlockInfo } from '../src/albatross-policy/functions';
 import { posSupplyAt } from '../src/supply-calculator/pos';
-import { SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE, SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET } from '../src/albatross-policy/constants';
+import { rpcCall } from './utils/rpc-utils-test';
+
+const now = 1746723234681; // To avoid re-creating a snapshot, we use a fixed timestamp
 
 dotenv.config();
-
-interface RpcOptions {
-  url?: string;
-  username?: string;
-  password?: string;
-  network?: string;
-}
-
-async function rpcCall(method: string, params: any[], options: RpcOptions): Promise<any> {
-    if (!options.url) {
-        throw new Error('RPC URL is required');
-    }
-
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-    // Add basic auth if credentials are provided
-    if (options.username && options.password) {
-        const auth = Buffer.from(`${options.username}:${options.password}`).toString('base64');
-        headers.Authorization = `Basic ${auth}`;
-    }
-
-    const body = JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 });
-    const fetchOptions = { method: 'POST', headers, body };
-    const response = await fetch(options.url, fetchOptions);
-    if (!response.ok) throw new Error(`HTTP error: ${JSON.stringify({ response, text: await response.text() })}.`);
-    const responseBody = await response.json();
-    if (responseBody.error) throw new Error(`RPC error: ${responseBody.error.message}`);
-    return responseBody.result.data;
-}
 
 describe('Supply Calculator RPC Comparisons', () => {
     // Define networks to test
@@ -86,28 +59,11 @@ describe('Supply Calculator RPC Comparisons', () => {
         describe(`Network: ${network.name}`, () => {
             const { url, username, password, networkParam } = network;
 
-            const { timestamp: migrationTimestamp, isTestnet } = getMigrationBlockInfo({ network: networkParam });
-            const genesisSupply = isTestnet ? SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET : SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE;
-
-            const now = Date.now();
-
-            // Define test cases with proper timestamps
+            const { timestamp: migrationTimestamp, genesisSupply } = getMigrationBlockInfo({ network: networkParam });
             const testCases = [
-                {
-                    name: 'Current time',
-                    genesisTime: migrationTimestamp,
-                    currentTime: now,
-                },
-                {
-                    name: 'One month later',
-                    genesisTime: migrationTimestamp,
-                    currentTime: now + 30 * 24 * 60 * 60 * 1000, // 30 days in the future
-                },
-                {
-                    name: 'One year later',
-                    genesisTime: migrationTimestamp,
-                    currentTime: now + 365 * 24 * 60 * 60 * 1000, // 1 year in the future
-                },
+                { name: 'Current time', currentTime: now },
+                { name: 'One month later', currentTime: now + 30 * 24 * 60 * 60 * 1000 },
+                { name: 'One year later', currentTime: now + 365 * 24 * 60 * 60 * 1000 },
             ];
 
             describe('Supply at timestamp', () => {
@@ -117,7 +73,7 @@ describe('Supply Calculator RPC Comparisons', () => {
                         const rpcParams = [genesisSupplyLuna, migrationTimestamp, currentTime];
 
                         try {
-                            const expected = await rpcCall('getSupplyAt', rpcParams, { url, username, password });
+                            const expected = await rpcCall('getSupplyAt', rpcParams, { url, username, password, network: networkParam });
                             const actual = posSupplyAt(currentTime, { network: networkParam as any });
                             expect(Math.abs(actual * 1e5 - expected)).toBeLessThanOrEqual(1);
                         } catch (error) {
