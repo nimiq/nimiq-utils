@@ -11,8 +11,8 @@
   "sideEffects": false,
   "scripts": {
     "build": "yarn lint && unbuild",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint src/**/*.ts tests/**/*.ts",
+    "lint:fix": "yarn run lint --fix",
     "test": "jest",
     "test:update": "jest --updateSnapshot",
     "pr": "yarn test && yarn build"

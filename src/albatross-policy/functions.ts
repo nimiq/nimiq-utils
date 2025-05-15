@@ -22,7 +22,7 @@ function getNetwork(network?: string) {
     const nl = network.toLowerCase();
     if (nl.includes('test')) return { isMainnet: false, isTestnet: true };
     if (nl.includes('main')) return { isMainnet: true, isTestnet: false };
-    console.warn(`Network "${network}" not implemented.`);
+    console.warn(`Network "${network}" not implemented.`); // eslint-disable-line no-console
     return { isMainnet: false, isTestnet: false };
 }
 
@@ -70,7 +70,9 @@ export function getMigrationBlockInfo(options: BaseAlbatrossPolicyOptions = {}) 
     const date = isTestnet
         ? PROOF_OF_STAKE_MIGRATION_DATE_TESTNET
         : PROOF_OF_STAKE_MIGRATION_DATE;
-    const genesisSupply = isTestnet ? SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET : SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE;
+    const genesisSupply = isTestnet
+        ? SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE_TESTNET
+        : SUPPLY_AT_PROOF_OF_STAKE_MIGRATION_DATE;
     return { migrationBlock, date, timestamp: date.getTime(), genesisSupply, isTestnet, isMainnet };
 }
 

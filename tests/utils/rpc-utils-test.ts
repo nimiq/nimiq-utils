@@ -53,7 +53,7 @@ export async function rpcCall<T = any>(
                         const cleanJson = match[1].replace(/,\s*$/, '');
                         return JSON.parse(cleanJson) as T;
                     } catch (e) {
-                        console.warn('Could not parse snapshot result:', e);
+                        console.warn('Could not parse snapshot result:', e); // eslint-disable-line no-console
                     }
                 }
             }

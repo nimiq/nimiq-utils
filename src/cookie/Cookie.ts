@@ -39,7 +39,7 @@ export function setCookie(
         samesite?: 'lax'|'strict'|'none',
     },
 ) {
-    if (typeof globalThis.document === 'undefined') return;
+    if (typeof globalThis.document === 'undefined') return '';
 
     if (typeof cookieName !== 'string') throw new Error('cookieName must be a string');
     if (typeof cookieValue !== 'string') throw new Error('cookieValue must be a string');
