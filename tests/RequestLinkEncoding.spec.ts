@@ -1,3 +1,8 @@
+/**
+ * Use a jest environment that provides TextEncoder and TextDecoder for Utf8Tools
+ * @jest-environment node
+ */
+
 /* eslint-disable spaced-comment */
 /// <reference lib="es2017" />
 /// <reference lib="esnext.bigint" />

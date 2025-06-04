@@ -1,11 +1,11 @@
-/* global describe, beforeAll, afterAll, it, expect */
+/**
+ * Use a jest environment that provides TextEncoder and TextDecoder for Utf8Tools
+ * @jest-environment node
+ */
 
-import { TextDecoder as NodeTextDecoder } from 'util';
+/* global describe, it, expect */
+
 import { Utf8Tools } from '../src/utf8-tools/Utf8Tools';
-
-declare namespace global {
-    let TextDecoder: any;
-}
 
 const asciiString = 'abc';
 const asciiBytes = new Uint8Array([97, 98, 99]);
@@ -55,29 +55,11 @@ function testIsValidUtf8() {
 }
 
 describe('Utf8Tools', () => {
-    describe('native TextDecoder', () => {
-        beforeAll(() => {
-            global.TextDecoder = NodeTextDecoder;
-        });
+    it('can transform strings to utf-8.', testStringToUtf8ByteArray);
 
-        afterAll(() => {
-            delete global.TextDecoder;
-        });
+    it('can transform utf-8 bytes to strings.', testUtf8ByteArrayToString);
 
-        it('can transform strings to utf-8.', testStringToUtf8ByteArray);
-
-        it('can transform utf-8 bytes to strings.', testUtf8ByteArrayToString);
-
-        it('can validate utf-8 bytes.', testIsValidUtf8);
-    });
-
-    describe('fallback', () => {
-        it('can transform strings to utf-8.', testStringToUtf8ByteArray);
-
-        it('can transform utf-8 bytes to strings.', testUtf8ByteArrayToString);
-
-        it('can validate utf-8 bytes.', testIsValidUtf8);
-    });
+    it('can validate utf-8 bytes.', testIsValidUtf8);
 
     it('can truncate to utf8 byte lengths', () => {
         expect(() => Utf8Tools.truncateToUtf8ByteLength(asciiString, -1)).toThrow();
