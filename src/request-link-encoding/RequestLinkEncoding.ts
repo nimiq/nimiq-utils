@@ -329,7 +329,7 @@ export function createBitcoinRequestLink(
     recipient: string, // expected to be normalized
     options: BitcoinRequestLinkOptions = {},
 ): string {
-    if (!recipient) throw new Error('Recipient is required');
+    if (!validateBitcoinAddress(recipient)) throw new Error(`Invalid recipient address: ${recipient}`);
     if (options.amount && !isUnsignedSafeInteger(options.amount)) throw new TypeError('Invalid amount');
     if (options.fee && !isUnsignedSafeInteger(options.fee)) throw new TypeError('Invalid fee');
     const query: string[] = [];
@@ -349,19 +349,19 @@ export function createBitcoinRequestLink(
 
 export function parseBitcoinRequestLink(
     requestLink: string | URL,
-    isValidAddress?: (address: string) => boolean,
-    normalizeAddress?: (address: string) => string,
+    isValidAddress: (address: string) => boolean = validateBitcoinAddress,
+    normalizeAddress: (address: string) => string = (address) => address,
 ): null | (BitcoinRequestLinkOptions & { recipient: string }) {
     const url = toUrl(requestLink);
     if (!url || !/^bitcoin:$/i.test(url.protocol)) return null;
 
-    const recipient = normalizeAddress ? normalizeAddress(url.pathname) : url.pathname;
+    const recipient = normalizeAddress(url.pathname);
     const rawAmount = url.searchParams.get('amount');
     const rawFee = url.searchParams.get('fee');
     const label = url.searchParams.get('label') || undefined;
     const message = url.searchParams.get('message') || undefined;
 
-    if (!recipient || (isValidAddress && !isValidAddress(recipient))) return null; // recipient is required
+    if (!isValidAddress(recipient)) return null; // recipient is required
 
     const amount = rawAmount ? Math.round(parseFloat(rawAmount) * (10 ** DECIMALS[Currency.BTC])) : undefined;
     if (typeof amount === 'number' && !isUnsignedSafeInteger(amount)) return null;
@@ -384,9 +384,7 @@ export function createEthereumRequestLink(
     const { amount, gasPrice, gasLimit, chainId } = options;
     const contractAddress = options.contractAddress
         || (chainId ? getEthereumContractAddress(chainId, currency) : undefined);
-    if (!recipient || !validateEthereumAddress(recipient)) {
-        throw new TypeError(`Invalid recipient address: ${recipient}.`);
-    }
+    if (!validateEthereumAddress(recipient)) throw new TypeError(`Invalid recipient address: ${recipient}.`);
     if (amount && !isUnsignedSafeInteger(amount)) throw new TypeError('Invalid amount');
     if (gasPrice && !isUnsignedSafeInteger(gasPrice)) throw new TypeError('Invalid gasPrice');
     if (gasLimit && !isUnsignedSafeInteger(gasLimit)) throw new TypeError('Invalid gasLimit');
@@ -577,12 +575,18 @@ function parseUnsignedInteger(value: string): number | bigint {
     return result;
 }
 
-function isNativeEthereumCurrency(currency: Currency): currency is EthereumSupportedNativeCurrency {
-    return (ETHEREUM_SUPPORTED_NATIVE_CURRENCIES as readonly Currency[]).includes(currency);
+function validateBitcoinAddress(address: string): boolean {
+    // No actual Bitcoin address validation. Just basic sanitization via a regular expression.
+    // This is to block malicious addresses that append additional params like "?amount=5".
+    return /^[a-z0-9]+$/i.test(address);
 }
 
 function validateEthereumAddress(address: string): boolean {
     return /^0x[a-f0-9]{40}$/i.test(address);
+}
+
+function isNativeEthereumCurrency(currency: Currency): currency is EthereumSupportedNativeCurrency {
+    return (ETHEREUM_SUPPORTED_NATIVE_CURRENCIES as readonly Currency[]).includes(currency);
 }
 
 function getEthereumBlockchainName(chainIdOrNativeCurrency: number | Currency)
