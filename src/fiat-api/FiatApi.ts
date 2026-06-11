@@ -1459,7 +1459,7 @@ async function _getHistoricBridgeableFiatCurrencyExchangeRatesByRange(
     const toDate = to === from ? fromDate : _getDateString(to, timezone);
     // Note: entries for future dates are omitted and thus basically undefined which is reflected in the return type.
     return fetchFiatApi<{[date: string]: number}>(
-        `https://usd-crc-historic-rate.deno.dev/api/rates/${fromDate}/${toDate}`,
+        `https://usd-crc-historic-rate.sisou.deno.net/api/rates/${fromDate}/${toDate}`,
     );
 }
 
