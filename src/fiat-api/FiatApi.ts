@@ -540,7 +540,8 @@ type HistoryBridgeableCurrencyTimezone = (typeof HISTORY_BRIDGEABLE_CURRENCY_TIM
 // const API_URL_CRYPTOCOMPARE = 'https://data-api.ccdata.io/index/cc';
 const API_URL_CRYPTOCOMPARE = 'https://data-api.cryptocompare.com/index/cc';
 const API_URL_CRYPTOCOMPARE_LEGACY = 'https://min-api.cryptocompare.com/data';
-let API_URL_COINGECKO = 'https://api.coingecko.com/api/v3';
+const API_URL_COINGECKO_DEFAULT = 'https://api.coingecko.com/api/v3';
+let API_URL_COINGECKO = API_URL_COINGECKO_DEFAULT;
 
 const COIN_IDS_COINGECKO = {
     [CryptoCurrency.NIM]: 'nimiq-2',
@@ -557,9 +558,11 @@ const ONE_DAY = 24 * ONE_HOUR;
 
 /**
  * @param url The URL to the CoinGecko v3 API.
+ * @param rateLimits Custom rate limits for the specified API endpoint. Unset limits are considered infinite.
  */
-export function setCoinGeckoApiUrl(url = 'https://api.coingecko.com/api/v3') {
+export function setCoinGeckoApiUrl(url = API_URL_COINGECKO_DEFAULT, rateLimits: RateLimits = _coingeckoRateLimits) {
     API_URL_COINGECKO = url;
+    _rateLimitSchedulers[Provider.CoinGecko].setRateLimits(rateLimits);
 }
 
 const _coinGeckoExtraHeaders = new Map<string, string>();
